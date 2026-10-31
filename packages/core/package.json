@@ -1,0 +1,53 @@
+{
+  "name": "deshiqr",
+  "version": "0.1.0",
+  "description": "Parse, verify and build Bangla QR (NPSB / EMVCo) payment payloads. Zero dependencies.",
+  "keywords": [
+    "bangla-qr",
+    "bkash",
+    "npsb",
+    "emv",
+    "emvco",
+    "qr",
+    "payments",
+    "bangladesh"
+  ],
+  "license": "MIT",
+  "author": "Himel Das <hello2himel@proton.me>",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hello2himel/deshiQR.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/hello2himel/deshiQR#readme",
+  "bugs": {
+    "url": "https://github.com/hello2himel/deshiQR/issues"
+  }
+}

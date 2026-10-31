@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"],
+    "paths": {
+      "deshiqr": ["../../packages/core/src/index.ts"],
+      "deshiqr-qr": ["../../packages/qr/src/index.ts"],
+      "deshiqr-element": ["../../packages/element/src/index.ts"]
+    }
+  },
+  "include": ["src", "test", "vite.config.ts"]
+}

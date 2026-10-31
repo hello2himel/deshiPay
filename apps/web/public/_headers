@@ -1,0 +1,27 @@
+# deshiQR — security and cache headers for Netlify.
+#
+# script-src stays strict ('self' + the single inline theme bootstrap hash below).
+# style-src allows 'unsafe-inline' because the web component's shadow DOM carries
+# its own <style> block. connect-src allows any HTTPS origin because the Supabase
+# project URL is deployment-specific (only the public anon key is ever used).
+# The Google Fonts origins are limited to stylesheets/fonts.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; object-src 'none'; script-src 'self' 'sha256-rbOyoEqXLy4ODbaWj6jkruM/sRDLV8uUia8yDC8FNY8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss:; manifest-src 'self'
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon.svg
+  Cache-Control: public, max-age=86400
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable

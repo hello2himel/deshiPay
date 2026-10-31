@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>deshiQR — Bangla QR pay pages, posters and embeds</title>
+    <meta
+      name="description"
+      content="Turn the Bangla QR printed at your counter into a shareable pay page, a printable A4 poster and an embeddable <deshiqr-pay> panel. bKash verified today; more providers planned. No account needed for the demo."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e0b15" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="deshiQR — Bangla QR pay pages, posters and embeds" />
+    <meta
+      property="og:description"
+      content="The Bangla QR at your counter, turned into a shareable pay page, an A4 poster and an embeddable payment panel. bKash verified today, more providers planned."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="deshiQR — Bangla QR pay pages" />
+    <meta
+      name="twitter:description"
+      content="Turn a Bangla QR into a pay page, poster and embed. bKash verified today. No backend needed for the demo."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("deshiqr.theme");
+          const theme =
+            stored === "dark" || stored === "light"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="boot-screen">Loading deshiQR…</div>
+    </div>
+    <noscript>
+      <div class="noscript">
+        <h1>deshiQR needs JavaScript</h1>
+        <p>
+          The pay page generates the Bangla QR in your browser, so JavaScript is required. The QR
+          payload itself is public data printed at the merchant's counter.
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

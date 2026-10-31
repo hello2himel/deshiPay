@@ -1,0 +1,38 @@
+{
+  "name": "deshiqr-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "deshiQR \u2014 Bangla QR (NPSB) payment payload toolkit, hosted pay pages and embeds.",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "pnpm build:libs && pnpm build:web",
+    "build:libs": "pnpm --filter deshiqr --filter deshiqr-qr --filter deshiqr-element build",
+    "build:web": "pnpm --filter @deshiqr/web build",
+    "dev": "pnpm --filter @deshiqr/web dev",
+    "test": "pnpm build:libs && pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "vendor:edge": "node scripts/vendor-edge.mjs",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@types/node": "^26.6.6",
+    "prettier": "^3.6.2",
+    "qrcode": "^1.5.4",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hello2himel/deshiQR.git"
+  },
+  "homepage": "https://github.com/hello2himel/deshiQR#readme",
+  "bugs": {
+    "url": "https://github.com/hello2himel/deshiQR/issues"
+  },
+  "license": "MIT"
+}

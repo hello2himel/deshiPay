@@ -1,0 +1,59 @@
+{
+  "name": "deshiqr-element",
+  "version": "0.1.0",
+  "description": "<deshiqr-pay> web component: embed a Bangla QR payment panel anywhere.",
+  "keywords": [
+    "bangla-qr",
+    "bkash",
+    "web-component",
+    "custom-element",
+    "qr",
+    "payments"
+  ],
+  "license": "MIT",
+  "author": "Himel Das <hello2himel@proton.me>",
+  "type": "module",
+  "sideEffects": [
+    "./dist/deshiqr-element.js",
+    "./dist/deshiqr-element.global.js"
+  ],
+  "main": "./dist/deshiqr-element.js",
+  "module": "./dist/deshiqr-element.js",
+  "types": "./dist/deshiqr-element.d.ts",
+  "unpkg": "./dist/deshiqr-element.global.js",
+  "jsdelivr": "./dist/deshiqr-element.global.js",
+  "exports": {
+    ".": {
+      "types": "./dist/deshiqr-element.d.ts",
+      "import": "./dist/deshiqr-element.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "deshiqr": "workspace:*",
+    "deshiqr-qr": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hello2himel/deshiQR.git",
+    "directory": "packages/element"
+  },
+  "homepage": "https://github.com/hello2himel/deshiQR#readme",
+  "bugs": {
+    "url": "https://github.com/hello2himel/deshiQR/issues"
+  }
+}

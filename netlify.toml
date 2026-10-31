@@ -1,0 +1,15 @@
+# Netlify build for the hosted deshiQR app.
+# The app is fully static; Supabase is optional (see docs/self-hosting.md).
+# Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the Netlify UI to enable
+# accounts, hosted merchant pages and invoices. Without them the app runs in
+# local demo mode.
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm build"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# SPA fallbacks, security headers and cache rules live in
+# apps/web/public/_redirects and apps/web/public/_headers so they travel with
+# the built output.

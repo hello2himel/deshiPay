@@ -136,6 +136,17 @@ Follow [docs/self-hosting.md](./docs/self-hosting.md): create a Supabase project
 - **Never custody funds.** No wallets, no balances, no payout rails — just payloads.
 - **Synthetic fixtures only.** No real merchant data in this repo, ever.
 
+## Built with deshiQR
+
+**Chanasta** — [github.com/hello2himel/chanasta](https://github.com/hello2himel/chanasta) — is the flagship
+consumer of this engine: a Bangla-first "buy me a coffee" (চা + নাস্তা) where supporters send money
+directly to a creator's own bKash/Nagad/Rocket/bank account. Chanasta displays payment info and stores
+self-reported "I sent it" claims; it never processes or holds money. It vendors a pinned copy of
+`deshiqr` + `deshiqr-qr` and is a good reference for building a product on top of this library.
+
+The embeddable browser bundle is also published from this repo's Pages site until the npm release:
+`https://hello2himel.github.io/deshiQR/element/deshiqr-element.global.js` (IIFE, global `DeshiQrElement`).
+
 ## Documentation
 
 - [Payload format](./docs/format.md) — every tag, the checksum, how payloads are derived.

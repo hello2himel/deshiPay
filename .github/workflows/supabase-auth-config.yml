@@ -58,7 +58,6 @@ jobs:
             --rawfile content supabase/templates/reauthentication.html \
             '{
               password_min_length: 8,
-              password_hibp_enabled: true,
               mailer_subjects_reauthentication: $subject,
               mailer_templates_reauthentication_content: $content
             }' > /tmp/auth-patch.json
@@ -69,7 +68,7 @@ jobs:
             --data @/tmp/auth-patch.json \
             "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/config/auth")
           echo "auth config PATCH: HTTP $code"
-          jq '{password_min_length, password_hibp_enabled, mailer_subjects_reauthentication}' /tmp/auth-patch-response.json
+          jq '{password_min_length, mailer_subjects_reauthentication}' /tmp/auth-patch-response.json
           test "$code" -ge 200 -a "$code" -lt 300
 
       - name: Inspect the effective auth settings (no secrets)

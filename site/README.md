@@ -15,7 +15,8 @@ Payment pages for **Bangla QR**. Each user signs up, drops one Bangla QR (bKash,
 ```
 site/
   public/
-    index.html        landing + sign up / sign in
+    index.html        landing page (hero, live payment demo, "Create your page" CTA)
+    login.html        sign up / sign in page (served at /login)
     app.html          dashboard: onboarding wizard, then the editor (served at /app)
     pay.html          the customer page (served at /<username>)
     terms.html        terms of service
@@ -36,6 +37,9 @@ site/
   tests/              qr.test.js (engine adapter), export.test.js (standalone export),
                       e2e/ (browser smoke test, optional)
 ```
+
+The sign-in/sign-up form gets its own page at **`/login`** (the landing page only has a
+"Create your page" button that links there), so the homepage stays a landing page.
 
 The database schema and Supabase config live at the **repo root**: `supabase/migrations/` (versioned SQL,
 applied automatically by the Supabase GitHub integration) and `supabase/config.toml`.

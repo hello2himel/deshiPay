@@ -148,8 +148,6 @@ p { margin: 0; }
 .foot-col b { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .foot-col a { color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 500; }
 .foot-col a:hover { color: var(--accent-text); text-decoration: underline; }
-.site-foot-base { border-top: 1px solid var(--line); }
-.site-foot-base .site-foot-in { padding-top: 14px; padding-bottom: 20px; color: var(--muted); font-size: 13px; gap: 8px; }
 @media (min-width: 900px) { .site-foot { margin-top: 72px; } }
 
 /* ---------- legal / info pages ---------- */

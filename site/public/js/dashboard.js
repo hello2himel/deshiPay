@@ -850,7 +850,7 @@
     try { r = await sb.from("profiles").select("*").eq("user_id", user.id).maybeSingle(); } catch (e) { r = { error: e }; }
     if (r.error) {
       root.replaceChildren(h("div", { class: "setup-missing" }, h("h1", null, "Couldn’t load your page"),
-        h("p", null, /relation|schema|profiles/i.test(r.error.message || "") ? "The database tables aren’t set up yet. Run supabase/schema.sql in the Supabase SQL editor." : "Check your connection and try again."),
+        h("p", null, /relation|schema|profiles/i.test(r.error.message || "") ? "The database tables aren’t set up yet. Apply the SQL in supabase/migrations/ (enable the Supabase GitHub integration, or paste the files into the SQL editor)." : "Check your connection and try again."),
         h("button", { class: "btn", type: "button", onClick: function () { location.reload(); } }, "Try again")));
       return;
     }

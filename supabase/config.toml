@@ -1,0 +1,14 @@
+# Supabase project configuration for the DeshiQR website.
+#
+# The database schema is versioned in supabase/migrations/ and is applied
+# automatically by the Supabase GitHub integration: Project Settings >
+# Integrations > GitHub > connect this repository with Working directory ".",
+# then enable "Deploy to production". Every push to the production branch
+# applies any migration that has not been applied yet.
+#
+# For local development: `supabase start` (uses supabase/migrations/ and
+# supabase/seed.sql if present) and `supabase db push` for a linked project.
+project_id = "deshiqr"
+
+[db.migrations]
+enabled = true

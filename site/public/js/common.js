@@ -6,7 +6,7 @@
   var configured = !!(cfg.supabaseUrl && cfg.supabaseAnonKey && !/YOUR-/i.test(cfg.supabaseUrl + cfg.supabaseAnonKey));
   var _client = null;
 
-  // Keep in sync with public.is_reserved_username() in supabase/schema.sql
+  // Keep in sync with public.is_reserved_username() in supabase/migrations/
   var RESERVED = new Set(
     ("app,api,admin,administrator,login,logout,signin,signup,register,auth,pay,payment,payments,dashboard," +
       "settings,account,profile,help,support,about,terms,privacy,contact,static,assets,css,js,vendor,img,images," +

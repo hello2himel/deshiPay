@@ -1,7 +1,15 @@
 -- =====================================================================
--- DeshiQR: Supabase schema
--- Run this whole file once in: Supabase dashboard > SQL Editor > New query.
--- It is safe to re-run (everything is "if not exists" / "or replace").
+-- DeshiQR: initial Supabase schema (migration 1 of `supabase/migrations/`)
+--
+-- This is the canonical database schema. It is applied automatically by the
+-- Supabase GitHub integration ("Deploy to production") on every push to the
+-- production branch, or manually with `supabase db push` / by pasting this
+-- file into the Supabase dashboard > SQL Editor once.
+--
+-- Migration files are applied in filename order and recorded in the project's
+-- migration history; add future changes as new `YYYYMMDDHHMMSS_name.sql`
+-- files next to this one. It is safe to re-run (everything is
+-- "if not exists" / "or replace").
 --
 -- Security model
 --   * public.profiles holds one row per signed-in user.

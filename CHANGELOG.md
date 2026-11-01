@@ -31,6 +31,13 @@ All notable changes to this project are documented here. The format is based on
   extended Chromium e2e covering the online journey, the offline CTA/wizard/download and the generated
   file; `docs/website.md` documents the operator side.
 
+- **Database migrations from the repo.** The Supabase schema moved from `site/supabase/schema.sql` to
+  versioned SQL migrations in [`supabase/migrations/`](./supabase/migrations/) (plus
+  `supabase/config.toml`), so the Supabase **GitHub integration** can apply every new migration
+  automatically when a commit lands on `main` — no manual SQL-editor step, no GitHub Action secrets.
+  Add future schema changes as new `YYYYMMDDHHMMSS_name.sql` files. Setup instructions are in
+  [`docs/website.md`](./docs/website.md#automatic-database-migrations).
+
 ### Fixed
 
 - **UTF-8 byte-length TLV support (real Bangla QR payloads).** EMVCo/NPSB payloads count each field's

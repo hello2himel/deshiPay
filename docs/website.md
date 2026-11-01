@@ -30,9 +30,12 @@ site/                     static site (plain HTML/CSS/JS, no bundler, no depende
   public/vendor/          qrcode, jsQR, supabase-js, deshiqr.global.js (built from packages/deshiqr)
   scripts/                build-config.js, dev-server.js, gen-themes.js, refresh-engine.js
   tests/                  qr.test.js (engine adapter), e2e/ (optional browser smoke test)
-  supabase/schema.sql     tables, Row Level Security, public functions
 netlify.toml              repo root: build/routing/headers for site/ (Netlify reads this)
 ```
+
+The database schema and Supabase config live at the repo root, not inside `site/`:
+`supabase/migrations/` (versioned SQL, applied by the Supabase GitHub integration) and
+`supabase/config.toml`.
 
 - **Hosting — Netlify.** The repo-root [`netlify.toml`](../netlify.toml) sets `base = "site"`,
   `publish = "public"`, build command `node scripts/build-config.js`, plus the redirects (`/app`,
@@ -69,9 +72,13 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    "Create my page" flow and can download standalone HTML files (the same fallback the site uses when
    Supabase is paused). Add the real Supabase variables and remove `SITE_OFFLINE` later to switch the
    accounts back on.
-3. **Database.** In Supabase → *SQL Editor → New query*, paste all of
-   [`site/supabase/schema.sql`](../site/supabase/schema.sql) and run it (safe to re-run). It creates
-   the tables, RLS policies, username rules and the public functions.
+3. **Database — automatically from this repo.** One-time: Supabase → *Project Settings →
+   Integrations → GitHub*, authorize the repository, set **Working directory** to `.` and enable
+   **Deploy to production** (and *Automatic branching* if you want preview databases per branch).
+   Every push to `main` then applies the SQL files in
+   [`supabase/migrations/`](../supabase/migrations/) that the project hasn't applied yet.
+   Manual alternative: paste those files, in filename order, into *SQL Editor* once. See
+   [Automatic database migrations](#automatic-database-migrations).
 4. **Supabase Auth URLs** (*Authentication → URL Configuration*):
    - **Site URL:** `https://deshiqr.netlify.app`
    - **Redirect URLs:** `https://deshiqr.netlify.app/app` and `http://localhost:8888/app`
@@ -82,6 +89,27 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    `/`, `/app`, `/<username>` and `/favicon.ico` against the live URL.
 6. Optional: add a custom domain in Netlify → *Domain management*; then update the Supabase Site URL
    and redirect URLs to the custom domain.
+
+## Automatic database migrations
+
+The schema is versioned in [`supabase/migrations/`](../supabase/migrations/) and
+[`supabase/config.toml`](../supabase/config.toml); `supabase/` sits at the repo root (the integration's
+**Working directory** is `.`).
+
+- **One-time setup:** Supabase Dashboard → *Project Settings → Integrations → GitHub* → **Authorize
+  GitHub** → choose `hello2himel/deshiQR` → set **Working directory** to `.` → enable **Deploy to
+  production** (optional: *Automatic branching* for preview databases on GitHub branches). No GitHub
+  Action or secrets are needed; Supabase watches the repo and runs the migrations itself.
+- **Changing the schema:** add a new file `supabase/migrations/YYYYMMDDHHMMSS_short_name.sql` (never
+  edit a migration that has already been applied), then push/merge to `main`. Supabase applies the
+  files it hasn't seen and records them in the project's migration history. See the Supabase
+  [GitHub integration docs](https://supabase.com/docs/guides/deployment/branching/github-integration).
+- **Checks:** with *Automatic branching* you can make the Supabase status check required on PRs, so a
+  bad migration is caught before it reaches `main`. Without branching, test the SQL on a throwaway
+  project/branch first.
+- **Local / CLI alternative:** `supabase start` for a local stack, and `supabase link` +
+  `supabase db push` to apply the same migrations from a machine. The `SITE_OFFLINE` site build and
+  the website are unaffected by migrations.
 
 ## Local development
 
@@ -179,7 +207,7 @@ CI (`node site/scripts/refresh-engine.js --check`) fails if the vendored copy is
 ## Security notes
 
 - The **anon key is public by design**: it ends up in `site/public/js/config.js` in the browser. Row
-  Level Security in `schema.sql` is what protects the data — never put the `service_role` key in the
+  Level Security in the migrations is what protects the data — never put the `service_role` key in the
   site or in Netlify env vars.
 - No secrets belong in the repo. `.env` files stay ignored; the site needs no secret to run.
 - The customer page is driven by `get_public_page()` (published pages, public fields only); all user
@@ -187,7 +215,7 @@ CI (`node site/scripts/refresh-engine.js --check`) fails if the vendored copy is
 - Anyone can claim any free page name, and a page shows whatever name is in the uploaded QR — the
   customer page tells payers to check the name in their app before paying. See
   [`site/README.md`](../site/README.md#security-notes) for the impersonation/reporting discussion and
-  the reserved-name list (kept in both `site/supabase/schema.sql` and `site/public/js/common.js`).
+  the reserved-name list (kept in both `supabase/migrations/` and `site/public/js/common.js`).
 
 ## CI
 
@@ -201,7 +229,7 @@ Python matrix job is unaffected. The site tests need no dependencies and no netw
 - [`site/README.md`](../site/README.md) — full site guide: user flows, customising, tests,
   troubleshooting.
 - [`netlify.toml`](../netlify.toml) — routing, headers/CSP, cache headers.
-- [`site/supabase/schema.sql`](../site/supabase/schema.sql) — tables, policies, reserved names.
+- [`supabase/migrations/`](../supabase/migrations/) — versioned schema: tables, policies, reserved names.
 - [Format](./format.md), [API](./api.md) — the payload engine the site edits with.
 - [SECURITY.md](../SECURITY.md) — the library's security posture.
 

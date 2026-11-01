@@ -1,10 +1,15 @@
 # DeshiPay
 
-**Payment pages for Bangla QR.** Drop in the QR you already use for bKash, Nagad, Rocket or your bank,
-pick a link, and customers get a page where they type an amount and scan a ready-to-pay dynamic QR.
-Wallet numbers and bank details can sit beside it for people who would rather copy and send.
+**One link to receive payments, donations and support.** DeshiPay gives your shop, your work or your
+cause a payment page: customers scan a live Bangla QR with the amount already in it, or copy your
+bKash, Nagad or bank details. No app for them to install, nothing for you to integrate.
 
 Live: **<https://deshipay.netlify.app>**
+
+The **Bangla QR is the headline feature**: the page rewrites the QR you already own so the amount is
+ready before the customer scans. Wallet numbers and bank details sit beside it for people who would
+rather copy and send. Use one page for a sale, an invoice, a tip, a donation or support — it is a
+complete way to receive money, not just a QR generator.
 
 DeshiPay is *not* a payment processor: it never handles, holds or confirms money. Customers pay from
 their own banking app, straight to the account in the QR.
@@ -14,6 +19,13 @@ The payload engine behind the site is a separate, zero-dependency library projec
 PyPI [`deshiqr`](https://pypi.org/project/deshiqr/), browser bundle on GitHub Pages. This repo vendors
 its browser bundle (`site/public/vendor/deshiqr.global.js`, committed) so the site deploys without the
 library toolchain.
+
+## Who it is for
+
+- Shops and small businesses taking payments at the counter or online.
+- Freelancers and studios sending a client a link to pay an invoice.
+- Creators and communities collecting tips, support or donations.
+- Causes and campaigns receiving contributions with a real QR and copyable details.
 
 ## What's here
 

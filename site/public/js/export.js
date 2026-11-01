@@ -99,7 +99,7 @@
     var value = bucket && bucket[key];
     if (typeof value !== "string" || !value) {
       throw new Error(
-        "DeshiQR export: missing " + group + "." + key + " asset — pass the contents of " + file + " as assets." + group + "." + key
+        "DeshiPay export: missing " + group + "." + key + " asset — pass the contents of " + file + " as assets." + group + "." + key
       );
     }
     return value;
@@ -113,7 +113,7 @@
   //           favicon?, fontUrl?, footerHref? }
   function buildPageHtml(page, assets) {
     if (!page || typeof page !== "object" || Array.isArray(page)) {
-      throw new Error("DeshiQR export: a page object is required");
+      throw new Error("DeshiPay export: a page object is required");
     }
     assets = assets || {};
 
@@ -139,7 +139,7 @@
       '<meta charset="utf-8">',
       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
       '<meta name="robots" content="noindex">',
-      "<title>Payment page · DeshiQR</title>",
+      "<title>Payment page · DeshiPay</title>",
       '<meta name="theme-color" content="#E6F0ED">',
       '<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141F25">',
       icon ? '<link rel="icon" href="' + attr(icon) + '" type="image/svg+xml">' : "",
@@ -174,10 +174,10 @@
 
   function fetchText(url) {
     if (typeof fetch !== "function") {
-      return Promise.reject(new Error("DeshiQR export: fetch() isn’t available in this browser"));
+      return Promise.reject(new Error("DeshiPay export: fetch() isn’t available in this browser"));
     }
     return fetch(url, { cache: "no-store", credentials: "same-origin" }).then(function (res) {
-      if (!res.ok) throw new Error("DeshiQR export: couldn’t load " + url + " (HTTP " + res.status + ")");
+      if (!res.ok) throw new Error("DeshiPay export: couldn’t load " + url + " (HTTP " + res.status + ")");
       return res.text();
     });
   }
@@ -231,7 +231,7 @@
   // Resolves with the complete standalone HTML for the page object.
   function exportPage(page) {
     if (!page || typeof page !== "object" || Array.isArray(page)) {
-      return Promise.reject(new Error("DeshiQR export: a page object is required"));
+      return Promise.reject(new Error("DeshiPay export: a page object is required"));
     }
     return loadAssets().then(function (assets) {
       return buildPageHtml(page, {
@@ -315,7 +315,7 @@
     root.Deshi.exportPage = exportPage;
     root.Deshi.downloadPage = downloadPage;
   } else if (!(typeof module === "object" && module.exports)) {
-    throw new Error("DeshiQR export: window.Deshi is missing. Load /js/common.js before /js/export.js.");
+    throw new Error("DeshiPay export: window.Deshi is missing. Load /js/common.js before /js/export.js.");
   }
 
   return api;

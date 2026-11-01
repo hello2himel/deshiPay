@@ -1,17 +1,21 @@
-# DeshiQR
+# DeshiPay website
 
 > This is the **DeshiPay website** — the [DeshiPay repo](../README.md) (served at
 > <https://deshipay.netlify.app>). The payload-editing engine it runs comes from the separate
 > [deshiQR](https://github.com/hello2himel/deshiQR) library repo; this directory adds the pages, the
 > Supabase auth/database and the editor UI on top.
 
-Payment pages for **Bangla QR**. Each user signs up, drops one Bangla QR (bKash, Nagad, Rocket, Upay, any bank app), picks a link, and gets a page at `yourdomain.com/username` where customers type an amount and receive a ready-to-scan QR. Wallet numbers and bank details can sit beside it for customers who'd rather copy and send.
+One page to **receive payments, donations and support**. Anyone signs up, adds the Bangla QR they already
+use (bKash, Nagad, Rocket, Upay, any bank app) plus optional wallet/bank details, and picks a link. Their
+page at `yourdomain.com/username` puts the live, amount-ready QR first and the copyable details beside
+it — for a sale, an invoice, a tip, a donation or support. The QR is the headline method; the page is the
+complete way to get paid.
 
 - **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshipay.netlify.app>
 - **Auth + database** on **Supabase** (email/password, Postgres with Row Level Security)
 - **Payload editing in the browser** comes from the separate [deshiQR](https://github.com/hello2himel/deshiQR) engine: the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
 - **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
-- The page **only shows payment details**. There is no payment confirmation or money handling of any kind.
+- The page **only shows payment details** — no payment confirmation and no money handling of any kind. Customers pay from their own app, whether that is a QR scan or a wallet/bank transfer.
 
 ```
 site/

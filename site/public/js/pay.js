@@ -6,7 +6,7 @@
 
   function state(title, text, actions) {
     root.replaceChildren(h("div", { class: "pv-state" },
-      h("a", { class: "brand", href: "/" }, h("i"), "DeshiQR"),
+      h("a", { class: "brand", href: "/" }, h("i"), "DeshiPay"),
       h("h1", null, title),
       h("p", null, text),
       actions
@@ -65,7 +65,7 @@
 
   function unavailable() {
     return state("Temporarily unavailable",
-      "Sorry — payment pages can’t be loaded right now. DeshiQR is temporarily unavailable; please try again in a little while.",
+      "Sorry — payment pages can’t be loaded right now. DeshiPay is temporarily unavailable; please try again in a little while.",
       h("button", { class: "btn", type: "button", onClick: retry }, "Try again"));
   }
 

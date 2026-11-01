@@ -221,7 +221,7 @@
           ),
           card,
           help,
-          opts.preview ? null : h("footer", { class: "pv-foot" }, "Made with ", h("a", { href: opts.footerHref || "/" }, "DeshiQR"))
+          opts.preview ? null : h("footer", { class: "pv-foot" }, "Made with ", h("a", { href: opts.footerHref || "/" }, "DeshiPay"))
         )
       );
       root.replaceChildren(tree);

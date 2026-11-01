@@ -168,7 +168,7 @@
     } }, fields, submit, msg);
 
     var head = {
-      signup: ["Create your page", "Free, and it takes about a minute."],
+      signup: ["Create your page", "Free, and it takes about a minute — for payments, donations or support."],
       signin: ["Welcome back", "Sign in to edit your payment page."],
       forgot: ["Reset your password", "We’ll email you a link to choose a new one."]
     }[mode];

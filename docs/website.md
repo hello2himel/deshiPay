@@ -1,7 +1,9 @@
 # The website (`site/`)
 
-The repo ships a website: **<https://deshipay.netlify.app>**. It is the payment-page product built on
-top of the `deshiqr` payload engine — the library docs ([format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md)) still
+**DeshiPay** is live at **<https://deshipay.netlify.app>**: one page to receive payments, donations and
+support. The live, amount-ready Bangla QR is the headline method, with wallet and bank details beside it.
+The site is built on top of the `deshiqr` payload engine — the library docs
+([format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md))
 describe the engine itself; this page is the operator guide for running and deploying the site.
 
 The full site guide (user flows, customising themes/wallets, security details, troubleshooting) is
@@ -9,11 +11,12 @@ The full site guide (user flows, customising themes/wallets, security details, t
 
 ## What it is
 
-- A merchant signs up, drops any Bangla QR (bKash, Nagad, Rocket, Upay, any bank app — the QR image or
-  the code text), picks a link such as `deshipay.netlify.app/shop`, and optionally adds wallet numbers
-  and bank details.
+- A shop, freelancer, creator or cause signs up, adds the Bangla QR it already owns (bKash, Nagad,
+  Rocket, Upay, any bank app — the QR image or the code text), picks a link such as
+  `deshipay.netlify.app/shop`, and optionally adds wallet numbers and bank details.
 - Customers open `/shop`, type an amount (Bangla digits work) and get a ready-to-scan dynamic QR with
-  the amount baked in. Wallet numbers and bank lines are tap-to-copy.
+  the amount baked in; wallet numbers and bank lines are tap-to-copy for anyone who would rather send
+  directly. One page covers a sale, an invoice, a tip, a donation or support.
 - The page only shows payment details. There is no payment confirmation or money handling of any
   kind. Payload editing happens in the browser.
 

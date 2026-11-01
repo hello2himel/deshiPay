@@ -8,3 +8,6 @@ node_modules/
 .idea/
 site/.netlify/
 site/tests/e2e/shots/
+
+# Local print deliverables (PDF/PNG) are not committed
+out/

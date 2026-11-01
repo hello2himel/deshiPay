@@ -17,12 +17,16 @@ const path = require("path");
 // accent must keep >= 4.5:1 contrast against white (button text);
 // dark must keep >= 4.5:1 against the dark page background.
 const THEMES = [
+  // emerald is the site default (green scheme); the rest are user-selectable.
+  // Deep "bottle" green chosen for the green migration: calmer than the bright
+  // money/success greens, 6.5:1 white-on-accent, and clearly distinct from the
+  // old rose and from bKash pink.
+  { id: "emerald", accent: "#056B4E", dark: "#34D6A4", ok: "#0D7A30", okDark: "#7CE08B" },
   { id: "rose", accent: "#E2136E", dark: "#F0388B" },
   { id: "crimson", accent: "#C62432", dark: "#FF6F7A" },
   { id: "amber", accent: "#B45309", dark: "#F5A04A" },
   { id: "coffee", accent: "#7C4A2D", dark: "#D6A07A" },
   { id: "olive", accent: "#4D7C0F", dark: "#B1D05B" },
-  { id: "emerald", accent: "#0B7F58", dark: "#3DD598" },
   { id: "teal", accent: "#0F766E", dark: "#3FCFC8" },
   { id: "ocean", accent: "#1D5FD0", dark: "#6CA6FF" },
   { id: "violet", accent: "#6D3FD9", dark: "#AD92FF" },
@@ -70,7 +74,7 @@ function lightVars(t) {
     ["--on-accent", "#FFFFFF"],
     ["--accent-soft", mix("#FFFFFF", a, 0.15)],
     ["--accent-text", mix(a, "#000000", 0.1)],
-    ["--ok", "#0B7F58"],
+    ["--ok", t.ok || "#0B7F58"],
     ["--ok-soft", "#DDF4EA"],
     ["--bad", "#C0262D"],
     ["--bad-soft", "#FBE6E7"],
@@ -94,7 +98,7 @@ function darkVars(t) {
     ["--on-accent", "#17101F"],
     ["--accent-soft", mix(DARK.panel, a, 0.2)],
     ["--accent-text", a],
-    ["--ok", "#3DD598"],
+    ["--ok", t.okDark || "#3DD598"],
     ["--ok-soft", "#0F2F26"],
     ["--bad", "#FF8A8F"],
     ["--bad-soft", "#3A1618"],

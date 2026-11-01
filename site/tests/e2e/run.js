@@ -201,6 +201,15 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
+    ok(
+      (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "emerald",
+      "the site uses the green default theme"
+    );
+    const landingAccent = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--accent").trim().toUpperCase()
+    );
+    ok(landingAccent === "#056B4E", "the default accent is the chosen green (got " + landingAccent + ")");
+
     ok(state.health === 0, "the landing itself makes no backend probe");
     const onlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(

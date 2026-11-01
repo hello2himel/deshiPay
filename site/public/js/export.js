@@ -84,7 +84,7 @@
   }
 
   function themeId(theme) {
-    return typeof theme === "string" && THEME_RE.test(theme) ? theme : "rose";
+    return typeof theme === "string" && THEME_RE.test(theme) ? theme : "emerald";
   }
 
   function footerHref(assets) {
@@ -140,7 +140,8 @@
       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
       '<meta name="robots" content="noindex">',
       "<title>Payment page · DeshiQR</title>",
-      '<meta name="theme-color" content="#F5E9F1">',
+      '<meta name="theme-color" content="#E6F0ED">',
+      '<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141F25">',
       icon ? '<link rel="icon" href="' + attr(icon) + '" type="image/svg+xml">' : "",
       fontUrl ? '<link rel="preconnect" href="https://fonts.googleapis.com">' : "",
       fontUrl ? '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' : "",

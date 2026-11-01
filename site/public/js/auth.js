@@ -22,7 +22,7 @@
     username: "demo",
     title: "Himel Das",
     message: "Live demo of a real Bangla QR payment page — this QR pays the account inside it. Try a small amount.",
-    theme: "rose",
+    theme: "emerald",
     presets: [100, 500, 1000, 5000],
     // Base payload of the demo QR (a real Bangla QR: NPSB account template,
     // merchant name/city in tags 59/60 and the provider token templates).

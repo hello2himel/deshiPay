@@ -82,6 +82,24 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- **Pink → green rebrand (new default palette).** The website's colour scheme is now a deep "bottle"
+  green: accent `#056B4E`, accent-text `#046046`, soft `#DAE9E4`, page `#E6F0ED`, line `#B9D6CD`,
+  ink `#181D2B` — 6.5:1 white-on-accent and 6.5:1 link text, WCAG AA everywhere; dark-mode twin
+  `#34D6A4` (9:1 on the dark page). Rationale: the 163° hue echoes the national-flag/taka security
+  green, sits ~20° away from the "paid/success" green (so status is not painted in the brand colour),
+  and is nobody else's colour in this market (bKash pink, Nagad orange, Rocket purple).
+  - The `emerald` theme is refined in place (no new theme id/DB check migration) and becomes the
+    default for the site, `/app`, `/login`, `/pay` fallbacks, exports, the landing demo and new
+    database rows (`profiles.theme` default via a new migration). `rose` (and the rest) stay
+    selectable — they are simply no longer the default.
+  - Accessibility/consistency fixed at the same time: `--ok` no longer equals the accent
+    (`#0D7A30`, 4.74:1 on its soft pill — fixes an existing AA fail; dark `#7CE08B`), the customer
+    page's caution box is now neutral instead of "success green", the QR placeholder pattern is
+    neutral, `<meta name="theme-color">` is green (with a dark variant) instead of pink, the favicon
+    is green instead of bKash pink, and the Emerald picker swatch matches `#056B4E`.
+
+### Fixed
+
 - **The landing page demo is now the real payment page.** Instead of a static mock slip, the right-hand
   card mounts the actual customer-page component (`PayView`) exactly the way `pay.html` does, using the
   demo Bangla QR payload (NPSB account template, merchant name/city, provider token templates) as the

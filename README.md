@@ -18,54 +18,12 @@ Pages. There is no server and no database; it never holds funds, stores data, or
 ## Payload anatomy
 
 A Bangla QR payload is a flat run of **TLV** fields — tag, length, value — glued together with no
-separators and no terminator, and sealed by a checksum. Below is the synthetic `DEMO STORE` fixture
-from [docs/demo-payloads.md](./docs/demo-payloads.md) — one payload, 265 characters, every value fake —
-wrapped at tag boundaries. Each `┬───` marks a field's tag and length (`TTLL`); beneath it: the tag,
-its name, its properties, and the value it carries.
+separators and no terminator, and sealed by a checksum. The figure below shows the synthetic
+`DEMO STORE` fixture from [docs/demo-payloads.md](./docs/demo-payloads.md) — one payload, 265
+characters, every value fake — wrapped at tag boundaries. Each field's 4-character `TTLL` header is
+underlined and annotated with the tag, its name, its properties, and the value it carries:
 
-```text
-000201010211
-┬───  ┬───
-│     └── 01 · point of initiation · 2 digits: "11" static, "12" dynamic · "11"
-└── 00 · payload format · exactly 2 digits, always "01" · "01"
-
-26470014bd.org.bb.npsb01020202042002031101000000000
-┬───┬───              ┬───  ┬───    ┬───
-│   │                 │     │       └── 26/03 · account identifier · alphanumeric, 4–34 · "01000000000"
-│   │                 │     └── 26/02 · scheme / variant · 4 digits · "2002"
-│   │                 └── 26/01 · template version · 2 digits · "02"
-│   └── 26/00 · institution AID · ASCII, ≤ 32 · "bd.org.bb.npsb"
-└── 26 · account template · TLV subtree (47 characters)
-
-5204601653030505802BD
-┬───    ┬───   ┬───
-│       │      └── 58 · country · ISO 3166-1 alpha-2 · "BD"
-│       └── 53 · currency · ISO 4217 numeric, here BDT · "050"
-└── 52 · merchant category code · 4 digits · "6016"
-
-5910DEMO STORE6005Dhaka62060602FT
-┬───          ┬───     ┬───┬───
-│             │        │   └── 62/06 · customer label · text · "FT"
-│             │        └── 62 · additional data · TLV subtree (6 characters), optional
-│             └── 60 · merchant city · text, 1–15 · "Dhaka"
-└── 59 · merchant name · text, 1–25 · "DEMO STORE"
-
-80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=
-┬───┬───              ┬───
-│   │                 └── 80/01 · token · base64, opaque · "ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE="
-│   └── 80/00 · institution AID · ASCII · "bd.org.bb.npsb"
-└── 80 · token template A · TLV subtree (66 characters), opaque
-
-81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=
-┬───┬───              ┬───
-│   │                 └── 81/01 · token · base64, opaque · "ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE="
-│   └── 81/00 · institution AID · ASCII · "bd.org.bb.npsb"
-└── 81 · token template B · TLV subtree (66 characters), opaque
-
-6304295D
-┬───
-└── 63 · CRC-16/CCITT-FALSE · 4 uppercase hex, computed over all the rest · "295D"
-```
+![Annotated Bangla QR payload: one synthetic payload with every tag underlined, named, and annotated with its properties and example value](docs/assets/payload-annotated.png)
 
 The final `63` field is a CRC-16/CCITT-FALSE over everything before it; `update` always re-seals it.
 An amount edit flips `01` to `12`, inserts `54` after `53`, and re-seals `63` — everything else is

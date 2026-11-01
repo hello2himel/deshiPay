@@ -227,7 +227,7 @@ A few intentional differences from the site's original in-page engine come from 
 
 ## Customising
 
-- **Add a theme**: add a line to `THEMES` in [`site/scripts/gen-themes.js`](scripts/gen-themes.js), run `npm run themes`, then add the id and colour to `THEMES` in [`site/public/js/providers.js`](public/js/providers.js) and to `profiles_theme_valid` in [`site/supabase/schema.sql`](supabase/schema.sql) (re-create that constraint, or run `alter table public.profiles drop constraint profiles_theme_valid;` followed by the new `add constraint`).
+- **Add a theme**: add a line to `THEMES` in [`site/scripts/gen-themes.js`](scripts/gen-themes.js), run `npm run themes`, then add the id and colour to `THEMES` in [`site/public/js/providers.js`](public/js/providers.js) and to `profiles_theme_valid` in [`site/supabase/schema.sql`](supabase/schema.sql) (re-create that constraint, or run `alter table public.profiles drop constraint profiles_theme_valid;` followed by the new `add constraint`). Every surface is generated from that one accent — page background, borders, secondary buttons/segments and soft tints (in light and dark mode), so the whole page follows the theme.
 - **Add a wallet or bank**: edit `WALLETS` / `BANKS` in [`site/public/js/providers.js`](public/js/providers.js). Wallet entries are decorative colour tiles, not logos.
 - **Fonts** come from Google Fonts. To self-host, download Bricolage Grotesque and Figtree, add `@font-face` rules to `base.css`, and drop the two `fonts.*` hosts from the CSP in the repo-root `netlify.toml`.
 - Social-share previews (Open Graph) would need server-rendering, e.g. a Netlify Edge Function. Not included.

@@ -29,8 +29,26 @@ const THEMES = [
   { id: "graphite", accent: "#2E3A4B", dark: "#B6C1D1" }
 ];
 
-const LIGHT = { bg: "#F6F4F8", sunk: "#EDE9F1", line: "#E0DAE7", ink: "#1B1226", muted: "#625A70" };
-const DARK = { bg: "#130E1B", panel: "#1D1628", sunk: "#281F35", line: "#382D48", ink: "#F4F0F8", muted: "#ABA1BA" };
+// The page surfaces are tinted from the theme accent itself (not a neutral
+// base), so the background follows the theme: rose -> pinkish white, emerald ->
+// minty white, ocean -> bluish white, amber -> cream, graphite -> cool grey.
+// Tints are mixed with white/black rather than a shared lavender base, which
+// used to wash the hue out for every accent except the warm ones.
+const LIGHT = {
+  bg: "#FFFFFF", bgTint: 0.1,
+  sunk: "#FFFFFF", sunkTint: 0.15,
+  line: "#FFFFFF", lineTint: 0.28,
+  ink: "#1B1226", inkTint: 0.12,
+  muted: "#6B6478", mutedTint: 0.12
+};
+const DARK = {
+  bg: "#100B17", bgTint: 0.1,
+  panel: "#181120", panelTint: 0.08,
+  sunk: "#221A2E", sunkTint: 0.12,
+  line: "#392E48", lineTint: 0.18,
+  ink: "#F4F0F8", inkTint: 0.05,
+  muted: "#ABA1BA", mutedTint: 0.06
+};
 
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const hex = (a) => "#" + a.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase();
@@ -42,15 +60,15 @@ const mix = (a, b, t) => {
 function lightVars(t) {
   const a = t.accent;
   return [
-    ["--bg", mix(LIGHT.bg, a, 0.05)],
+    ["--bg", mix(LIGHT.bg, a, LIGHT.bgTint)],
     ["--panel", "#FFFFFF"],
-    ["--sunk", mix(LIGHT.sunk, a, 0.07)],
-    ["--line", mix(LIGHT.line, a, 0.1)],
-    ["--ink", mix(LIGHT.ink, a, 0.1)],
-    ["--muted", mix(LIGHT.muted, a, 0.08)],
+    ["--sunk", mix(LIGHT.sunk, a, LIGHT.sunkTint)],
+    ["--line", mix(LIGHT.line, a, LIGHT.lineTint)],
+    ["--ink", mix(LIGHT.ink, a, LIGHT.inkTint)],
+    ["--muted", mix(LIGHT.muted, a, LIGHT.mutedTint)],
     ["--accent", a],
     ["--on-accent", "#FFFFFF"],
-    ["--accent-soft", mix("#FFFFFF", a, 0.11)],
+    ["--accent-soft", mix("#FFFFFF", a, 0.15)],
     ["--accent-text", mix(a, "#000000", 0.1)],
     ["--ok", "#0B7F58"],
     ["--ok-soft", "#DDF4EA"],
@@ -66,12 +84,12 @@ function lightVars(t) {
 function darkVars(t) {
   const a = t.dark;
   return [
-    ["--bg", mix(DARK.bg, a, 0.05)],
-    ["--panel", mix(DARK.panel, a, 0.04)],
-    ["--sunk", mix(DARK.sunk, a, 0.07)],
-    ["--line", mix(DARK.line, a, 0.1)],
-    ["--ink", mix(DARK.ink, a, 0.06)],
-    ["--muted", mix(DARK.muted, a, 0.06)],
+    ["--bg", mix(DARK.bg, a, DARK.bgTint)],
+    ["--panel", mix(DARK.panel, a, DARK.panelTint)],
+    ["--sunk", mix(DARK.sunk, a, DARK.sunkTint)],
+    ["--line", mix(DARK.line, a, DARK.lineTint)],
+    ["--ink", mix(DARK.ink, a, DARK.inkTint)],
+    ["--muted", mix(DARK.muted, a, DARK.mutedTint)],
     ["--accent", a],
     ["--on-accent", "#17101F"],
     ["--accent-soft", mix(DARK.panel, a, 0.2)],

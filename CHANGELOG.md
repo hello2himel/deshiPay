@@ -40,6 +40,13 @@ All notable changes to this project are documented here. The format is based on
 
 ### Fixed
 
+- **Netlify secret scanning false positive on the public Supabase values.** The build writes
+  `SUPABASE_URL` and the public anon key into `site/public/js/config.js`; on public repositories
+  Netlify's sensitive-variable policy can fail the deploy with *"Secrets scanning found secrets in
+  build"*. The repo-root `netlify.toml` now sets
+  `SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"` (the anon key is public by design —
+  RLS protects the data; the `service_role` key must never be exposed).
+
 - **UTF-8 byte-length TLV support (real Bangla QR payloads).** EMVCo/NPSB payloads count each field's
   `LL` length in UTF-8 bytes, so payloads with non-ASCII values — a Bangla merchant name in tag `59`,
   a Bangla city in `60` — used to fail with `MISSING_FIELD`/`BAD_TLV`. The engine now parses by byte

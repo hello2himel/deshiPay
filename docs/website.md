@@ -66,6 +66,15 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    | `SUPABASE_ANON_KEY` | your anon / publishable key (public by design) |
    | `GOOGLE_AUTH`       | `true` only if you enabled Google auth         |
 
+   Both values are **public by design** (the anon key is shipped in the browser; Row Level Security
+   protects the data). On public repositories Netlify's sensitive-variable policy may flag them once
+   the build writes them into `site/public/js/config.js` and fail the build with *"Secrets scanning
+   found secrets in build"*. The repo's [`netlify.toml`](../netlify.toml) sets
+   `SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"` for that reason; if your site overrides
+   build settings, add the same variable in *Site configuration → Environment variables* (all deploy
+   contexts), or use `SECRETS_SCAN_OMIT_PATHS = "site/public/js/config.js"`. Never commit or expose the
+   `service_role` key.
+
    The build fails with a clear message if the two required variables are missing — unless you
    deliberately deploy **without a database** by setting `SITE_OFFLINE=true` instead of the two
    Supabase variables. An offline-only deploy has no accounts and no hosted pages; visitors get the

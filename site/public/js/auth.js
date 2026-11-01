@@ -27,8 +27,8 @@
     ref_prefix: "",
     ref_len: 0,
     wallets: [
-      { provider: "bkash", type: "personal", number: "01868735269" },
-      { provider: "nagad", type: "personal", number: "01712345678" }
+      { provider: "bkash", type: "personal", number: "01700000000" },
+      { provider: "nagad", type: "personal", number: "01800000000" }
     ],
     banks: [
       { bank: "BRAC Bank", name: "Demo Store", number: "1234567890123", branch: "Bogra", routing: "123456789", swift: "" }

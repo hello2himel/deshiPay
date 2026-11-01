@@ -469,7 +469,7 @@ test("inspect() and build() keep the console clean (warnings suppressed)", () =>
 
 /* ---------------- page wiring ---------------- */
 
-test("app.html and pay.html load the vendored engine, then payload.js, not qr.js", () => {
+test("pages load the vendored engine, then payload.js, not qr.js", () => {
   for (const page of H.PAGES) {
     const html = fs.readFileSync(path.join(__dirname, "..", "public", page), "utf8");
     const vendorAt = html.indexOf("/vendor/deshiqr.global.js");
@@ -479,9 +479,15 @@ test("app.html and pay.html load the vendored engine, then payload.js, not qr.js
     assert.ok(vendorAt < payloadAt, page + " must load the bundle before the adapter");
     assert.strictEqual(html.indexOf("/js/qr.js"), -1, page + " must not load the deleted legacy engine");
   }
+  // The landing page mounts the live payment demo, so it loads the engine and
+  // adapter too — before auth.js, which mounts PayView.
   const index = fs.readFileSync(path.join(__dirname, "..", "public", "index.html"), "utf8");
-  assert.strictEqual(index.indexOf("/vendor/deshiqr.global.js"), -1);
-  assert.strictEqual(index.indexOf("/js/payload.js"), -1);
+  const vendorAt = index.indexOf("/vendor/deshiqr.global.js");
+  const payloadAt = index.indexOf("/js/payload.js");
+  const authAt = index.indexOf("/js/auth.js");
+  assert.ok(vendorAt >= 0 && payloadAt >= 0, "index.html must load the engine and adapter for the demo");
+  assert.ok(vendorAt < payloadAt && payloadAt < authAt, "index.html: bundle, then adapter, then auth.js");
+  assert.strictEqual(index.indexOf("/js/qr.js"), -1, "index.html must not load the deleted legacy engine");
 });
 
 console.log("\n" + passed + " passed" + (process.exitCode ? ", some FAILED" : ""));

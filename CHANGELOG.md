@@ -79,6 +79,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Amount inputs are capped at ৳50,000.** Customer-page amount fields, quick amounts, `?amount=` locks and
+  the dashboard's "link with an amount" all enforce a ৳50,000 ceiling (the QR engine can still carry more,
+  but the product policy is 50k). Above it: a clear "above the page limit" message, the static QR stays
+  visible, quick amounts over the cap are hidden, presets over the cap are dropped, and an over-limit
+  `?amount=` link opens normally instead of locking. e2e checks the refusal (202 checks).
+
+### Changed
+
 - **QR blur-in on every refresh.** The "develop" blur/fade animation (previously only on the first QR
   draw) now replays whenever the QR is rebuilt: typing an amount, tapping a quick amount, clearing the
   amount back to the static QR, or any other redraw. Reduced-motion users still get the QR without the

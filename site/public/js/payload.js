@@ -8,7 +8,7 @@
  *   - keeps the shapes the pages already use:
  *       DeshiQR.inspect(raw), DeshiQR.build(base, amount, ref),
  *       DeshiQR.makeRef(prefix, len), DeshiQR.sanitizeAmount(text),
- *       DeshiQR.MAX_AMOUNT
+ *       DeshiQR.MAX_AMOUNT (engine ceiling) and MAX_INPUT_AMOUNT (page limit)
  *   - delegates every payload validation to `DeshiQR.validate(payload, {warnings:false})`
  *   - delegates every payload edit + re-seal to `DeshiQR.update(payload, edits, {warnings:false})`
  *   - reuses the legacy screen copy and a small READ-ONLY TLV reader that only
@@ -32,7 +32,8 @@
 
   var enc8 = new TextEncoder();
   var dec8 = new TextDecoder();
-  var MAX_AMOUNT = 9999999.99;
+  var MAX_AMOUNT = 9999999.99;   // engine/EMV ceiling
+  var MAX_INPUT_AMOUNT = 50000;  // DeshiPay page/input policy: ৳50,000
 
   /* ---------------- READ-ONLY TLV reader (metadata + legacy error copy only) ----------------
    *
@@ -289,6 +290,7 @@
     build: build,
     makeRef: makeRef,
     sanitizeAmount: sanitizeAmount,
-    MAX_AMOUNT: MAX_AMOUNT
+    MAX_AMOUNT: MAX_AMOUNT,
+    MAX_INPUT_AMOUNT: MAX_INPUT_AMOUNT
   });
 });

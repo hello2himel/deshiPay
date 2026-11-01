@@ -330,6 +330,12 @@ async function scenarioOnline(browser) {
     await page.waitForSelector("#email", { timeout: 10000 });
     ok(state.health > 0, "login page probes /auth/v1/health before showing sign-in");
     ok(!!(await page.$(".no-login a[href='/app?local=1']")), "login page offers a no-login create option");
+    const noLoginStyle = await page.$eval(".no-login a[href='/app?local=1']", (e) => {
+      const cs = getComputedStyle(e);
+      return { borderStyle: cs.borderStyle, borderColor: cs.borderColor };
+    });
+    ok(noLoginStyle.borderStyle === "dashed", "the no-login option is a dashed button");
+    ok(noLoginStyle.borderColor.replace(/ /g, "") === "rgb(5,107,78)", "the no-login button uses the brand green border");
     await Promise.all([
       page.waitForNavigation({ waitUntil: "networkidle0" }),
       page.click(".no-login a[href='/app?local=1']"),

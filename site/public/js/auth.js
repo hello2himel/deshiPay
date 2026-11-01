@@ -184,7 +184,7 @@
 
     var noLogin = h("div", { class: "no-login" },
       h("span", null, "No account needed?"),
-      h("a", { class: "linkbtn", href: "/app?local=1" }, "Create a page without login")
+      h("a", { class: "btn dashed block", href: "/app?local=1" }, "Create a page without login")
     );
 
     T.fill(card, h("div", null, h("h2", null, head[0]), h("p", { class: "sub" }, head[1])), form, google, switcher, noLogin);

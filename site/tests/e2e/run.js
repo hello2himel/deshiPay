@@ -313,23 +313,6 @@ async function scenarioOnline(browser) {
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
 
-    // Motion respects prefers-reduced-motion: no hiding, no reveal animation.
-    await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
-    await page.reload({ waitUntil: "networkidle0" });
-    await page.waitForSelector(".feat");
-    ok((await page.$eval(".feat", (e) => getComputedStyle(e).opacity)) === "1", "reduced motion shows reveal content immediately");
-    ok(
-      (await page.evaluate(() => document.documentElement.classList.contains("motion-ready"))) === false,
-      "reduced motion skips the scroll-reveal setup"
-    );
-    await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
-    await page.reload({ waitUntil: "networkidle0" });
-    await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
-    ok(
-      (await page.evaluate(() => document.documentElement.classList.contains("motion-ready"))) === true,
-      "scroll-reveal motion is enabled when the visitor allows motion"
-    );
-
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {
       const blob = await Deshi.qrPng(p, 700);

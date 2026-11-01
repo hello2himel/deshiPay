@@ -144,14 +144,3 @@
 
 body.pay-page { min-height: 100vh; }
 body.pay-page .pv { min-height: 100vh; }
-
-/* ---------- customer-page entrance ---------- */
-.pay-page .pv-head,
-.pay-page .pv-help,
-.pay-page .pv-card,
-.pay-page .pv-foot { animation: rise 0.5s cubic-bezier(0.2, 0.65, 0.2, 1) both; }
-.pay-page .pv-card { animation-delay: 0.06s; }
-.pay-page .pv-help { animation-delay: 0.1s; }
-.pay-page .pv-foot { animation-delay: 0.16s; }
-.made-cta .ic { transition: transform 0.18s ease; }
-.made-cta:hover .ic { transform: translateX(2px); }

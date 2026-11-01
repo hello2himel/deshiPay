@@ -1,7 +1,7 @@
 # The website (`site/`)
 
 The repo ships a website: **<https://deshipay.netlify.app>**. It is the payment-page product built on
-top of the `deshiqr` payload engine — the library docs ([format](./format.md), [API](./api.md)) still
+top of the `deshiqr` payload engine — the library docs ([format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md)) still
 describe the engine itself; this page is the operator guide for running and deploying the site.
 
 The full site guide (user flows, customising themes/wallets, security details, troubleshooting) is
@@ -285,7 +285,7 @@ own CI lives in the [deshiQR repo](https://github.com/hello2himel/deshiQR).
   troubleshooting.
 - [`netlify.toml`](../netlify.toml) — routing, headers/CSP, cache headers.
 - [`supabase/migrations/`](../supabase/migrations/) — versioned schema: tables, policies, reserved names.
-- [Format](./format.md), [API](./api.md) — the payload engine the site edits with.
+- [Format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md) — the payload engine the site edits with (in the deshiQR repo).
 - [SECURITY.md](../SECURITY.md) — the library's security posture.
 
 Known limitation: this environment has no Netlify or Supabase credentials, so the deploy described

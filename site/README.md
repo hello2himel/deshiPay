@@ -18,7 +18,11 @@ site/
     index.html        landing + sign up / sign in
     app.html          dashboard: onboarding wizard, then the editor (served at /app)
     pay.html          the customer page (served at /<username>)
+    terms.html        terms of service
+    privacy.html      privacy policy
+    contact.html      contact + FAQ
     404.html
+    sitemap.xml       static sitemap (home, terms, privacy, contact)
     css/              base, pay (customer page), studio (landing + dashboard), themes (generated)
     js/payload.js     thin site adapter over the vendored deshiqr engine (payload editing)
     js/reader.js      reads a QR out of a screenshot, in the browser
@@ -28,6 +32,7 @@ site/
     vendor/           qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT),
                       deshiqr.global.js (MIT, built from packages/deshiqr)
   scripts/            build-config.js, gen-themes.js, dev-server.js, refresh-engine.js
+  (every page shares a site footer with product/legal/support links)
   tests/              qr.test.js (engine adapter), export.test.js (standalone export),
                       e2e/ (browser smoke test, optional)
 ```

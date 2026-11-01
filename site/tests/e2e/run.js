@@ -226,6 +226,26 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });
     ok(true, "the demo’s Wallet method renders the customer copy rows");
     await shot("01-landing-mobile");
+
+    console.log("Footer and legal pages");
+    const footLinks = await page.$$eval(".site-foot a", (els) => els.map((e) => e.getAttribute("href")));
+    ok(
+      footLinks.includes("/terms") && footLinks.includes("/privacy") && footLinks.includes("/contact"),
+      "the landing footer links to terms, privacy and contact"
+    );
+    for (const [path, heading] of [
+      ["/terms", "Terms of service"],
+      ["/privacy", "Privacy policy"],
+      ["/contact", "Contact & FAQ"],
+    ]) {
+      await page.goto(BASE + path, { waitUntil: "networkidle0" });
+      await page.waitForSelector(".legal h1", { timeout: 10000 });
+      ok((await page.$eval(".legal h1", (e) => e.textContent)) === heading, path + " serves its own page");
+      ok(!!(await page.$(".site-foot")), path + " has the site footer");
+    }
+    await page.goto(BASE + "/", { waitUntil: "networkidle0" });
+    await page.waitForSelector("#email", { timeout: 10000 });
+
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {
       const blob = await Deshi.qrPng(p, 700);
@@ -349,6 +369,7 @@ async function scenarioOnline(browser) {
     ok(state.health > healthBefore, "online payment page probes the backend health endpoint on load");
     ok(!(await page.evaluate(() => document.body.innerText.includes("Temporarily unavailable"))), "online payment page never shows “Temporarily unavailable”");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
+    ok(!!(await page.$(".site-foot")), "customer page has the site footer");
     ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/rahim-traders", "online customer page still shows its host/username handle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "customer page uses the chosen theme");
     await shot("10-pay-empty");

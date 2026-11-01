@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" data-theme="rose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact and FAQ · DeshiQR</title>
+<meta name="description" content="How to reach DeshiQR, and answers to the common questions about payment pages.">
+<meta name="theme-color" content="#FCE7F1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<link rel="stylesheet" href="/css/themes.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/studio.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="/"><i></i>DeshiQR</a>
+    <div class="top-actions"><a class="btn sec sm" href="/">Back to home</a></div>
+  </div>
+</header>
+<main class="legal">
+  <h1>Contact &amp; FAQ</h1>
+  <p class="updated">Last updated: 2 November 2026</p>
+  <p class="lede">A small independent project — messages go straight to the maintainer. These are the questions people ask most; if yours is different, mail us.</p>
+
+  <h2>Is DeshiQR a payment gateway?</h2>
+  <p>No. It builds and hosts a page that shows your QR and generates an amount-bearing QR in the visitor’s browser. The payment itself happens in the customer’s bKash/Nagad/bank app, straight to the account in your QR. DeshiQR never receives or holds money.</p>
+
+  <h2>Does the generated QR really work?</h2>
+  <p>It is a standard EMV/Bangla QR payload with the amount inserted and the checksum re-sealed by the same engine that desktop tools use, so bank apps that support Bangla QR can normally scan it. Each bank decides what it accepts — always try one small payment yourself before sharing your link.</p>
+
+  <h2>My QR won’t scan / the app rejects it</h2>
+  <p>Check that the original QR is a Bangla QR from the same app family, and that the app’s version is up to date. If a specific app refuses amount-bearing QR codes, get in touch with the details and we’ll try to help. You can also scan the QR from the page to see exactly what it contains.</p>
+
+  <h2>How do I create a page?</h2>
+  <p>Open <a href="/app">Create a page</a>, sign up, drop a screenshot of your QR, choose a link and colour, and publish. If the database is paused, the same flow still works and gives you a standalone HTML file to host yourself.</p>
+
+  <h2>How do I delete my page or account?</h2>
+  <p>Sign in and use <em>Delete my page</em> in the dashboard. To delete the account and email as well, mail us from the address you signed up with. See the <a href="/privacy">privacy policy</a> for details.</p>
+
+  <h2>Someone is using my name / my QR on a page</h2>
+  <p>Mail us the page link and a screenshot. Pages that impersonate someone or use a QR they do not own are removed. Remember that anyone can put any name on a page, so customers should always check the merchant name inside their banking app before paying.</p>
+
+  <h2>Contact</h2>
+  <p>Email: <a href="mailto:hello2himel@proton.me">hello2himel@proton.me</a> — best effort, usually within a few days.</p>
+  <p>Bugs and feature requests: <a href="https://github.com/hello2himel/deshiQR/issues" target="_blank" rel="noopener">open an issue on GitHub</a>. The code is open source; the terms are in <a href="/terms">terms of service</a>.</p>
+</main>
+<footer class="site-foot">
+  <div class="site-foot-in">
+    <div class="foot-brand">
+      <b>DeshiQR</b>
+      <p>Payment pages for Bangla QR. We never handle money — customers pay from their own banking app, straight to the account in your QR.</p>
+    </div>
+    <nav class="foot-cols" aria-label="Site">
+      <div class="foot-col">
+        <b>Product</b>
+        <a href="/">Home</a>
+        <a href="/#how">How it works</a>
+        <a href="/app">Create a page</a>
+      </div>
+      <div class="foot-col">
+        <b>Legal</b>
+        <a href="/terms">Terms of service</a>
+        <a href="/privacy">Privacy policy</a>
+      </div>
+      <div class="foot-col">
+        <b>Support</b>
+        <a href="/contact">Contact &amp; FAQ</a>
+        <a href="https://github.com/hello2himel/deshiQR" target="_blank" rel="noopener">Open source</a>
+      </div>
+    </nav>
+  </div>
+  <div class="site-foot-base">
+    <div class="site-foot-in">
+      <span>© DeshiQR · Made in Bangladesh</span>
+      <span>Not a payment processor</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

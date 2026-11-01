@@ -24,13 +24,18 @@ site/                     static site (plain HTML/CSS/JS, no bundler, no depende
   public/index.html       landing page + sign up / sign in
   public/app.html         dashboard (served at /app)
   public/pay.html         customer page (served at /<username>)
+  public/terms.html       terms of service
+  public/privacy.html     privacy policy
+  public/contact.html     contact + FAQ
   public/404.html
+  public/sitemap.xml      static sitemap
   public/css/             base, pay, studio, themes (generated)
   public/js/              auth, common, providers, reader, dashboard, payview, pay, payload
   public/vendor/          qrcode, jsQR, supabase-js, deshiqr.global.js (built from packages/deshiqr)
   scripts/                build-config.js, dev-server.js, gen-themes.js, refresh-engine.js
   tests/                  qr.test.js (engine adapter), e2e/ (optional browser smoke test)
-netlify.toml              repo root: build/routing/headers for site/ (Netlify reads this)
+netlify.toml              repo root: build/routing/headers for site/ (Netlify reads this;
+                          /terms, /privacy, /contact pretty routes are rewritten to the html files)
 ```
 
 The database schema and Supabase config live at the repo root, not inside `site/`:

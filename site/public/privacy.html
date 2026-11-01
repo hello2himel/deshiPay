@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-theme="rose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy policy · DeshiQR</title>
+<meta name="description" content="What data DeshiQR stores, why, and how to delete it.">
+<meta name="theme-color" content="#FCE7F1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<link rel="stylesheet" href="/css/themes.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/studio.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="/"><i></i>DeshiQR</a>
+    <div class="top-actions"><a class="btn sec sm" href="/">Back to home</a></div>
+  </div>
+</header>
+<main class="legal">
+  <h1>Privacy policy</h1>
+  <p class="updated">Last updated: 2 November 2026</p>
+  <p class="lede">DeshiQR is a small independent project operated by Himel Das. This page explains what data the website stores, why, and what you can do about it. We collect the minimum needed to run a payment page.</p>
+
+  <h2>What we store</h2>
+  <ul>
+    <li><strong>Account:</strong> your email address and a password hash, managed by Supabase Auth. We never see your password.</li>
+    <li><strong>Your page:</strong> the page name (username), title, optional note, colour theme, quick-amount list, the amount-free base of the Bangla QR you uploaded, the merchant name and city read from that QR, and any wallet numbers or bank details you add.</li>
+    <li><strong>Timestamps:</strong> when your page was created and last updated.</li>
+    <li><strong>Technical logs:</strong> our hosts (Netlify, Supabase) keep standard request logs such as IP address and user agent under their own policies.</li>
+  </ul>
+  <p>We do <strong>not</strong> collect payment data, card numbers, or transaction history — payments happen in your customers’ own banking apps and never pass through DeshiQR. We do not use analytics or advertising trackers.</p>
+
+  <h2>Why we store it</h2>
+  <p>To create and show your page, to sign you in, to keep the service working and secure, and to let you edit or delete your page. Your page data is deliberately public: anyone who visits your page sees the title, note, QR and payment details, because that is what a payment page is for.</p>
+
+  <h2>Who else is involved</h2>
+  <ul>
+    <li><strong>Supabase</strong> — authentication and the Postgres database.</li>
+    <li><strong>Netlify</strong> — static hosting and the deploy pipeline.</li>
+    <li><strong>Google Fonts</strong> — font files loaded by the browser (receives the visitor’s IP).</li>
+    <li><strong>GitHub</strong> — source code and deploys.</li>
+  </ul>
+  <p>Each provider processes data under its own privacy policy. We do not sell data or share it beyond what is needed to run the site.</p>
+
+  <h2>Cookies and local storage</h2>
+  <p>There are no tracking or advertising cookies. The browser stores your Supabase sign-in session, a draft of a page you are editing, and (for the landing-page demo only) nothing about you. You can clear this at any time in your browser settings.</p>
+
+  <h2>How long, and deleting it</h2>
+  <p>Your page stays until you delete it from the dashboard (or turn it off to hide it). To delete your page, sign in and use <em>Delete my page</em>. To delete your account and email, email the address below and we will remove it. Hosting and database providers keep their own logs for their standard periods.</p>
+
+  <h2>Security</h2>
+  <p>The site is served over HTTPS and the database uses row-level security: only you can change your row, and public pages are served through a limited function. The public “anon” key used by the browser is safe to expose by design; the service key is never shipped to the browser or stored in the repo. No system is perfectly secure, so keep your password unique and report anything suspicious.</p>
+
+  <h2>Children</h2>
+  <p>DeshiQR is not intended for children. You must be at least 18 to create an account.</p>
+
+  <h2>Your choices and contact</h2>
+  <p>You can ask for a copy, correction or deletion of your data, or object to how it is used, by writing to <a href="mailto:hello2himel@proton.me">hello2himel@proton.me</a>. We answer in good faith and as quickly as we can. If these terms change materially, the date at the top changes.</p>
+</main>
+<footer class="site-foot">
+  <div class="site-foot-in">
+    <div class="foot-brand">
+      <b>DeshiQR</b>
+      <p>Payment pages for Bangla QR. We never handle money — customers pay from their own banking app, straight to the account in your QR.</p>
+    </div>
+    <nav class="foot-cols" aria-label="Site">
+      <div class="foot-col">
+        <b>Product</b>
+        <a href="/">Home</a>
+        <a href="/#how">How it works</a>
+        <a href="/app">Create a page</a>
+      </div>
+      <div class="foot-col">
+        <b>Legal</b>
+        <a href="/terms">Terms of service</a>
+        <a href="/privacy">Privacy policy</a>
+      </div>
+      <div class="foot-col">
+        <b>Support</b>
+        <a href="/contact">Contact &amp; FAQ</a>
+        <a href="https://github.com/hello2himel/deshiQR" target="_blank" rel="noopener">Open source</a>
+      </div>
+    </nav>
+  </div>
+  <div class="site-foot-base">
+    <div class="site-foot-in">
+      <span>© DeshiQR · Made in Bangladesh</span>
+      <span>Not a payment processor</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

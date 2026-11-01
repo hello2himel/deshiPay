@@ -46,7 +46,7 @@
   <!-- The real customer page, mounted by auth.js with a synthetic demo QR. -->
   <section class="demo" id="demoPayment" aria-label="Live payment page demo"></section>
 
-  <section class="how">
+  <section class="how" id="how">
     <h2>How it works</h2>
     <ol>
       <li><span><b>Drop your QR</b><span>A screenshot from your payment app is enough.</span></span></li>
@@ -55,7 +55,38 @@
     </ol>
   </section>
 </main>
-<footer class="land-foot">DeshiQR never handles money. Customers pay from their own banking app, straight to the account in your QR.</footer>
+<footer class="site-foot">
+  <div class="site-foot-in">
+    <div class="foot-brand">
+      <b>DeshiQR</b>
+      <p>Payment pages for Bangla QR. We never handle money — customers pay from their own banking app, straight to the account in your QR.</p>
+    </div>
+    <nav class="foot-cols" aria-label="Site">
+      <div class="foot-col">
+        <b>Product</b>
+        <a href="/">Home</a>
+        <a href="/#how">How it works</a>
+        <a href="/app">Create a page</a>
+      </div>
+      <div class="foot-col">
+        <b>Legal</b>
+        <a href="/terms">Terms of service</a>
+        <a href="/privacy">Privacy policy</a>
+      </div>
+      <div class="foot-col">
+        <b>Support</b>
+        <a href="/contact">Contact &amp; FAQ</a>
+        <a href="https://github.com/hello2himel/deshiQR" target="_blank" rel="noopener">Open source</a>
+      </div>
+    </nav>
+  </div>
+  <div class="site-foot-base">
+    <div class="site-foot-in">
+      <span>© DeshiQR · Made in Bangladesh</span>
+      <span>Not a payment processor</span>
+    </div>
+  </div>
+</footer>
 
 <script src="/js/config.js"></script>
 <script src="/vendor/supabase.js"></script>

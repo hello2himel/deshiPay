@@ -12,6 +12,7 @@
   container-name: pv;
   min-height: 100%;
 }
+.pay-page .pv-in { min-height: 100vh; min-height: 100svh; align-content: center; }
 .pv-in {
   max-width: 1040px; margin: 0 auto; padding: 22px 16px 28px;
   display: grid; gap: 22px; align-items: start;
@@ -125,7 +126,7 @@
     align-content: start;
     column-gap: 64px; row-gap: 28px; padding: 56px 28px 40px;
   }
-  .pv-card { position: sticky; top: 28px; }
+  .pv-card { position: static; }
   .pv-head { gap: 18px; align-content: start; }
   .pv-avatar { width: 64px; height: 64px; border-radius: 20px; font-size: 30px; }
   .pv-help { align-content: start; }

@@ -39,6 +39,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Payment content is vertically centred.** On narrow screens the landing's live demo now sits in a
+  viewport-height section and is centred under the sticky nav; the real customer page centres its
+  content block vertically too, so the payment card sits in the middle of the viewport instead of
+  hugging the top. Mobile landing and desktop customer pages are checked in e2e.
+
+### Changed
+
 - **Look step uses picker rows + sheets.** Avatar, colour and quick amounts are now compact rows that
   always show the current choice (e.g. "Avatar · Shop", "Colour · Coffee", "Quick amounts ·
   100, 500, 1000, 5000"). Tapping a row opens a modal sheet with the full list (or the quick-amount

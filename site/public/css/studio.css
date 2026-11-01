@@ -69,6 +69,9 @@
 /* The landing demo is the real payment widget (PayView), directly on the page:
    no surrounding card: the slip and its method tabs are the only chrome. */
 .demo { width: 100%; max-width: 420px; justify-self: center; }
+@media (max-width: 899px) {
+  .demo { max-width: min(100%, 480px); min-height: calc(100vh - 65px); min-height: calc(100svh - 65px - env(safe-area-inset-top, 0px)); display: grid; align-content: center; }
+}
 .demo .pv-head { display: none; }
 .demo .pv-help { display: none; }
 /* the demo is for scanning, not saving: no Save QR image button, but the

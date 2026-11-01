@@ -65,6 +65,7 @@
 .qrbox.empty { background: repeating-conic-gradient(#edf0ee 0 25%, #fff 0 50%) 0 0 / 28px 28px; color: var(--s-muted); font-size: 14px; padding: 24px; }
 .qrbox.empty span { background: #fff; border-radius: 10px; padding: 8px 12px; }
 .qrbox.dev svg { animation: develop 0.7s ease-out; }
+@media (prefers-reduced-motion: reduce) { .qrbox.dev svg { animation: none; } }
 @keyframes develop { from { filter: blur(14px); opacity: 0.2; } to { filter: none; opacity: 1; } }
 
 .slip .btn { background: var(--slip-accent); color: #fff; }

@@ -19,7 +19,6 @@
     var page = initial;
     var method = opts.method || null;
     var amount = opts.fixedAmount > 0 ? String(opts.fixedAmount) : "";
-    var shown = false; // the "developing" animation only plays on first draw
     var qr = {}; // live refs for the QR panel
 
     function methods() {
@@ -89,8 +88,7 @@
       try {
         var ref = page.ref_len ? window.DeshiQR.makeRef(page.ref_prefix, page.ref_len) : null;
         qr.payload = window.DeshiQR.build(page.qr_payload, n, ref);
-        qr.box.className = "qrbox" + (shown ? "" : " dev");
-        shown = true;
+        qr.box.className = "qrbox dev";
         qr.box.replaceChildren(T.qrSvg(qr.payload));
         qr.save.disabled = false;
         qr.help.textContent = HELP_TEXT;
@@ -105,8 +103,7 @@
       if (!page.qr_payload) return empty();
       try {
         qr.payload = page.qr_payload;
-        qr.box.className = "qrbox" + (shown ? "" : " dev");
-        shown = true;
+        qr.box.className = "qrbox dev";
         qr.box.replaceChildren(T.qrSvg(page.qr_payload));
         qr.save.disabled = false;
         qr.help.textContent = "No amount set. Scan this QR and type the amount in your payment app, or enter one above for a ready-made QR.";

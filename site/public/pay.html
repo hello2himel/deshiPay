@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" data-theme="rose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Payment page · DeshiQR</title>
+<meta name="theme-color" content="#F5E9F1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..800&display=swap">
+<link rel="stylesheet" href="/css/themes.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/pay.css">
+</head>
+<body class="pay-page">
+<div id="root"></div>
+<noscript><div class="pv-state"><h1>JavaScript needed</h1><p>This payment page needs JavaScript to draw the QR code.</p></div></noscript>
+
+<script src="/js/config.js"></script>
+<script src="/vendor/supabase.js"></script>
+<script src="/vendor/qrcode.js"></script>
+<script src="/vendor/deshiqr.global.js"></script>
+<script src="/js/payload.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/providers.js"></script>
+<script src="/js/payview.js"></script>
+<script src="/js/pay.js"></script>
+</body>
+</html>

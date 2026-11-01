@@ -11,11 +11,14 @@ import {
 } from "./fields.ts";
 import {
   type Field,
+  type LengthMode,
+  type ParsedPayload,
   encodeFields,
   insertFieldSorted,
   normalize,
-  parse,
   parseSubfields,
+  parseWithMode,
+  valueLength,
   MAX_FIELD_LENGTH,
 } from "./tlv.ts";
 import { filterWarnings, validate } from "./validate.ts";
@@ -177,7 +180,7 @@ function resolveEdits(edits: unknown): EditPlan {
   };
 }
 
-function assertNoDuplicateTags(fields: readonly Field[]): void {
+function assertNoDuplicateTags(fields: readonly Field[], mode: LengthMode): void {
   const seenTopLevel = new Set<string>();
   for (const field of fields) {
     if (seenTopLevel.has(field.tag)) {
@@ -195,7 +198,7 @@ function assertNoDuplicateTags(fields: readonly Field[]): void {
     if (!field) continue;
     let children: Field[];
     try {
-      children = parseSubfields(field.value);
+      children = parseSubfields(field.value, mode);
     } catch {
       continue; // an unparseable template is reported by validation
     }
@@ -210,7 +213,13 @@ function assertNoDuplicateTags(fields: readonly Field[]): void {
   }
 }
 
-function applyAt(fields: Field[], segments: string[], fullPath: string, value: string | null): void {
+function applyAt(
+  fields: Field[],
+  segments: string[],
+  fullPath: string,
+  value: string | null,
+  mode: LengthMode,
+): void {
   const head = segments[0] as string;
   const rest = segments.slice(1);
   const index = fields.findIndex((field) => field.tag === head);
@@ -224,7 +233,7 @@ function applyAt(fields: Field[], segments: string[], fullPath: string, value: s
       }
       return;
     }
-    if (value.length > MAX_FIELD_LENGTH) {
+    if (valueLength(value, mode) > MAX_FIELD_LENGTH) {
       throw new DeshiQrError(
         "BAD_VALUE",
         `Value for tag ${fullPath} is longer than ${MAX_FIELD_LENGTH} characters.`,
@@ -247,7 +256,7 @@ function applyAt(fields: Field[], segments: string[], fullPath: string, value: s
 
   let children: Field[];
   try {
-    children = parseSubfields(parent.value);
+    children = parseSubfields(parent.value, mode);
   } catch {
     throw new DeshiQrError(
       "BAD_TAG",
@@ -256,15 +265,15 @@ function applyAt(fields: Field[], segments: string[], fullPath: string, value: s
     );
   }
 
-  applyAt(children, rest, fullPath, value);
+  applyAt(children, rest, fullPath, value, mode);
 
   if (children.length === 0) {
     fields.splice(index, 1);
     return;
   }
 
-  const encoded = encodeFields(children);
-  if (encoded.length > MAX_FIELD_LENGTH) {
+  const encoded = encodeFields(children, mode);
+  if (valueLength(encoded, mode) > MAX_FIELD_LENGTH) {
     throw new DeshiQrError(
       "BAD_VALUE",
       `Value for tag ${fullPath} is longer than ${MAX_FIELD_LENGTH} characters.`,
@@ -293,6 +302,10 @@ function defaultWarningSink(warning: DeshiQrIssue): void {
  * in ascending numeric order, and the checksum is always recomputed. The point
  * of initiation (`01`) follows the amount unless it was edited explicitly.
  *
+ * Field lengths may be UTF-8 byte counts (the EMVCo/NPSB rule) or legacy
+ * character counts; the unit is auto-detected and the result is re-encoded in
+ * the same unit, so non-ASCII (Bangla) payloads round-trip either way.
+ *
  * @throws {DeshiQrError} on any invalid payload, edit, or resulting payload.
  */
 export function update(
@@ -309,13 +322,15 @@ export function update(
     throw new DeshiQrError("UNSUPPORTED", "The payload is longer than 4096 characters.");
   }
 
-  let fields: Field[];
+  let parsed: ParsedPayload;
   try {
-    fields = parse(text);
+    parsed = parseWithMode(text);
   } catch (error) {
     if (DeshiQrError.is(error)) throw error;
     throw new DeshiQrError("BAD_TLV", error instanceof Error ? error.message : "Malformed payload.");
   }
+  const fields = parsed.fields;
+  const mode = parsed.mode;
 
   const last = fields[fields.length - 1];
   if (!last || last.tag !== CHECKSUM_TAG) {
@@ -332,14 +347,18 @@ export function update(
     throw new DeshiQrError("CHECKSUM_MISMATCH", "The checksum does not match.", CHECKSUM_TAG);
   }
 
-  assertNoDuplicateTags(fields);
+  assertNoDuplicateTags(fields, mode);
 
   // ---- apply edits -------------------------------------------------------
   const plan = resolveEdits(edits);
   const working = fields.filter((field) => field.tag !== CHECKSUM_TAG);
 
-  for (const edit of plan.aliasEdits) applyAt(working, edit.path.split("/"), edit.path, edit.value);
-  for (const edit of plan.tagPathEdits) applyAt(working, edit.path.split("/"), edit.path, edit.value);
+  for (const edit of plan.aliasEdits) {
+    applyAt(working, edit.path.split("/"), edit.path, edit.value, mode);
+  }
+  for (const edit of plan.tagPathEdits) {
+    applyAt(working, edit.path.split("/"), edit.path, edit.value, mode);
+  }
 
   // ---- point of initiation follows the amount ---------------------------
   if (plan.touched54 && !plan.touched01) {
@@ -347,8 +366,8 @@ export function update(
     setTopLevel(working, "01", hasAmount ? "12" : "11");
   }
 
-  // ---- re-seal -----------------------------------------------------------
-  const body = `${encodeFields(working)}${CHECKSUM_TAG}04`;
+  // ---- re-seal (same length unit as the input) --------------------------
+  const body = `${encodeFields(working, mode)}${CHECKSUM_TAG}04`;
   const result = body + crc16(body);
 
   // ---- validate the result: errors throw, warnings are surfaced ---------

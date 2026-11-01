@@ -1,0 +1,17 @@
+{
+  "name": "deshiqr-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DeshiQR payment pages. Static site for Netlify, auth and data on Supabase.",
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "build": "node scripts/build-config.js",
+    "themes": "node scripts/gen-themes.js",
+    "test": "node tests/qr.test.js",
+    "refresh-engine": "node scripts/refresh-engine.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

@@ -25,11 +25,31 @@ Every field is `TTLLVV…`:
 | ----- | ----- | ----------------------------------------- |
 | `TT`  | 2     | two-digit tag, as ASCII digits            |
 | `LL`  | 2     | two-digit **decimal** length of the value |
-| `VV…` | `LL`  | value, ASCII                              |
+| `VV…` | `LL`  | value, UTF-8                              |
+
+The standard counts `LL` in **UTF-8 bytes**, not characters. A value containing non-ASCII text (a
+Bangla merchant name, for example) therefore counts three bytes per Bangla character: the name
+`রহিম ট্রেডার্স` is 14 characters but 40 bytes, so its field is written `5940রহিম ট্রেডার্স`, and the
+same payload's city `ঢাকা` is 4 characters / 12 bytes → `6012ঢাকা`. deshiQR parses such payloads by
+walking byte offsets and decoding each value as UTF-8, so real bKash/bank Bangla QRs work.
+
+Some producers count characters instead of bytes. deshiQR auto-detects the unit by parsing and then
+re-encoding the payload: it tries **bytes first**, then **characters**, and accepts the first unit that
+round-trips to the exact input. All-ASCII payloads round-trip in both (one byte is one character), so
+they detect as bytes and their bytes on the wire are unchanged.
+
+The detected unit is remembered: `update()` re-encodes a character-counted payload with character
+lengths and a byte-counted payload with byte lengths. `update(payload)` / `update(payload, {})` is
+still a byte-identical round-trip for valid input in either unit.
+
+A value's encoded length must fit in two digits: at most 99 units — 99 bytes in a byte-counted payload,
+99 characters in a character-counted one. The `Length` values in the field table below are **character
+counts** of the documented field constraints.
 
 There is no terminator and no escaping. The payload is the concatenation of the fields, ending with
 the checksum field. Values that are themselves TLV trees (tags `26`, `62`, `80`, `81`) have a length
-covering their whole subtree.
+covering their whole subtree, counted in the same unit as their parent (UTF-8 bytes for standard
+payloads).
 
 ## Field table
 
@@ -73,7 +93,7 @@ and `81` must be preserved verbatim; the editor never rewrites them. See
 
 ## Checksum
 
-CRC-16/CCITT-FALSE over every byte **before** the final four characters, with the literal prefix
+CRC-16/CCITT-FALSE over every UTF-8 byte **before** the final four characters, with the literal prefix
 `6304` included:
 
 1. Build the payload with the checksum field prefix: `… + "6304"`.
@@ -106,7 +126,8 @@ Editing `63` directly is rejected with `BAD_TAG`. A validate-only call (`update(
   decimals; it is formatted to exactly 2 decimals. Values are never rounded, and values that are not a
   valid amount (≤ 0, > 99,999,999.99, or more than 2 decimals) raise `BAD_AMOUNT`.
 - Values that are not a string or number (other than `null`) raise `BAD_VALUE`; encoded values longer
-  than 99 characters raise `BAD_VALUE` too.
+  than 99 units (UTF-8 bytes in a byte-counted payload, characters in a character-counted one) raise
+  `BAD_VALUE` too.
 
 ## Worked example
 

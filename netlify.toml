@@ -1,0 +1,71 @@
+# Netlify configuration for the deshiQR website (source in site/).
+#
+# The website is a plain static site (HTML/CSS/JS, no bundler) in site/:
+#   base    = "site"       Netlify runs the build command with site/ as cwd
+#   publish = "public"     ...and deploys site/public
+#   command = "node scripts/build-config.js"
+#                          writes site/public/js/config.js from environment variables
+#
+# Required environment variables (Site configuration > Environment variables):
+#   SUPABASE_URL        https://xxxx.supabase.co
+#   SUPABASE_ANON_KEY   the public "anon" / publishable key (safe to expose)
+#   GOOGLE_AUTH         "true" to show the "Continue with Google" button (optional)
+#
+# The anon key is public by design: Row Level Security in site/supabase/schema.sql
+# protects the data. Never put the service_role key here. Full guide: docs/website.md
+
+[build]
+  base = "site"
+  publish = "public"
+  command = "node scripts/build-config.js"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# ---------------------------------------------------------------
+# Routing
+# Real files always win over these rules (no "force"), so /app.html,
+# /css/*, /js/* and so on are served as normal. Order matters: the
+# catch-all /:username rule has to stay last.
+# ---------------------------------------------------------------
+[[redirects]]
+  from = "/app"
+  to = "/app.html"
+  status = 200
+
+[[redirects]]
+  from = "/favicon.ico"
+  to = "/favicon.svg"
+  status = 200
+
+[[redirects]]
+  from = "/:username"
+  to = "/pay.html"
+  status = 200
+
+# ---------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+[[headers]]
+  for = "/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

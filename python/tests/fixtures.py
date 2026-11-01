@@ -4,6 +4,11 @@ No real merchant or payment data is used anywhere: the account is the
 unassignable prefix ``01000000000``, the merchant is ``DEMO STORE`` / ``Dhaka``
 and the NPSB tokens literally spell "deshiqr dummy token A/B not real".
 See ``docs/demo-payloads.md`` in the repository root.
+
+The Bangla fixtures are the same NPSB-shaped payload written two ways: with
+``LL`` counted as UTF-8 **bytes** (the EMVCo/NPSB rule; tag 59 is 40 bytes for
+a 14-character name) and with ``LL`` counted as **characters** (a legacy
+producer; tag 59 is 14). Both are accepted, and edits preserve the unit.
 """
 
 from __future__ import annotations
@@ -63,19 +68,49 @@ BAD_TAG_TLV = "XX040000"
 #: TLV with a non-numeric length.
 BAD_LENGTH_TLV = "0004ZZ"
 
+#: Sample Bangla merchant name (14 characters, 40 UTF-8 bytes).
+BANGLA_NAME = "রহিম ট্রেডার্স"
+#: Sample Bangla city (4 characters, 12 UTF-8 bytes).
+BANGLA_CITY = "ঢাকা"
 
-def seal(fields):
+#: The proof payload: real-world NPSB layout where ``LL`` counts UTF-8 bytes.
+#: Tag 59 declares 40 (bytes) for a 14-character Bangla name; tag 60 declares
+#: 12 (bytes) for a 4-character city. CRC ``1551``.
+BANGLA_BYTE_PAYLOAD = (
+    "00020101021126330014bd.org.bb.npsb0311017000000005204601653030505802BD5940রহিম ট্রেডার্স6012ঢাকা62060602FT63041551"
+)
+
+#: The same payload with ``LL`` counted in characters (a legacy producer):
+#: tag 59 declares 14, tag 60 declares 4. CRC ``E69B``.
+BANGLA_CHAR_PAYLOAD = (
+    "00020101021126330014bd.org.bb.npsb0311017000000005204601653030505802BD5914রহিম ট্রেডার্স6004ঢাকা62060602FT6304E69B"
+)
+
+#: ``update(BANGLA_BYTE_PAYLOAD, {"amount": 100})`` — byte lengths preserved,
+#: CRC ``7278``.
+BANGLA_BYTE_AMOUNT_100_PAYLOAD = (
+    "00020101021226330014bd.org.bb.npsb0311017000000005204601653030505406100.005802BD5940রহিম ট্রেডার্স6012ঢাকা62060602FT63047278"
+)
+
+#: ``update(BANGLA_CHAR_PAYLOAD, {"amount": 100})`` — char lengths preserved,
+#: CRC ``81B2``.
+BANGLA_CHAR_AMOUNT_100_PAYLOAD = (
+    "00020101021226330014bd.org.bb.npsb0311017000000005204601653030505406100.005802BD5914রহিম ট্রেডার্স6004ঢাকা62060602FT630481B2"
+)
+
+
+def seal(fields, mode="bytes"):
     """Encode fields and append a valid tag-63 checksum (drops any old tag 63)."""
-    body = encode_fields([field for field in fields if field.tag != "63"]) + "6304"
+    body = encode_fields([field for field in fields if field.tag != "63"], mode) + "6304"
     return body + crc16(body)
 
 
-def rebuild(payload, mutate=None):
+def rebuild(payload, mutate=None, mode="bytes"):
     """Parse a payload, apply ``mutate(fields)`` in place, then re-seal it."""
     fields = parse(payload)
     if mutate is not None:
         mutate(fields)
-    return seal(fields)
+    return seal(fields, mode)
 
 
 def set_field(fields, tag, value):

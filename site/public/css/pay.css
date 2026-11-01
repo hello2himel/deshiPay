@@ -1,0 +1,137 @@
+/* The payment page (also used for the live preview in the dashboard).
+   The ticket ("slip") is always white so the QR keeps maximum contrast, in dark mode too. */
+
+.pv {
+  --s-ink: #1b1226;
+  --s-muted: #675f75;
+  --s-line: #e6e0ec;
+  --s-sunk: #f4f1f7;
+  background: var(--bg);
+  color: var(--ink);
+  container-type: inline-size;
+  container-name: pv;
+  min-height: 100%;
+}
+.pv-in {
+  max-width: 1040px; margin: 0 auto; padding: 22px 16px 28px;
+  display: grid; gap: 22px; align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "head" "card" "help" "foot";
+}
+
+/* ---------- header ---------- */
+.pv-head { grid-area: head; display: grid; gap: 14px; }
+.pv-id { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.pv-avatar { flex: none; width: 56px; height: 56px; border-radius: 18px; background: var(--accent); color: var(--on-accent); font: 800 26px var(--disp); display: grid; place-items: center; }
+.pv-id h1 { font-size: clamp(26px, 8cqi, 40px); overflow-wrap: anywhere; }
+.pv-handle { color: var(--muted); font-size: 14px; margin-top: 2px; overflow-wrap: anywhere; }
+.pv-msg { color: var(--muted); max-width: 46ch; font-size: 16px; }
+
+/* ---------- card ---------- */
+.pv-card { grid-area: card; display: grid; gap: 14px; min-width: 0; }
+.pv-methods { display: flex; }
+.pv-methods.seg > button { padding: 0 8px; }
+
+/* ---------- ticket ---------- */
+.slip { --n: var(--bg); background: #fff; color: var(--s-ink); border-radius: 24px; position: relative; box-shadow: 0 18px 40px -18px var(--shadow); }
+.slip-top { padding: 22px 22px 18px; }
+.slip-to { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; color: var(--s-muted); }
+.slip-to b { color: var(--s-ink); font: 700 16px var(--disp); text-align: right; overflow-wrap: anywhere; }
+.cut { position: relative; height: 0; border-top: 2px dashed var(--s-line); margin: 0 18px; }
+.cut::before, .cut::after { content: ""; position: absolute; top: -14px; width: 26px; height: 26px; border-radius: 50%; background: var(--n); }
+.cut::before { left: -31px; }
+.cut::after { right: -31px; }
+.slip-bot { padding: 22px; }
+.slip-bot.center { text-align: center; }
+
+.amt { display: flex; align-items: baseline; gap: 6px; margin-top: 12px; padding-bottom: 4px; border-bottom: 3px solid var(--s-line); font-family: var(--disp); transition: border-color 0.15s; }
+.amt:focus-within { border-color: var(--slip-accent); }
+.amt-sym { font-size: 34px; font-weight: 800; color: #b3a8c2; }
+.amt-input { width: 100%; min-width: 0; border: 0; background: none; padding: 0; font: 800 56px/1.1 var(--disp); color: var(--s-ink); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.amt-input[data-len="l"] { font-size: 44px; }
+.amt-input[data-len="xl"] { font-size: 34px; }
+.amt-input:focus, .amt-input:focus-visible { outline: none; }
+.amt-input[readonly] { color: var(--s-ink); }
+.amt-err { min-height: 20px; margin-top: 6px; font-size: 13px; font-weight: 600; color: #c0262d; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.chip { min-height: 40px; padding: 0 16px; border: 0; border-radius: 99px; background: var(--s-sunk); color: var(--s-ink); font: 700 15px var(--body); transition: background 0.15s; }
+.chip:hover { background: var(--slip-accent-soft); }
+.chip:active { transform: scale(0.97); }
+.fixed-note { margin-top: 8px; font-size: 13px; color: var(--s-muted); }
+
+.qrbox { width: 100%; max-width: 288px; aspect-ratio: 1; margin: 0 auto; border-radius: 14px; display: grid; place-items: center; overflow: hidden; }
+.qrbox svg { width: 100%; height: auto; display: block; }
+.qrbox.empty { background: repeating-conic-gradient(#f0ebf5 0 25%, #fff 0 50%) 0 0 / 28px 28px; color: var(--s-muted); font-size: 14px; padding: 24px; }
+.qrbox.empty span { background: #fff; border-radius: 10px; padding: 8px 12px; }
+.qrbox.dev svg { animation: develop 0.7s ease-out; }
+@keyframes develop { from { filter: blur(14px); opacity: 0.2; } to { filter: none; opacity: 1; } }
+
+.slip .btn { background: var(--slip-accent); color: #fff; }
+.slip .btn.sec { background: var(--s-sunk); color: var(--s-ink); }
+.slip-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.slip-help { margin-top: 14px; font-size: 13px; color: var(--s-muted); max-width: 36ch; margin-inline: auto; }
+
+/* ---------- wallets and banks ---------- */
+.rows { display: grid; gap: 14px; text-align: left; }
+.item { border: 1.5px solid var(--s-line); border-radius: 18px; overflow: hidden; }
+.item-head { display: flex; align-items: center; gap: 12px; padding: 14px 14px 12px; }
+.logo { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font: 800 18px var(--disp); color: #fff; }
+.item-title { font: 700 17px/1.2 var(--disp); }
+.item-sub { font-size: 13px; color: var(--s-muted); }
+.copyrow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 0; border-top: 1px solid var(--s-line); background: none; text-align: left; color: var(--s-ink); transition: background 0.12s; }
+.copyrow:hover { background: var(--s-sunk); }
+.copyrow:active { background: var(--slip-accent-soft); }
+.copyrow .kv { flex: 1; min-width: 0; }
+.copyrow .k { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--s-muted); }
+.copyrow .v { display: block; font: 700 18px/1.3 var(--disp); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.copyrow.big .v { font-size: 24px; letter-spacing: 0.02em; }
+.copyrow .go { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--slip-accent-soft); color: var(--slip-accent); }
+.copyrow.done .go { background: #ddf4ea; color: #0b7f58; }
+.item-foot { padding: 12px 14px 14px; border-top: 1px solid var(--s-line); }
+.rows-note { margin-top: 16px; font-size: 13px; color: var(--s-muted); text-align: center; }
+
+/* ---------- help ---------- */
+.pv-help { grid-area: help; display: grid; gap: 14px; }
+.pv-help h2 { font-size: 20px; }
+.pv-steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 12px; }
+.pv-steps li { counter-increment: s; display: flex; gap: 12px; align-items: center; font-weight: 500; }
+.pv-steps li::before { content: counter(s); flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--sunk); display: grid; place-items: center; font: 800 14px var(--disp); }
+.pv-fine { color: var(--muted); font-size: 14px; max-width: 46ch; }
+.pv-caution { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--accent-soft); font-size: 14px; max-width: 46ch; }
+.pv-caution .ic { margin-top: 2px; color: var(--accent-text); }
+.pv-foot { grid-area: foot; text-align: center; color: var(--muted); font-size: 13px; padding-top: 8px; }
+.pv-foot a { color: inherit; }
+
+/* ---------- empty / error states ---------- */
+.pv-state { max-width: 440px; margin: 12vh auto 0; padding: 0 20px; text-align: center; display: grid; gap: 14px; justify-items: center; }
+.pv-state p { color: var(--muted); }
+.pv-empty { border: 2px dashed var(--line); border-radius: 22px; padding: 36px 24px; text-align: center; color: var(--muted); display: grid; gap: 8px; justify-items: center; background: var(--panel); }
+.pv-empty .ic { width: 32px; height: 32px; color: var(--accent); }
+.pv-empty b { color: var(--ink); font: 800 18px var(--disp); }
+
+/* ---------- wide screens (measured on the page itself, so the preview stays single column) ---------- */
+@container pv (min-width: 760px) {
+  .pv-in {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    grid-template-areas: "head card" "help card" "foot foot";
+    grid-template-rows: auto 1fr auto;
+    column-gap: 64px; row-gap: 28px; padding: 56px 28px 40px;
+  }
+  .pv-card { position: sticky; top: 28px; }
+  .pv-head { gap: 18px; align-content: start; }
+  .pv-avatar { width: 64px; height: 64px; border-radius: 20px; font-size: 30px; }
+  .pv-help { align-content: start; }
+}
+@container pv (max-width: 460px) {
+  .pv-in { padding: 16px 14px 24px; }
+  .amt-input { font-size: 48px; }
+  .amt-input[data-len="l"] { font-size: 40px; }
+  .amt-input[data-len="xl"] { font-size: 32px; }
+}
+@container pv (max-width: 340px) {
+  .slip-top, .slip-bot { padding-inline: 16px; }
+  .amt-input { font-size: 40px; }
+}
+
+body.pay-page { min-height: 100vh; }
+body.pay-page .pv { min-height: 100vh; }

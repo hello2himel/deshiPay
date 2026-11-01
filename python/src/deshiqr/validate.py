@@ -29,12 +29,13 @@ from .fields import (
 from .tlv import (
     CRC_TAG,
     Field,
+    LengthMode,
     find_field,
     find_value,
     is_hex_checksum,
     normalize,
-    parse,
     parse_subfields,
+    parse_with_mode,
 )
 
 __all__ = [
@@ -107,7 +108,7 @@ def _issue(code: str, message: str, tag: Optional[str] = None) -> DeshiQrIssue:
     return DeshiQrIssue(code, message, tag)
 
 
-def _parse_templates(fields: List[Field]) -> dict:
+def _parse_templates(fields: List[Field], mode: LengthMode = "bytes") -> dict:
     """Parse the documented templates once; ``None`` means invalid TLV."""
     parsed = {}
     for tag in PARSED_TEMPLATE_TAGS:
@@ -115,7 +116,7 @@ def _parse_templates(fields: List[Field]) -> dict:
         if field is None:
             continue
         try:
-            parsed[tag] = parse_subfields(field.value)
+            parsed[tag] = parse_subfields(field.value, mode)
         except DeshiQrError:
             parsed[tag] = None
     return parsed
@@ -155,9 +156,9 @@ def _duplicate_issues(fields: List[Field], parsed: dict) -> List[DeshiQrIssue]:
     return issues
 
 
-def assert_no_duplicate_tags(fields: List[Field]) -> None:
+def assert_no_duplicate_tags(fields: List[Field], mode: LengthMode = "bytes") -> None:
     """Raise the first ``DUPLICATE_TAG`` error, in the same order as ``validate``."""
-    issues = _duplicate_issues(fields, _parse_templates(fields))
+    issues = _duplicate_issues(fields, _parse_templates(fields, mode))
     if issues:
         first = issues[0]
         raise DeshiQrError(first.code, first.message, first.tag)
@@ -181,7 +182,9 @@ def collect(payload: object) -> ValidationReport:
         )
 
     try:
-        fields = parse(text)
+        parsed_payload = parse_with_mode(text)
+        fields = parsed_payload.fields
+        mode = parsed_payload.mode
     except DeshiQrError as error:
         return ValidationReport(False, [_issue(error.code, error.message, error.tag)], [])
 
@@ -207,7 +210,7 @@ def collect(payload: object) -> ValidationReport:
         errors.append(_issue("CHECKSUM_MISMATCH", "The checksum does not match.", CRC_TAG))
 
     # ---- nested templates (26 and 62 are parsed; 80/81 stay opaque) ------
-    parsed = _parse_templates(fields)
+    parsed = _parse_templates(fields, mode)
 
     # ---- duplicate tags ---------------------------------------------------
     errors.extend(_duplicate_issues(fields, parsed))

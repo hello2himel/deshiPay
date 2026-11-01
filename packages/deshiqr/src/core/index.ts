@@ -14,7 +14,10 @@ export type { ValidateOptions, ValidationReport } from "./validate.ts";
 
 export { crc16 } from "./crc.ts";
 export {
+  DEFAULT_LENGTH_MODE,
   MAX_FIELD_LENGTH,
+  byteLength,
+  detectLengthMode,
   encodeField,
   encodeFields,
   findField,
@@ -24,8 +27,10 @@ export {
   normalize,
   parse,
   parseSubfields,
+  parseWithMode,
+  valueLength,
 } from "./tlv.ts";
-export type { Field } from "./tlv.ts";
+export type { Field, LengthMode, ParsedPayload } from "./tlv.ts";
 
 export {
   ALIASES,

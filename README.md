@@ -15,6 +15,85 @@ Pages. There is no server and no database; it never holds funds, stores data, or
 [![PyPI: deshiqr](https://img.shields.io/pypi/v/deshiqr?label=deshiqr)](https://pypi.org/project/deshiqr/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
+## Payload anatomy
+
+A Bangla QR payload is a flat run of **TLV** fields — tag, length, value — glued together with no
+separators and no terminator, then sealed by a checksum. Every field is four ASCII characters plus its
+value:
+
+```text
+  TT  LL  VV…V
+  │   │   └──── value: exactly LL characters (ASCII)
+  │   └──────── length: two decimal digits, "00"–"99"
+  └──────────── tag: two decimal digits, "00"–"99"
+
+  the fields are concatenated:  TTLLVVTTLLVV…  and the payload always ends with  6304<CRC>
+```
+
+A value is not always text: `26`, `62`, `80` and `81` are templates, so their value is itself a list of
+fields and their `LL` covers the whole subtree. Tag `26` below says "47 characters follow" — and those
+47 characters are themselves four fields:
+
+```text
+  26 47   ← tag 26 (account template), length 47
+
+  0014bd.org.bb.npsb   010202   02042002   031101000000000
+  └────────────────┘   └────┘   └──────┘   └─────────────┘
+        26/00          26/01     26/02          26/03
+         (18)           (6)       (8)           (15)   → 18 + 6 + 8 + 15 = 47
+```
+
+Opened up recursively, the synthetic `DEMO STORE` fixture from
+[docs/demo-payloads.md](./docs/demo-payloads.md) looks like this — 265 characters, every value fake:
+
+```text
+payload · 265 characters
+├─ 00 len 02  payload format .................... "01"
+├─ 01 len 02  point of initiation ............... "11"  ← static; "12" once an amount is set
+├─ 26 len 47  account template
+│  ├─ 00 len 14  institution AID ................... "bd.org.bb.npsb"
+│  ├─ 01 len 02  template version .................. "02"
+│  ├─ 02 len 04  scheme / variant .................. "2002"
+│  └─ 03 len 11  account identifier ................ "01000000000"
+├─ 52 len 04  merchant category code ............ "6016"
+├─ 53 len 03  currency .......................... "050"  ← BDT
+├─ 58 len 02  country ........................... "BD"
+├─ 59 len 10  merchant name ..................... "DEMO STORE"
+├─ 60 len 05  merchant city ..................... "Dhaka"
+├─ 62 len 06  additional data
+│  └─ 06 len 02  customer label .................... "FT"
+├─ 80 len 66  token template A
+│  ├─ 00 len 14  institution AID ................... "bd.org.bb.npsb"
+│  └─ 01 len 44  token (base64, opaque) ............ "ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE="
+├─ 81 len 66  token template B
+│  ├─ 00 len 14  institution AID ................... "bd.org.bb.npsb"
+│  └─ 01 len 44  token (base64, opaque) ............ "ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE="
+└─ 63 len 04  CRC-16/CCITT-FALSE ................ "295D"
+```
+
+### What one edit changes
+
+`update` never rebuilds the payload from scratch. It walks the tree, applies your edits, keeps `01`
+consistent and re-seals `63` last:
+
+```text
+payload ──▶ parse TLV ──▶ apply edits ──▶ sync tag 01 ──▶ re-seal tag 63 ──▶ payload'
+```
+
+```text
+update(staticPayload, { amount: 500, reference: "BILL123" })
+
+  00 26 52 53 58 59 60 80 81 .................................... byte for byte, never touched
+
+  01  "11" ──▶ "12" ....................... static becomes dynamic
+  54  absent ──▶ "500.00" ................. inserted in tag order, after 53
+  62  "0602FT" ──▶ "0107BILL1230602FT" .... new 62/01, before 62/06
+  63  "295D" ──▶ "DB6A" ................... checksum re-sealed last
+```
+
+Everything not listed — account, name, city, currency, country, opaque tokens — is copied byte for
+byte. The full field table and every known value are in [docs/format.md](./docs/format.md#field-table).
+
 ## The API: two functions
 
 ```ts

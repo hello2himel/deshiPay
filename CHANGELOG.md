@@ -56,6 +56,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
   also available as `site/public/mark.svg` (tile) and `mark-square.svg`.
 
 ### Changed
+
 - **Look step uses picker rows + sheets.** Avatar, colour and quick amounts are now compact rows that
   always show the current choice (e.g. "Avatar · Shop", "Colour · Coffee", "Quick amounts ·
   100, 500, 1000, 5000"). Tapping a row opens a modal sheet with the full list (or the quick-amount

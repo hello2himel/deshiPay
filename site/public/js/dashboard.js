@@ -215,7 +215,7 @@
       var all = STEPS.concat([SHARE]);
       nav.replaceChildren(h("div", { class: "tabs", role: "tablist" }, all.map(function (s) {
         return h("button", { type: "button", role: "tab", "aria-selected": String(s.id === tabId), onClick: function () { tabId = s.id; paintNav(); paintPanel(); window.scrollTo({ top: 0 }); } },
-          icon(s.icon), s.tab, problem && problem.step === s.id ? h("span", { class: "dot", title: "Needs attention" }) : null);
+          icon(s.icon), h("span", { class: "tab-label" }, s.tab), problem && problem.step === s.id ? h("span", { class: "dot", title: "Needs attention" }) : null);
       })));
     }
   }

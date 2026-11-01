@@ -289,6 +289,21 @@ async function scenarioOnline(browser) {
     ok(true, "published, share tab with live banner");
     await shotFull("08-share");
 
+    // Mobile tab bar: only the selected tab keeps its label; the others are icon pills.
+    const mobileTabs = await page.$$eval(".tabs button", (els) => els.map((el) => {
+      const label = el.querySelector(".tab-label");
+      return {
+        selected: el.getAttribute("aria-selected") === "true",
+        hasLabel: !!label,
+        labelVisible: !!label && getComputedStyle(label).display !== "none",
+      };
+    }));
+    ok(mobileTabs.length === 5, "published dashboard has five tabs");
+    ok(mobileTabs.filter((t) => t.selected).length === 1 && mobileTabs.filter((t) => t.selected)[0].labelVisible,
+      "mobile: the active tab shows icon + label");
+    ok(mobileTabs.filter((t) => !t.selected).every((t) => t.hasLabel && !t.labelVisible),
+      "mobile: every inactive tab is icon-only");
+
     console.log("Share tab: download the page as HTML");
     ok(
       (await page.evaluate(() => Array.from(document.querySelectorAll("#panel h2")).some((e) => e.textContent === "Download your page as HTML"))),
@@ -368,6 +383,10 @@ async function scenarioOnline(browser) {
     await shot("15-pay-desktop");
     await page.goto(BASE + "/app", { waitUntil: "networkidle0" });
     await page.waitForSelector(".tabs");
+    const desktopLabels = await page.$$eval(".tabs button .tab-label", (els) =>
+      els.map((el) => getComputedStyle(el).display !== "none"));
+    ok(desktopLabels.length === 5 && desktopLabels.every(Boolean),
+      "desktop: every tab shows its label");
     await shot("17-dashboard-desktop");
 
     console.log("Sign out and wrong password");

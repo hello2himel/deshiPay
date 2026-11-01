@@ -84,6 +84,13 @@
 .tabs button { flex: none; min-height: 46px; padding: 0 16px; border-radius: 99px; border: 1.5px solid var(--line); background: var(--panel); color: var(--muted); font: 700 15px var(--body); display: inline-flex; align-items: center; gap: 8px; }
 .tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .tabs button .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
+/* On phones/tablets the tab bar scrolls, so only the selected tab keeps its
+   label; the other tabs are icon pills and all of them fit. */
+@media (max-width: 959px) {
+  .tabs button { padding: 0 14px; }
+  .tabs button[aria-selected="true"] { padding: 0 16px; }
+  .tabs button:not([aria-selected="true"]) .tab-label { display: none; }
+}
 
 .panel { display: grid; gap: 20px; }
 .panel-head { display: grid; gap: 8px; }

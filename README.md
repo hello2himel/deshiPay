@@ -11,7 +11,7 @@ zero-dependency libraries for JavaScript/TypeScript and Python, and as a browser
 Pages. The library has no server and no database; it never holds funds, stores data, or confirms
 payments.
 
-The repo also ships a website — payment pages for Bangla QR at <https://deshiqr.netlify.app>. That
+The repo also ships a website — payment pages for Bangla QR at <https://deshipay.netlify.app>. That
 website adds accounts and pages on Supabase on top of this library; the library itself stays a payload
 engine. See [Website](#website).
 
@@ -22,7 +22,7 @@ engine. See [Website](#website).
 
 ## Website
 
-The repo also ships a website: **<https://deshiqr.netlify.app>** — payment pages for Bangla QR. A
+The repo also ships a website: **<https://deshipay.netlify.app>** — payment pages for Bangla QR. A
 merchant drops any Bangla QR (bKash, Nagad, Rocket, Upay, any bank app), picks a link, and customers
 visit `/username`, type an amount and get a ready-to-scan dynamic QR. Wallet numbers and bank details
 can sit beside it for customers who would rather copy and send.
@@ -49,14 +49,14 @@ Netlify reads the repo-root [`netlify.toml`](./netlify.toml): `base = "site"`, `
 build command `node scripts/build-config.js`, which writes `site/public/js/config.js` from the
 `SUPABASE_URL` and `SUPABASE_ANON_KEY` environment variables (optionally `GOOGLE_AUTH=true`).
 
-1. Import this GitHub repo into Netlify and name the site `deshiqr` (so the URL is
-   <https://deshiqr.netlify.app>).
+1. Import this GitHub repo into Netlify and name the site `deshipay` (so the URL is
+   <https://deshipay.netlify.app>).
 2. Set the environment variables above in the Netlify UI.
 3. Apply the database schema — connect the repo in Supabase's GitHub integration (*Project Settings
    → Integrations → GitHub*, Working directory `.`, **Deploy to production**) so pushes to `main`
    apply [`supabase/migrations/`](./supabase/migrations/) automatically, or paste those files into the
    SQL editor once — and add
-   `https://deshiqr.netlify.app/app` (plus `http://localhost:8888/app` for local work) to the Supabase
+   `https://deshipay.netlify.app/app` (plus `http://localhost:8888/app` for local work) to the Supabase
    Auth redirect URLs.
 
 Full operator guide (local development, refreshing the vendored engine bundle, troubleshooting):
@@ -233,7 +233,7 @@ See [`examples/README.md`](./examples/README.md) for how to run each one.
 | ---------------------------------------- | ----------------------------------------------------------------------------- |
 | [`packages/deshiqr`](./packages/deshiqr) | npm `deshiqr` — `update` + `validate`, zero deps, ESM/CJS/types + IIFE bundle |
 | [`python`](./python)                     | PyPI `deshiqr` — Python 3.9+ port of the same two functions                   |
-| [`site`](./site)                         | the website — [deshiqr.netlify.app](https://deshiqr.netlify.app)              |
+| [`site`](./site)                         | the website — [deshipay.netlify.app](https://deshipay.netlify.app)              |
 | [`cdn`](./cdn)                           | demo page for the GitHub Pages browser bundle                                 |
 | [`examples`](./examples)                 | one example per platform                                                      |
 | [`docs`](./docs)                         | format, API reference, self-hosting, demo payloads                            |

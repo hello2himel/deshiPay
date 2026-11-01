@@ -1,6 +1,6 @@
 # The website (`site/`)
 
-The repo ships a website: **<https://deshiqr.netlify.app>**. It is the payment-page product built on
+The repo ships a website: **<https://deshipay.netlify.app>**. It is the payment-page product built on
 top of the `deshiqr` payload engine — the library docs ([format](./format.md), [API](./api.md)) still
 describe the engine itself; this page is the operator guide for running and deploying the site.
 
@@ -10,7 +10,7 @@ The full site guide (user flows, customising themes/wallets, security details, t
 ## What it is
 
 - A merchant signs up, drops any Bangla QR (bKash, Nagad, Rocket, Upay, any bank app — the QR image or
-  the code text), picks a link such as `deshiqr.netlify.app/shop`, and optionally adds wallet numbers
+  the code text), picks a link such as `deshipay.netlify.app/shop`, and optionally adds wallet numbers
   and bank details.
 - Customers open `/shop`, type an amount (Bangla digits work) and get a ready-to-scan dynamic QR with
   the amount baked in. Wallet numbers and bank lines are tap-to-copy.
@@ -55,8 +55,8 @@ Netlify credentials are not part of the repo — the steps below are the one-tim
 the repo-root `netlify.toml`; do not override the build command or publish directory in the UI.
 
 1. **Create the Netlify site.** Netlify → *Add new site → Import an existing project* → GitHub →
-   `hello2himel/deshiQR`. Name the site **`deshiqr`** so the URL is
-   <https://deshiqr.netlify.app>. Netlify picks up `netlify.toml` (`base = "site"`, for a monorepo).
+   `hello2himel/deshiQR`. Name the site **`deshipay`** so the URL is
+   <https://deshipay.netlify.app>. Netlify picks up `netlify.toml` (`base = "site"`, for a monorepo).
 2. **Environment variables** (*Site configuration → Environment variables*, production + deploy
    previews):
 
@@ -89,8 +89,8 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    Manual alternative: paste those files, in filename order, into *SQL Editor* once. See
    [Automatic database migrations](#automatic-database-migrations).
 4. **Supabase Auth URLs** (*Authentication → URL Configuration*):
-   - **Site URL:** `https://deshiqr.netlify.app`
-   - **Redirect URLs:** `https://deshiqr.netlify.app/app` and `http://localhost:8888/app`
+   - **Site URL:** `https://deshipay.netlify.app`
+   - **Redirect URLs:** `https://deshipay.netlify.app/app` and `http://localhost:8888/app`
 
    These are used by confirmation and password-reset emails.
 5. **Deploy.** Push to `main` (or *Deploys → Trigger deploy*). The build writes
@@ -128,8 +128,8 @@ Besides the schema, the project's auth configuration is versioned in
 | Setting | Value |
 | --- | --- |
 | `project_id` / production remote | `wbnkjhlaitoetaztukiy` (production project ref) |
-| Auth `site_url` | `https://deshiqr.netlify.app` |
-| Redirect URLs | `https://deshiqr.netlify.app/app`, `http://localhost:8888/app` |
+| Auth `site_url` | `https://deshipay.netlify.app` |
+| Redirect URLs | `https://deshipay.netlify.app/app`, `http://localhost:8888/app` |
 | JWT expiry | 3600 s (1 hour) |
 | Sign-ups | enabled (email provider) |
 | Anonymous sign-ins | disabled |

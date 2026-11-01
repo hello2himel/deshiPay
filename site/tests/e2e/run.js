@@ -209,6 +209,13 @@ async function scenarioOnline(browser) {
     const onlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
     ok(onlineHosts.length > 0 && onlineHosts.every((t) => t === "localhost:8899"), "online landing shows this site’s host");
     ok(!onlineLandingText.includes("Take it with you") && !onlineLandingText.includes("your-site.com"), "online landing has no offline-only copy");
+    const topLinks = await page.$$eval(".top-links a", (els) => els.map((e) => e.getAttribute("href")));
+    ok(
+      topLinks.includes("/#how") && topLinks.includes("/#demo") && topLinks.includes("/contact"),
+      "the top nav uses the bar: how it works, demo and FAQ"
+    );
+    ok(!!(await page.$(".top-actions a[href='/login']")), "the top nav offers a create-page action");
+    ok(!!(await page.$(".top-actions a[href='/login?mode=signin']")), "the top nav offers a sign-in action");
 
     // The landing demo is the real customer page (PayView), not a static mock.
     ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "landing shows the live payment demo (real customer page)");

@@ -57,6 +57,11 @@ All notable changes to this project are documented here. The format is based on
   competing buttons — and keeps it a landing page. `/login` is routed by Netlify and the dev server,
   and the footer's "Create a page" link points at it.
 
+- **The top navbar now does something.** On the landing and info pages the bar carries real navigation
+  — How it works, Demo and FAQ (anchor/route links) — plus Sign in and a compact Create page button;
+  it hides the text links on narrow screens so the mobile bar stays clean. The demo section is now
+  `#demo` so the nav can jump to it (with scroll-margin under the sticky bar).
+
 ### Fixed
 
 - **Netlify secret scanning false positive on the public Supabase values.** The build writes

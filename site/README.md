@@ -27,12 +27,13 @@ site/
     js/dashboard.js   onboarding + editor (online, and local mode when the backend is down)
     vendor/           qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT),
                       deshiqr.global.js (MIT, built from packages/deshiqr)
-  supabase/schema.sql tables, security rules, public functions
   scripts/            build-config.js, gen-themes.js, dev-server.js, refresh-engine.js
   tests/              qr.test.js (engine adapter), export.test.js (standalone export),
                       e2e/ (browser smoke test, optional)
 ```
 
+The database schema and Supabase config live at the **repo root**: `supabase/migrations/` (versioned SQL,
+applied automatically by the Supabase GitHub integration) and `supabase/config.toml`.
 The Netlify config is at the **repo root** (`netlify.toml`), with `base = "site"` and `publish = "public"`.
 
 ---
@@ -59,7 +60,7 @@ Commit the refreshed vendor files so the static site deploys without the monorep
 ### 1. Supabase
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor → New query**, paste all of [`site/supabase/schema.sql`](supabase/schema.sql), and run it. (Safe to re-run.)
+2. **Create the tables — automatically.** Supabase Dashboard → *Project Settings → Integrations → GitHub*, authorize this repository, set **Working directory** to `.`, and enable **Deploy to production**. Every push to `main` then applies the SQL in [`supabase/migrations/`](../supabase/migrations/) automatically. (Manual alternative: paste those files, in filename order, into the SQL editor once — safe to re-run.)
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable** key. Never use the `service_role` key in this app.
 4. **Authentication → URL Configuration**:
    - **Site URL**: the deployed site, e.g. `https://deshiqr.netlify.app` (or your custom domain)
@@ -219,7 +220,7 @@ A few intentional differences from the site's original in-page engine come from 
 - **Row Level Security**: `profiles` is readable/writable only by its owner. The public page never reads the table; it calls `get_public_page()`, a `SECURITY DEFINER` function that returns only public fields and only for published pages (never the user id or email).
 - **Database constraints** enforce username format, a reserved-name list (`app`, `login`, `bkash`, `admin`, ...), length limits, valid theme, and "at least one payment method".
 - **No inline scripts**; the repo-root `netlify.toml` ships a Content-Security-Policy limited to your own files, Google Fonts and Supabase. All user text is rendered as text, never as HTML.
-- **Impersonation**: anyone can register any free name, and a page shows whatever name is in the QR. The page tells customers to check the name in their app before confirming. If you run this publicly, consider adding a way to report pages, and extend the reserved list in **both** `site/supabase/schema.sql` (`is_reserved_username`) and `site/public/js/common.js` (`RESERVED`).
+- **Impersonation**: anyone can register any free name, and a page shows whatever name is in the QR. The page tells customers to check the name in their app before confirming. If you run this publicly, consider adding a way to report pages, and add a migration that updates `is_reserved_username` in **both** `supabase/migrations/` and `site/public/js/common.js` (`RESERVED`).
 - **Username lookups** are open (needed for the live availability check). Pages are `noindex`.
 - Deleting a page from the dashboard removes the row; to delete the sign-in account itself use *Authentication → Users* in Supabase.
 
@@ -227,7 +228,7 @@ A few intentional differences from the site's original in-page engine come from 
 
 ## Customising
 
-- **Add a theme**: add a line to `THEMES` in [`site/scripts/gen-themes.js`](scripts/gen-themes.js), run `npm run themes`, then add the id and colour to `THEMES` in [`site/public/js/providers.js`](public/js/providers.js) and to `profiles_theme_valid` in [`site/supabase/schema.sql`](supabase/schema.sql) (re-create that constraint, or run `alter table public.profiles drop constraint profiles_theme_valid;` followed by the new `add constraint`). Every surface is generated from that one accent — page background, borders, secondary buttons/segments and soft tints (in light and dark mode), so the whole page follows the theme.
+- **Add a theme**: add a line to `THEMES` in [`site/scripts/gen-themes.js`](scripts/gen-themes.js), run `npm run themes`, then add the id and colour to `THEMES` in [`site/public/js/providers.js`](public/js/providers.js) and to `profiles_theme_valid` in a **new** migration under [`supabase/migrations/`](../supabase/migrations/) (drop and re-add that constraint there; never edit an applied migration). Every surface is generated from that one accent — page background, borders, secondary buttons/segments and soft tints (in light and dark mode), so the whole page follows the theme.
 - **Add a wallet or bank**: edit `WALLETS` / `BANKS` in [`site/public/js/providers.js`](public/js/providers.js). Wallet entries are decorative colour tiles, not logos.
 - **Fonts** come from Google Fonts. To self-host, download Bricolage Grotesque and Figtree, add `@font-face` rules to `base.css`, and drop the two `fonts.*` hosts from the CSP in the repo-root `netlify.toml`.
 - Social-share previews (Open Graph) would need server-rendering, e.g. a Netlify Edge Function. Not included.
@@ -248,7 +249,7 @@ The engine's own tests live with the package: `pnpm --filter deshiqr test` from 
 ## Troubleshooting
 
 - *"Supabase isn't connected yet"* on the landing page: `config.js` still has the placeholders. Set the environment variables and redeploy.
-- *"The database tables aren't set up yet"* in `/app`: run `site/supabase/schema.sql`.
+- *"The database tables aren't set up yet"* in `/app`: apply the SQL in `supabase/migrations/` — enable the Supabase GitHub integration (Project Settings → Integrations → GitHub, Working directory `.`, Deploy to production) or paste the files into the SQL editor once.
 - *Confirmation email link goes to the wrong place*: fix **Site URL** and **Redirect URLs** in Supabase.
 - *`/username` shows a 404 from Netlify*: the rewrite rules in the repo-root `netlify.toml` weren't picked up. Check the file is at the repo root, that `base` is `site`, and that the **publish** directory is `public`.
 - *"That link was just taken"* when saving: another user got the name first; pick another.

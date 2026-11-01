@@ -9,7 +9,7 @@
  *
  * To add a theme: add a line to THEMES, run `npm run themes`, and add the id to
  *   - THEMES in public/js/themes.js
- *   - the profiles_theme_valid check in supabase/schema.sql
+ *   - the profiles_theme_valid check in, or a new migration next to, supabase/migrations/
  */
 const fs = require("fs");
 const path = require("path");

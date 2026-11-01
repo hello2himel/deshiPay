@@ -52,7 +52,10 @@ build command `node scripts/build-config.js`, which writes `site/public/js/confi
 1. Import this GitHub repo into Netlify and name the site `deshiqr` (so the URL is
    <https://deshiqr.netlify.app>).
 2. Set the environment variables above in the Netlify UI.
-3. Run [`site/supabase/schema.sql`](./site/supabase/schema.sql) in the Supabase SQL editor, and add
+3. Apply the database schema — connect the repo in Supabase's GitHub integration (*Project Settings
+   → Integrations → GitHub*, Working directory `.`, **Deploy to production**) so pushes to `main`
+   apply [`supabase/migrations/`](./supabase/migrations/) automatically, or paste those files into the
+   SQL editor once — and add
    `https://deshiqr.netlify.app/app` (plus `http://localhost:8888/app` for local work) to the Supabase
    Auth redirect URLs.
 

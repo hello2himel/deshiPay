@@ -26,6 +26,7 @@
   var LOCAL_DRAFT_KEY = "deshiqr.local.v1";
   var sb, user;
   var localMode = false; // backend paused/unreachable: no sb, no user
+  var forcedLocal = false; // ?local=1: the visitor chose the no-account flow
   var S = blank();
   var isNew = true, step = 0, tabId = "link";
   var savedSnap = "", originalUsername = "", justPublished = false, busy = false;
@@ -194,7 +195,7 @@
 
   function paintTop() {
     if (localMode) {
-      topActions.replaceChildren(h("span", { class: "user-chip local" }, "Offline mode"));
+      topActions.replaceChildren(h("span", { class: "user-chip local" }, forcedLocal ? "No account" : "Offline mode"));
       return;
     }
     var kids = [];
@@ -912,6 +913,8 @@
   }
 
   async function boot() {
+    // Explicit no-account flow from the login page: skip the backend entirely.
+    if (/(?:^|[?&])local(?:=1)?(?:&|$)/.test(location.search)) { forcedLocal = true; return startLocal(); }
     if (!(await backendOnline())) return startLocal();
     sb = T.client();
     if (!sb) return setupMissing();

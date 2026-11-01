@@ -335,6 +335,17 @@ async function scenarioOnline(browser) {
     await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".hero-cta[href='/login']")]);
     await page.waitForSelector("#email", { timeout: 10000 });
     ok(state.health > 0, "login page probes /auth/v1/health before showing sign-in");
+    ok(!!(await page.$(".no-login a[href='/app?local=1']")), "login page offers a no-login create option");
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle0" }),
+      page.click(".no-login a[href='/app?local=1']"),
+    ]);
+    await page.waitForSelector("#f-title", { timeout: 10000 });
+    ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 1 of 5 · Name"), "the no-login option starts the same offline wizard");
+    ok((await page.$("#f-user")) === null, "the no-login flow asks for no username/link");
+    ok((await page.$eval("#topActions .user-chip", (e) => e.textContent)).trim() === "No account", "the no-login dashboard is labelled No account");
+    await page.goto(BASE + "/login", { waitUntil: "networkidle0" });
+    await page.waitForSelector("#email", { timeout: 10000 });
     await page.type("#email", "owner@example.com");
     await page.type("#pw", "correct-horse-1");
     await page.click("form button[type=submit]");

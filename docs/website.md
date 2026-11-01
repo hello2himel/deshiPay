@@ -63,7 +63,12 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    | `SUPABASE_ANON_KEY` | your anon / publishable key (public by design) |
    | `GOOGLE_AUTH`       | `true` only if you enabled Google auth         |
 
-   The build fails with a clear message if the two required variables are missing.
+   The build fails with a clear message if the two required variables are missing — unless you
+   deliberately deploy **without a database** by setting `SITE_OFFLINE=true` instead of the two
+   Supabase variables. An offline-only deploy has no accounts and no hosted pages; visitors get the
+   "Create my page" flow and can download standalone HTML files (the same fallback the site uses when
+   Supabase is paused). Add the real Supabase variables and remove `SITE_OFFLINE` later to switch the
+   accounts back on.
 3. **Database.** In Supabase → *SQL Editor → New query*, paste all of
    [`site/supabase/schema.sql`](../site/supabase/schema.sql) and run it (safe to re-run). It creates
    the tables, RLS policies, username rules and the public functions.

@@ -146,6 +146,18 @@ After publishing, the same sections become tabs, plus **Share** (link, link with
 
 **Customer page**: pick *Scan QR*, *Wallet* or *Bank* (only the ones the owner set up). For QR, type an amount (Bangla digits work) and the QR appears. On phones, *Save QR image* opens the share sheet so it can be saved and picked from the gallery inside a banking app. Wallet numbers and bank lines are tap-to-copy.
 
+### Payments tab (links + amount poster)
+
+Once a page is published, the dashboard has a **Payments** tab for requesting a specific amount:
+
+- **Locked amount** → `/<username>?amount=500` (customer cannot change it). Open or copy the link.
+- **Preferred amount** → `/<username>?preferred=500` (page opens prefilled, but the customer can edit).
+- **Poster with this amount** → the same A4/A5 poster, but its QR is generated with the amount baked
+  in, so the app opens with the amount filled. The amount is printed above the app icons.
+
+Both amounts are capped at **৳50,000**. The Payments tab is visible after publishing; while drafting,
+the same tools live in Share and the local Download step.
+
 ### Printable poster (A4 / A5)
 
 The Share tab (and the local **Download** step) offers an **A4 or A5 portrait poster** as a

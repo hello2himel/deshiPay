@@ -20,6 +20,7 @@
     { id: "look", tab: "Look", icon: "palette", title: "Make it yours", lead: "Pick an avatar, a colour and the quick amounts your customers will see." }
   ];
   var DOWNLOAD = { id: "download", tab: "Download", icon: "download", title: "Take your page with you", lead: "Download your payment page as one HTML file. Host it anywhere: Netlify Drop, GitHub Pages, or your own server. No account needed." };
+  var PAYMENTS = { id: "payments", tab: "Payments", icon: "wallet" };
   var SHARE = { id: "share", tab: "Share", icon: "share" };
   var posterFormat = "a4";
   var TAG_NAMES = { "00": "Format", "01": "Static (11) or dynamic (12)", "52": "Category", "53": "Currency (050 = BDT)", "54": "Amount", "58": "Country", "59": "Merchant name", "60": "City", "62": "Additional data", "63": "Checksum (recalculated)" };
@@ -217,7 +218,7 @@
       nav.replaceChildren(h("div", { class: "progress" }, h("div", { class: "count" }, "Step " + (step + 1) + " of " + STEPS.length + " · " + STEPS[step].tab), h("div", { class: "bars", "aria-hidden": "true" }, bars)));
     } else {
       var problem = validate();
-      var all = STEPS.concat([SHARE]);
+      var all = STEPS.concat([PAYMENTS, SHARE]);
       nav.replaceChildren(h("div", { class: "tabs", role: "tablist" }, all.map(function (s) {
         return h("button", { type: "button", role: "tab", "aria-selected": String(s.id === tabId), onClick: function () { tabId = s.id; paintNav(); paintPanel(); window.scrollTo({ top: 0 }); } },
           icon(s.icon), h("span", { class: "tab-label" }, s.tab), problem && problem.step === s.id ? h("span", { class: "dot", title: "Needs attention" }) : null);
@@ -267,6 +268,7 @@
     else if (id === "pay") node = payPanel();
     else if (id === "look") node = lookPanel();
     else if (id === "download") node = downloadPanel();
+    else if (id === "payments") node = paymentsPanel();
     else node = sharePanel();
     p.replaceChildren(node);
     barMsg("");
@@ -647,7 +649,7 @@
 
   /* ----- printable poster (A4 / A5) ----- */
 
-  function posterPanel() {
+  function posterPanel(amountFn) {
     var section = h("div", null);
     if (!S.qr || !window.DeshiPoster) {
       section.appendChild(h("p", { class: "hint", style: "margin:0" }, "Add a Bangla QR in step 2 to make a printable poster."));
@@ -662,13 +664,20 @@
     function row() {
       var r = toRow();
       r.title = S.title.trim() || "Your business";
+      var n = amountFn ? amountFn() : 0;
+      if (n > 0 && S.qr) {
+        var ref = r.ref_len ? TQ.makeRef(r.ref_prefix, r.ref_len) : null;
+        r.qr_payload = TQ.build(S.qr.payload, n, ref);
+        r.amount = n;
+        r.amountLabel = T.taka(n);
+      }
       return r;
     }
     function paint() {
       a4.setAttribute("aria-pressed", String(posterFormat === "a4"));
       a5.setAttribute("aria-pressed", String(posterFormat === "a5"));
       var svg = window.DeshiPoster.build(row(), posterFormat);
-      preview.replaceChildren(svg || h("p", { class: "hint" }, "Add a Bangla QR to make a poster."));
+      preview.replaceChildren(svg || h("p", { class: "hint" }, amountFn ? "Enter a set amount to make the amount poster." : "Add a Bangla QR to make a poster."));
     }
     a4.addEventListener("click", function () { posterFormat = "a4"; paint(); });
     a5.addEventListener("click", function () { posterFormat = "a5"; paint(); });
@@ -683,7 +692,10 @@
     section.appendChild(h("div", { class: "poster-formats" }, a4, a5, h("span", { class: "poster-hint-inline" }, "The QR is your Bangla QR, not your page link.")));
     section.appendChild(preview);
     section.appendChild(h("div", { class: "row-actions" }, downloadBtn, printBtn));
-    section.appendChild(h("p", { class: "hint" }, "Print at 100% (Actual size), portrait, no headers. On A5, scan from arm’s length. Payer scans and types the amount in their app."));
+    section.appendChild(h("p", { class: "hint" }, amountFn
+      ? "Print at 100% (Actual size), portrait, no headers. The QR carries the amount, so the app opens with it filled in."
+      : "Print at 100% (Actual size), portrait, no headers. On A5, scan from arm’s length. Payer scans and types the amount in their app."));
+    section.repaint = paint;
     return section;
   }
 
@@ -732,6 +744,67 @@
         h("p", { class: "section-sub" }, "A4 or A5 portrait, for your counter, wall or stall. Your static Bangla QR is on it, plus bKash, Nagad, Rocket, upay and the top bank apps."),
         posterPanel(),
         h("div", { class: "notice" }, icon("info"), h("span", null, "Only the web fonts load from the internet. Everything else is inside the file, so it works from any static host, or straight from a folder on your computer."))
+      ));
+  }
+
+  /* ----- payments: request a specific amount ----- */
+
+  function paymentsPanel() {
+    var url = T.pageUrl(originalUsername);
+    var limit = TQ.MAX_INPUT_AMOUNT || TQ.MAX_AMOUNT;
+    var amount = h("input", { class: "input", id: "f-pay-amount", type: "text", inputmode: "decimal", autocomplete: "off", placeholder: "e.g. 1500" });
+    var preferred = h("input", { class: "input", id: "f-pay-preferred", type: "text", inputmode: "decimal", autocomplete: "off", placeholder: "e.g. 500" });
+    var lockedOpen = h("a", { class: "btn sec", id: "pay-locked-open", target: "_blank", rel: "noopener" }, icon("external"), "Open locked page");
+    var lockedCopy = h("button", { class: "btn sec", id: "pay-locked-copy", type: "button" }, icon("copy"), "Copy locked link");
+    var preferredOpen = h("a", { class: "btn sec", id: "pay-preferred-open", target: "_blank", rel: "noopener" }, icon("external"), "Open preferred page");
+    var preferredCopy = h("button", { class: "btn sec", id: "pay-preferred-copy", type: "button" }, icon("copy"), "Copy preferred link");
+
+    function value(el) {
+      var n = parseFloat(TQ.sanitizeAmount(el.value));
+      return n > 0 && n <= limit ? n : 0;
+    }
+    function clean(el) {
+      var s = TQ.sanitizeAmount(el.value);
+      if (parseFloat(s) > limit) s = String(limit);
+      if (s !== el.value) el.value = s;
+    }
+    function sync() {
+      var n = value(amount), p = value(preferred);
+      lockedOpen.href = n ? url + "?amount=" + n : "#";
+      preferredOpen.href = p ? url + "?preferred=" + p : "#";
+      [ [lockedOpen, !n], [lockedCopy, !n], [preferredOpen, !p], [preferredCopy, !p] ].forEach(function (x) {
+        x[0].setAttribute("aria-disabled", String(x[1]));
+      });
+    }
+    function copy(urlToCopy, label) {
+      T.copyText(urlToCopy).then(function (ok) { T.toast(ok ? label + " copied" : "Couldn’t copy", { error: !ok, lift: dirty() }); });
+    }
+    amount.addEventListener("input", function () { clean(amount); sync(); if (poster) poster.repaint(); });
+    preferred.addEventListener("input", function () { clean(preferred); sync(); });
+    lockedOpen.addEventListener("click", function (e) { if (!value(amount)) e.preventDefault(); });
+    preferredOpen.addEventListener("click", function (e) { if (!value(preferred)) e.preventDefault(); });
+    lockedCopy.addEventListener("click", function () { if (value(amount)) copy(url + "?amount=" + value(amount), "Locked link"); });
+    preferredCopy.addEventListener("click", function () { if (value(preferred)) copy(url + "?preferred=" + value(preferred), "Preferred link"); });
+
+    var poster = posterPanel(function () { return value(amount); });
+    sync();
+
+    return h("div", { class: "panel" },
+      h("div", { class: "panel-head" }, h("h1", null, "Request a payment"), h("p", null, "Make a link or a printed QR for a specific amount. Use a locked amount for an invoice, or a preferred amount the customer can change.")),
+      h("div", { class: "stack" },
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("link")), h("h2", null, "Locked amount")),
+        h("p", { class: "section-sub" }, "The amount is fixed on the page, so the customer can’t change it."),
+        h("div", { class: "field" }, h("label", { for: "f-pay-amount" }, "Set amount in taka"), amount, h("p", { class: "hint" }, "Up to ৳50,000. Open the page now, or copy the link for an invoice.")),
+        h("div", { class: "row-actions" }, lockedOpen, lockedCopy),
+        h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("wallet")), h("h2", null, "Preferred amount")),
+        h("p", { class: "section-sub" }, "The page opens with this amount filled in, but the customer can edit it. Leave blank for no prefill."),
+        h("div", { class: "field" }, h("label", { for: "f-pay-preferred" }, "Preferred amount in taka"), preferred, h("p", { class: "hint" }, "Optional. Up to ৳50,000.")),
+        h("div", { class: "row-actions" }, preferredOpen, preferredCopy),
+        h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Poster with this amount")),
+        h("p", { class: "section-sub" }, "A4 or A5 portrait with the set amount baked into the QR, so the app opens with the amount filled in. Download or print it."),
+        poster
       ));
   }
 

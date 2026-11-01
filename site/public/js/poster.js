@@ -195,9 +195,13 @@
     qr.setAttribute("width", q.size); qr.setAttribute("height", q.size);
     svg.appendChild(qr);
 
-    // single instruction line (the amount is entered in the payer's app)
+    // single instruction line: static QR wants an amount typed in the app;
+    // an amount-specific QR already carries the amount.
+    var instruction = page.amountLabel
+      ? "Pay " + page.amountLabel + " by scanning this QR."
+      : "Scan with bKash, Nagad, Rocket or any bank app.";
     svg.appendChild(el("text", { x: f.cx, y: f.inY, "text-anchor": "middle", "font-family": BODY, "font-weight": 600,
-      "font-size": mm(f.inPt), fill: INK }, "Scan with bKash, Nagad, Rocket or any bank app."));
+      "font-size": mm(f.inPt), fill: INK }, instruction));
 
     // supported apps: Play Store icons for the four MFS + top-five bank apps,
     // plus the Bangla QR standard mark
@@ -215,7 +219,9 @@
   function slug(page) {
     return String((page && (page.username || page.title)) || "page").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "page";
   }
-  function filename(page, format) { return "deshipay-poster-" + (format || "a4") + "-" + slug(page) + ".svg"; }
+  function filename(page, format) {
+    return "deshipay-poster-" + (format || "a4") + "-" + slug(page) + (page.amount ? "-tk" + page.amount : "") + ".svg";
+  }
   function download(page, format) {
     var svg = build(page, format);
     if (!svg) return null;

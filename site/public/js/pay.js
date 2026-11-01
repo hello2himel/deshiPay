@@ -28,6 +28,15 @@
     return n > 0 && n <= cap ? n : 0;
   }
 
+  // ?preferred=500 prefills the amount but lets the customer change it.
+  function preferredAmount() {
+    var raw = new URLSearchParams(location.search).get("preferred");
+    if (!raw) return 0;
+    var n = parseFloat(window.DeshiQR.sanitizeAmount(raw));
+    var cap = window.DeshiQR.MAX_INPUT_AMOUNT || window.DeshiQR.MAX_AMOUNT;
+    return n > 0 && n <= cap ? n : 0;
+  }
+
   // ?method=wallet|bank|qr opens the page on that tab (like ?amount locks it).
   function initialMethod() {
     var m = new URLSearchParams(location.search).get("method");
@@ -45,6 +54,7 @@
     if (embeddedMeta && embeddedBg) embeddedMeta.setAttribute("content", embeddedBg);
     window.PayView.mount(root, embedded, {
       fixedAmount: fixedAmount(),
+      preferredAmount: preferredAmount(),
       method: initialMethod(),
       syncUrl: true,
       footerHref: window.DESHIQR_FOOTER_HREF || "/",
@@ -114,7 +124,7 @@
     var bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta && bg) meta.setAttribute("content", bg);
-    window.PayView.mount(root, page, { fixedAmount: fixedAmount(), method: initialMethod(), syncUrl: true });
+    window.PayView.mount(root, page, { fixedAmount: fixedAmount(), preferredAmount: preferredAmount(), method: initialMethod(), syncUrl: true });
   }
 
   async function boot() {

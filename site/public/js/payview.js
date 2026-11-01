@@ -18,7 +18,9 @@
     opts = opts || {};
     var page = initial;
     var method = opts.method || null;
-    var amount = opts.fixedAmount > 0 ? String(opts.fixedAmount) : "";
+    var amount = opts.fixedAmount > 0
+      ? String(opts.fixedAmount)
+      : (opts.preferredAmount > 0 ? String(opts.preferredAmount) : "");
     var inputLimit = (window.DeshiQR && (window.DeshiQR.MAX_INPUT_AMOUNT || window.DeshiQR.MAX_AMOUNT)) || 50000;
     var qr = {}; // live refs for the QR panel
 

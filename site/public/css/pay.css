@@ -128,7 +128,7 @@
   .pv-head { gap: 18px; align-content: start; }
   .pv-avatar { width: 64px; height: 64px; border-radius: 20px; font-size: 30px; }
   .pv-help { align-content: start; }
-  .pv-foot { justify-items: center; text-align: center; padding-top: 0; }
+  .pv-foot { justify-self: start; width: fit-content; justify-items: center; text-align: center; padding-top: 0; }
   .pv-foot .made-line { justify-content: center; }
 }
 @container pv (max-width: 460px) {

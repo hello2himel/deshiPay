@@ -201,6 +201,12 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     ok((await page.title()).includes("DeshiPay"), "the landing page title is DeshiPay");
     ok((await page.$eval(".brand", (e) => e.textContent.trim())) === "DeshiPay", "the header brand is DeshiPay");
+    const heroFill = await page.evaluate(() => ({
+      nav: document.querySelector(".top").getBoundingClientRect().height,
+      hero: document.querySelector(".hero-top").getBoundingClientRect().height,
+      viewport: window.innerHeight,
+    }));
+    ok(heroFill.hero >= heroFill.viewport - Math.ceil(heroFill.nav), "the hero fills at least the viewport below the nav");
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
     ok(
@@ -530,6 +536,12 @@ async function scenarioOnline(browser) {
     // signed out now, so this is a real landing page (a signed-in visitor is redirected to /app)
     await page.setViewport({ width: 1280, height: 860, deviceScaleFactor: 1 });
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
+    const desktopHero = await page.evaluate(() => ({
+      nav: document.querySelector(".top").getBoundingClientRect().height,
+      hero: document.querySelector(".hero-top").getBoundingClientRect().height,
+      viewport: window.innerHeight,
+    }));
+    ok(desktopHero.hero >= desktopHero.viewport - Math.ceil(desktopHero.nav), "desktop hero also fills the viewport below the nav");
     ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "none", "desktop hides the hamburger");
     ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "flex", "desktop shows the nav inline");
     ok((await page.$eval(".theme-toggle", (e) => getComputedStyle(e).display !== "none" && e.getBoundingClientRect().width > 0)), "desktop shows the theme toggle in the bar");

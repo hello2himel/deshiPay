@@ -1,7 +1,7 @@
 /*
  * DeshiQR site adapter — the thin layer between these pages and the repo's engine.
  *
- * The payload logic lives in the repo (`packages/deshiqr`), loaded here as
+ * The payload logic lives in the separate deshiQR engine repo, loaded here as
  * `/vendor/deshiqr.global.js`. This file does not edit, encode or checksum
  * payloads itself; it only:
  *

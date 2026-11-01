@@ -32,8 +32,8 @@ site/                     static site (plain HTML/CSS/JS, no bundler, no depende
   public/sitemap.xml      static sitemap
   public/css/             base, pay, studio, themes (generated)
   public/js/              auth, common, providers, reader, dashboard, payview, pay, payload
-  public/vendor/          qrcode, jsQR, supabase-js, deshiqr.global.js (built from packages/deshiqr)
-  scripts/                build-config.js, dev-server.js, gen-themes.js, refresh-engine.js
+  public/vendor/          qrcode, jsQR, supabase-js, deshiqr.global.js (vendored from the deshiQR repo)
+  scripts/                build-config.js, dev-server.js, gen-themes.js
   tests/                  qr.test.js (engine adapter), e2e/ (optional browser smoke test)
 netlify.toml              repo root: build/routing/headers for site/ (Netlify reads this;
                           /terms, /privacy, /contact pretty routes are rewritten to the html files)
@@ -50,10 +50,10 @@ The database schema and Supabase config live at the repo root, not inside `site/
 - **Auth and data — Supabase.** Email/password auth (optionally Google), Postgres with Row Level
   Security. The public customer page never reads the table directly: it calls `get_public_page()`, a
   `SECURITY DEFINER` function that returns only public fields for published pages.
-- **Payload editing — this repo's engine.** `site/public/vendor/deshiqr.global.js` is a byte-for-byte
-  copy of `packages/deshiqr/dist/deshiqr.global.js`; `site/public/js/payload.js` is the thin site
-  adapter (reads the uploaded QR's metadata, calls `DeshiQR.update` / `DeshiQR.validate`). The copy is
-  refreshed by `site/scripts/refresh-engine.js` and checked in CI.
+- **Payload editing — the deshiQR engine.** `site/public/vendor/deshiqr.global.js` is a committed copy
+  of the browser bundle from the separate [deshiQR](https://github.com/hello2himel/deshiQR) library
+  repo; `site/public/js/payload.js` is the thin site adapter (reads the uploaded QR's metadata, calls
+  `DeshiQR.update` / `DeshiQR.validate`). Update the copy from a deshiQR release when the engine changes.
 
 ## Deploying
 
@@ -61,8 +61,8 @@ Netlify credentials are not part of the repo — the steps below are the one-tim
 the repo-root `netlify.toml`; do not override the build command or publish directory in the UI.
 
 1. **Create the Netlify site.** Netlify → *Add new site → Import an existing project* → GitHub →
-   `hello2himel/deshiQR`. Name the site **`deshipay`** so the URL is
-   <https://deshipay.netlify.app>. Netlify picks up `netlify.toml` (`base = "site"`, for a monorepo).
+   `hello2himel/deshiPay`. Name the site **`deshipay`** so the URL is
+   <https://deshipay.netlify.app>. Netlify picks up `netlify.toml` (`base = "site"`).
 2. **Environment variables** (*Site configuration → Environment variables*, production + deploy
    previews):
 
@@ -112,7 +112,7 @@ The schema is versioned in [`supabase/migrations/`](../supabase/migrations/) and
 **Working directory** is `.`).
 
 - **One-time setup:** Supabase Dashboard → *Project Settings → Integrations → GitHub* → **Authorize
-  GitHub** → choose `hello2himel/deshiQR` → set **Working directory** to `.` → enable **Deploy to
+  GitHub** → choose `hello2himel/deshiPay` → set **Working directory** to `.` → enable **Deploy to
   production** (optional: *Automatic branching* for preview databases on GitHub branches). No GitHub
   Action or secrets are needed; Supabase watches the repo and runs the migrations itself.
 - **Changing the schema:** add a new file `supabase/migrations/YYYYMMDDHHMMSS_short_name.sql` (never
@@ -150,7 +150,7 @@ pushing to `main` — no dashboard clicking for these values.
 **One-time steps that still need the dashboard** (the integration is a GitHub ↔ Supabase link, so it
 must be authorized by the project owner):
 
-1. *Project Settings → Integrations → GitHub* → authorize `hello2himel/deshiQR`, set **Working
+1. *Project Settings → Integrations → GitHub* → authorize `hello2himel/deshiPay`, set **Working
    directory** `.`, enable **Deploy to production** (optionally *Automatic branching* for PR preview
    databases and required migration checks).
 2. Confirm the resulting **Authentication → URL Configuration** shows the site URL and redirects
@@ -171,13 +171,13 @@ offline mode described above.
 
 ## Local development
 
-From the repo root:
+From the repo root (Node >= 20; the site needs no npm dependencies):
 
 ```bash
-pnpm dev:site      # http://localhost:8888 — mimics the Netlify routing (/app, /<username>)
-pnpm build:site    # build the library, then vendor its browser bundle into site/public/vendor/
-pnpm test:site     # site suites: engine adapter + standalone export (node site/tests/qr.test.js && .../export.test.js)
-pnpm check:site    # verify the vendored bundle matches packages/deshiqr/dist
+node site/scripts/dev-server.js    # http://localhost:8888 — mimics the Netlify routing (/app, /<username>)
+node site/tests/qr.test.js         # site engine adapter + page wiring
+node site/tests/export.test.js     # standalone single-file export + escaping
+node site/scripts/gen-themes.js    # regenerate public/css/themes.css (commit the result)
 ```
 
 Supabase config for local work: either edit `site/public/js/config.js` by hand (the committed file
@@ -250,17 +250,13 @@ NODE_PATH=/tmp/deshiqr-e2e/node_modules CHROME=/path/to/chrome node site/tests/e
 ## Refreshing the vendored engine
 
 The site does not import the library as a package; it vendors the IIFE bundle so it stays a static
-site with no build step. After any change to `packages/deshiqr`:
+site with no build step. The engine lives in the separate
+[deshiQR](https://github.com/hello2himel/deshiQR) repo (npm/PyPI `deshiqr`).
 
-```bash
-pnpm build && node site/scripts/refresh-engine.js
-# or just:
-pnpm build:site
-```
-
-This copies `packages/deshiqr/dist/deshiqr.global.js` (and its source map) into
-`site/public/vendor/`. Commit the refreshed files — Netlify deploys exactly what is in the repo, and
-CI (`node site/scripts/refresh-engine.js --check`) fails if the vendored copy is stale.
+When the engine changes, build it there (`pnpm build` in that repo) and copy
+`packages/deshiqr/dist/deshiqr.global.js` (and its source map) into `site/public/vendor/`, then commit
+the refreshed files. Netlify deploys exactly what is in the repo; this site's CI cannot rebuild the
+engine, so the committed bundle is the source of truth until the next copy.
 
 ## Security notes
 
@@ -277,10 +273,11 @@ CI (`node site/scripts/refresh-engine.js --check`) fails if the vendored copy is
 
 ## CI
 
-The `verify` job in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) builds the library, then
-runs `node site/scripts/refresh-engine.js --check` and `pnpm test:site` alongside the existing
-typecheck/build/bundle checks, so a stale vendored engine or a broken site adapter fails CI. The
-Python matrix job is unaffected. The site tests need no dependencies and no network.
+The `verify` job in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs the site suites
+(`node site/tests/qr.test.js`, `node site/tests/export.test.js`) and fails if
+`site/public/css/themes.css` is stale (it regenerates the themes and diffs the result). The browser
+e2e suite (`site/tests/e2e/run.js`) needs Chromium + `puppeteer-core` and is run manually. The engine's
+own CI lives in the [deshiQR repo](https://github.com/hello2himel/deshiQR).
 
 ## Related
 

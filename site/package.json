@@ -1,14 +1,14 @@
 {
-  "name": "deshiqr-site",
+  "name": "deshipay-site",
   "version": "1.0.0",
   "private": true,
-  "description": "DeshiQR payment pages. Static site for Netlify, auth and data on Supabase.",
+  "description": "DeshiPay (DeshiQR-branded) payment pages. Static site for Netlify, auth and data on Supabase.",
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "build": "node scripts/build-config.js",
     "themes": "node scripts/gen-themes.js",
     "test": "node tests/qr.test.js && node tests/export.test.js",
-    "refresh-engine": "node scripts/refresh-engine.js"
+    "test:e2e": "node tests/e2e/run.js"
   },
   "engines": {
     "node": ">=20"

@@ -1,14 +1,15 @@
 # DeshiQR
 
-> This is the **DeshiQR website**, one part of the [deshiQR monorepo](../README.md). The payload-editing
-> engine it runs comes from the repo's `deshiqr` package; this directory adds the pages, the Supabase
-> auth/database and the editor UI on top.
+> This is the **DeshiPay website** — the [DeshiPay repo](../README.md) (served at
+> <https://deshipay.netlify.app>). The payload-editing engine it runs comes from the separate
+> [deshiQR](https://github.com/hello2himel/deshiQR) library repo; this directory adds the pages, the
+> Supabase auth/database and the editor UI on top.
 
 Payment pages for **Bangla QR**. Each user signs up, drops one Bangla QR (bKash, Nagad, Rocket, Upay, any bank app), picks a link, and gets a page at `yourdomain.com/username` where customers type an amount and receive a ready-to-scan QR. Wallet numbers and bank details can sit beside it for customers who'd rather copy and send.
 
 - **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshipay.netlify.app>
 - **Auth + database** on **Supabase** (email/password, Postgres with Row Level Security)
-- **Payload editing in the browser** comes from the repo's `deshiqr` engine (`packages/deshiqr`): the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
+- **Payload editing in the browser** comes from the separate [deshiQR](https://github.com/hello2himel/deshiQR) engine: the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
 - **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
 - The page **only shows payment details**. There is no payment confirmation or money handling of any kind.
 
@@ -31,8 +32,8 @@ site/
     js/export.js      builds the standalone single-file HTML export (see Offline mode)
     js/dashboard.js   onboarding + editor (online, and local mode when the backend is down)
     vendor/           qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT),
-                      deshiqr.global.js (MIT, built from packages/deshiqr)
-  scripts/            build-config.js, gen-themes.js, dev-server.js, refresh-engine.js
+                      deshiqr.global.js (MIT, vendored from the deshiQR engine repo)
+  scripts/            build-config.js, gen-themes.js, dev-server.js
   (every page shares a site footer with product/legal/support links)
   tests/              qr.test.js (engine adapter), export.test.js (standalone export),
                       e2e/ (browser smoke test, optional)
@@ -49,18 +50,15 @@ The Netlify config is at the **repo root** (`netlify.toml`), with `base = "site"
 
 ## Engine (payload editing)
 
-The QR payload logic is not duplicated in this site. `packages/deshiqr` builds the browser bundle
-`packages/deshiqr/dist/deshiqr.global.js` (global `window.DeshiQR`); the site keeps a committed copy at
-`public/vendor/deshiqr.global.js`, and `public/js/payload.js` adapts it to the shape the pages use.
-Refresh the copy after any engine change:
+The QR payload logic is not duplicated in this site. The engine is its own project:
+[**deshiQR**](https://github.com/hello2himel/deshiQR) (npm [`deshiqr`](https://www.npmjs.com/package/deshiqr),
+PyPI [`deshiqr`](https://pypi.org/project/deshiqr/), browser bundle on GitHub Pages). This site keeps a
+committed copy of the IIFE bundle at `public/vendor/deshiqr.global.js` (global `window.DeshiQR`), and
+`public/js/payload.js` adapts it to the shape the pages use.
 
-```bash
-pnpm build:libs                          # repo root: rebuild packages/deshiqr/dist
-cd site && npm run refresh-engine        # copy dist bundle + source map into public/vendor/
-node scripts/refresh-engine.js --check   # verify the vendor copy is byte-identical (exit 1 if stale)
-```
-
-Commit the refreshed vendor files so the static site deploys without the monorepo build tooling.
+To update the bundle: build/copy `deshiqr.global.js` (and its source map) from a deshiQR release or a
+local build of that repo into `public/vendor/`, then commit the refreshed files. The site has no build
+step and CI does not need the library toolchain.
 
 ---
 
@@ -84,8 +82,8 @@ Commit the refreshed vendor files so the static site deploys without the monorep
 
 ### 2. Netlify
 
-1. Push the **monorepo** (not just this folder) to a Git repository and **Add new site → Import from Git**. The repo-root `netlify.toml` points Netlify at this directory (`base = "site"`, `publish = "public"`). (Netlify Drop skips the build step, so if you use it, edit `public/js/config.js` by hand first.)
-2. Build settings come from `netlify.toml`: publish directory `public` under `site/`, build command `node scripts/build-config.js` only. The engine bundle is vendored and committed (`public/vendor/deshiqr.global.js`), so Netlify does not build the monorepo; refresh it with `node scripts/refresh-engine.js` after a library change. Nothing to fill in.
+1. Push this repo to GitHub and **Add new site → Import from Git**. The repo-root `netlify.toml` points Netlify at this directory (`base = "site"`, `publish = "public"`). (Netlify Drop skips the build step, so if you use it, edit `public/js/config.js` by hand first.)
+2. Build settings come from `netlify.toml`: publish directory `public` under `site/`, build command `node scripts/build-config.js` only. The engine bundle is vendored and committed (`public/vendor/deshiqr.global.js`), so Netlify does not build the library; update it from a deshiQR release when the engine changes. Nothing else to fill in.
 3. **Site configuration → Environment variables**:
 
    | Variable | Value |
@@ -103,11 +101,7 @@ The anon key is public by design; it ends up in the browser. What protects the d
 ### 3. Local development
 
 ```bash
-# from the repo root
-pnpm install                             # once, for the monorepo tooling
-pnpm dev:site                            # http://localhost:8888 (mimics the Netlify routing)
-
-# or call the scripts directly
+# from the repo root (Node >= 20; no install needed)
 node site/scripts/dev-server.js          # http://localhost:8888
 PORT=8889 node site/scripts/dev-server.js
 ```
@@ -202,7 +196,7 @@ footer links back to the site's origin at generation time.
 
 ## How the QR works (and the checksum)
 
-A Bangla QR is an EMV merchant QR: a flat list of `tag + 2-digit length + value` items, ending with a checksum. To turn *any* of them into a "pay this amount" QR, the engine (`packages/deshiqr`, loaded in the browser through `public/vendor/deshiqr.global.js` and `public/js/payload.js`) does exactly three things and leaves every other value alone (account, name, city, the bank's own tokens in tags 26-51 and 80-99):
+A Bangla QR is an EMV merchant QR: a flat list of `tag + 2-digit length + value` items, ending with a checksum. To turn *any* of them into a "pay this amount" QR, the [deshiQR](https://github.com/hello2himel/deshiQR) engine (loaded in the browser through `public/vendor/deshiqr.global.js` and `public/js/payload.js`) does exactly three things and leaves every other value alone (account, name, city, the bank's own tokens in tags 26-51 and 80-99):
 
 | Change | Why |
 |---|---|
@@ -257,7 +251,7 @@ NODE_PATH=/path/to/node_modules CHROME=/path/to/chrome \
                                                      # QR it draws, and opens the downloaded standalone file
 ```
 
-The engine's own tests live with the package: `pnpm --filter deshiqr test` from the repo root.
+The engine's own tests live in the [deshiQR repo](https://github.com/hello2himel/deshiQR); this repo tests the site adapter (`site/tests/qr.test.js`) and the standalone export (`site/tests/export.test.js`).
 
 ## Troubleshooting
 
@@ -268,8 +262,8 @@ The engine's own tests live with the package: `pnpm --filter deshiqr test` from 
 - *"That link was just taken"* when saving: another user got the name first; pick another.
 - *Landing shows "Create your page" although Supabase is configured*: the health probe could not get an answer — the project may be paused (HTTP 540) or restricted (402), the URL/anon key may be wrong, or the host is outside the CSP `connect-src` in the repo-root `netlify.toml`. That is the intended fallback; fix the project/config to get sign-in back.
 - *The Download step fails*: generating the file fetches this site's own CSS/JS, so the site must be reachable; reload and retry. The downloaded file itself then works without the site.
-- *Vendor engine is stale after a lib change*: run `cd site && npm run refresh-engine`, then commit the vendor files (`node scripts/refresh-engine.js --check` fails while they differ).
+- *Vendor engine is stale after a lib change*: copy the new `deshiqr.global.js` from the [deshiQR](https://github.com/hello2himel/deshiQR) build into `site/public/vendor/`, then commit it.
 
 ## Licences
 
-This site's code: MIT, part of the [deshiQR monorepo](../README.md) (root [LICENSE](../LICENSE)). Vendored libraries keep their own licences: qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT), and the `deshiqr` browser bundle (MIT, from [`packages/deshiqr`](../packages/deshiqr)).
+This site's code: MIT, in the [DeshiPay repo](../README.md) (root [LICENSE](../LICENSE)). Vendored libraries keep their own licences: qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT), and the `deshiqr` browser bundle (MIT, from the [deshiQR repo](https://github.com/hello2himel/deshiQR)).

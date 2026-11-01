@@ -10,63 +10,21 @@ permissions:
 
 jobs:
   verify:
-    name: typecheck, test, build
+    name: site tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: pnpm
+          node-version: 22
 
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Build the deshiqr package
-        run: pnpm build
-
-      - name: Verify the browser bundle
-        run: node scripts/check-globals.mjs
-
-      # The website in site/ vendors the browser bundle (site/public/vendor/deshiqr.global.js).
-      # It must be a byte-for-byte copy of the build above; refresh it with `pnpm build:site`.
-      - name: Verify the vendored website engine is current
-        run: node site/scripts/refresh-engine.js --check
-
-      - name: Test the website engine
-        run: pnpm test:site
-
-      - name: Test
-        run: pnpm test
-
-  python:
-    name: python package (Python ${{ matrix.python-version }})
-    # Pin the runner: ubuntu-latest is migrating to 24.04+ images that no longer
-    # ship prebuilt Python 3.9, which pyproject.toml still supports (>=3.9).
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Test
-        working-directory: python
-        run: python -m unittest discover -s tests -v
-
-      - name: Verify packaging
-        working-directory: python
+      - name: Site tests
         run: |
-          python -m pip install --upgrade build
-          python -m build --sdist --wheel --outdir dist
+          node site/tests/qr.test.js
+          node site/tests/export.test.js
+
+      - name: Generated theme CSS is current
+        run: |
+          node site/scripts/gen-themes.js
+          git diff --exit-code site/public/css/themes.css

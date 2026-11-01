@@ -29,6 +29,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Customer-page footer is a real call to action.** Instead of the tiny "Made with DeshiPay" text, every
+  customer page (and every downloaded standalone page) now ends with the DeshiPay logo + wordmark
+  ("Made with DeshiPay") and a **Create your own page** button linking to the site that generated the
+  page. It uses the page's theme colours and is hidden in the dashboard/landing previews as before.
+
+### Changed
+
 - **Contact email + report abuse.** The contact address is now
   **stargzr.science@gmail.com** everywhere (terms, privacy, contact/FAQ, security policy). Every page's
   footer has a **Report abuse** link in the Support column: a mailto with the subject pre-filled

@@ -219,7 +219,8 @@ async function scenarioOnline(browser) {
     if (demoChips[1]) await demoChips[1].click();
     ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the live demo’s quick amounts update the amount");
     ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 3, "the live demo has QR, Wallet and Bank methods");
-    ok((await page.$$eval(".demo .pv-help", (els) => els.length)) === 1, "the live demo shows the real “How to pay” section");
+    ok((await page.$$eval(".demo .pv-help", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0, "the homepage demo leaves out the “How to pay” block");
+    ok((await page.$$eval(".demo .pv-foot", (els) => els.length)) === 0, "the homepage demo leaves out the page footer");
     const demoMethods = await page.$$(".demo .pv-methods button");
     await demoMethods[1].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });

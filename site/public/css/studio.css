@@ -40,8 +40,12 @@
 .mailed .ic-big { width: 56px; height: 56px; border-radius: 18px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
 .mailed .ic-big .ic { width: 28px; height: 28px; }
 
-/* The landing demo is the real, full customer page (PayView) in a card. */
+/* The landing demo is the real customer page (PayView) in a card. The
+   page-only tail (How to pay + caution + footer) is left out of the homepage. */
 .demo { width: 100%; max-width: 420px; justify-self: center; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--bg); box-shadow: 0 24px 60px -34px var(--shadow); }
+.demo .pv-help { display: none; }
+/* drop the empty help/footer grid tracks too, so the card ends with the slip */
+.demo .pv-in { grid-template-areas: "head" "card"; }
 
 .how { display: grid; gap: 16px; margin-top: 8px; }
 .how h2 { font-size: 20px; }

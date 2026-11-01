@@ -38,9 +38,10 @@
   function mountDemo() {
     var host = document.getElementById("demoPayment");
     if (!host || !window.PayView) return;
-    // Exactly how pay.js mounts a real customer page — same options, same page
-    // data shape, full QR / Wallet / Bank tabs and "How to pay" section.
-    window.PayView.mount(host, DEMO_PAGE);
+    // The same customer page pay.js mounts, minus the page-only tail (footer)
+    // and the landing-page autofocus: full QR / Wallet / Bank tabs. The
+    // "How to pay" block is hidden for the landing demo in studio.css.
+    window.PayView.mount(host, DEMO_PAGE, { preview: true });
     // Start at ৳1,500 so the demo shows a real amount-bearing QR immediately;
     // the visitor can edit it or use the quick-amount chips.
     var amount = host.querySelector(".amt-input");

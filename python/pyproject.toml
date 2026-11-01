@@ -15,14 +15,17 @@ authors = [
 ]
 keywords = [
   "bangla-qr",
+  "bangladesh",
   "bkash",
-  "npsb",
   "emv",
   "emvco",
-  "qr",
+  "npsb",
   "payload-editor",
   "payments",
-  "bangladesh",
+  "qr",
+  "qr-code",
+  "validator",
+  "zero-dependency",
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -48,6 +51,7 @@ Repository = "https://github.com/hello2himel/deshiQR"
 Issues = "https://github.com/hello2himel/deshiQR/issues"
 Documentation = "https://github.com/hello2himel/deshiQR/blob/main/docs/api.md"
 Changelog = "https://github.com/hello2himel/deshiQR/blob/main/CHANGELOG.md"
+Demo = "https://hello2himel.github.io/deshiQR/"
 
 [tool.setuptools.packages.find]
 where = ["src"]

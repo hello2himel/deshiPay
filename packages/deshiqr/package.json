@@ -4,15 +4,18 @@
   "description": "Edit and validate Bangladesh Bangla QR (NPSB / EMVCo) payloads: update(payload, edits) and validate(payload). Zero dependencies.",
   "keywords": [
     "bangla-qr",
+    "bangladesh",
     "bkash",
-    "npsb",
     "emv",
     "emvco",
-    "qr",
+    "npsb",
+    "payload-editor",
     "payments",
-    "bangladesh",
-    "payload",
-    "validator"
+    "qr",
+    "qr-payload",
+    "typescript",
+    "validator",
+    "zero-dependency"
   ],
   "license": "MIT",
   "author": "Himel Das <hello2himel@proton.me>",

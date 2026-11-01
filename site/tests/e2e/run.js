@@ -460,7 +460,7 @@ async function scenarioOnline(browser) {
         labelVisible: !!label && getComputedStyle(label).display !== "none",
       };
     }));
-    ok(mobileTabs.length === 5, "published dashboard has five tabs");
+    ok(mobileTabs.length === 6, "published dashboard has six tabs");
     ok(mobileTabs.filter((t) => t.selected).length === 1 && mobileTabs.filter((t) => t.selected)[0].labelVisible,
       "mobile: the active tab shows icon + label");
     ok(mobileTabs.filter((t) => !t.selected).every((t) => t.hasLabel && !t.labelVisible),
@@ -541,6 +541,50 @@ async function scenarioOnline(browser) {
     ok(posterInfo.ok && posterInfo.srcAmount === 0 && !posterQr.includes("deshipay"), "poster QR is amount-free and points at the merchant account");
     await shotFull("09b-share-poster");
 
+    console.log("Payments tab");
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll(".tabs button")).find((b) => b.textContent.includes("Payments"));
+      btn.click();
+    });
+    await page.waitForSelector("#f-pay-amount");
+    ok((await page.$eval("#panel h1", (e) => e.textContent)) === "Request a payment", "the Payments tab opens the request flow");
+    await page.type("#f-pay-amount", "750");
+    await page.waitForFunction(() => {
+      const a = document.querySelector("#pay-locked-open");
+      return a && a.getAttribute("href").includes("?amount=750");
+    }, { timeout: 4000 });
+    ok((await page.$eval("#pay-locked-open", (e) => e.getAttribute("href"))).includes("?amount=750"), "the locked page link carries the set amount");
+    ok(!!(await page.$(".poster-preview svg")), "the amount-specific poster preview renders");
+    await page.type("#f-pay-preferred", "300");
+    await page.waitForFunction(() => {
+      const a = document.querySelector("#pay-preferred-open");
+      return a && a.getAttribute("href").includes("?preferred=300");
+    }, { timeout: 4000 });
+    ok((await page.$eval("#pay-preferred-open", (e) => e.getAttribute("href"))).includes("?preferred=300"), "the preferred page link carries the editable amount");
+    await armCapture(page);
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll("#panel button")).find((b) => b.textContent.includes("Download poster"));
+      btn.click();
+    });
+    const amountPoster = await readCapture(page);
+    ok(amountPoster.filename === "deshipay-poster-a4-rahim-traders-tk750.svg", "amount poster filename names the amount");
+    ok(amountPoster.html.includes("৳750") || amountPoster.html.includes("750"), "the amount is printed on the poster");
+    const amountQr = await page.evaluate(async (svgText) => {
+      const blob = new Blob([svgText], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = url; });
+      const c = document.createElement("canvas"); c.width = 1200; c.height = Math.round(1200 * 297 / 210);
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      const d = g.getImageData(0, 0, c.width, c.height);
+      const r = jsQR(d.data, c.width, c.height);
+      URL.revokeObjectURL(url);
+      return r ? r.data : null;
+    }, amountPoster.html);
+    const amountInfo = amountQr ? Q.inspect(amountQr) : { ok: false };
+    ok(amountInfo.ok && amountInfo.srcAmount === 750, "the amount-specific poster QR decodes to ৳750");
+    await shotFull("09c-payments");
+
     console.log("Customer page (mobile)");
     const healthBefore = state.health;
     await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
@@ -612,6 +656,17 @@ async function scenarioOnline(browser) {
     ok((await page.$eval(".amt-err", (e) => e.textContent)).includes("50,000"), "amounts above ৳50,000 are refused");
     ok(!!(await page.$(".qrbox svg")), "the static QR stays visible above the limit");
 
+    console.log("Preferred amount");
+    await page.goto(BASE + "/rahim-traders?preferred=500", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".amt-input");
+    ok((await page.$eval(".amt-input", (e) => e.value)) === "500", "?preferred=500 prefills the amount");
+    ok((await page.$eval(".amt-input", (e) => e.readOnly)) === false, "the preferred amount stays editable");
+    await page.waitForSelector(".qrbox svg");
+    await sleep(900);
+    const preferredDecoded = await decodeOnScreenQr(page);
+    const preferredInfo = preferredDecoded ? Q.inspect(preferredDecoded) : { ok: false };
+    ok(preferredInfo.ok && preferredInfo.srcAmount === 500, "the preferred amount QR already carries ৳500");
+
     console.log("Method deep links");
     await page.goto(BASE + "/rahim-traders?method=wallet", { waitUntil: "networkidle0" });
     await page.waitForSelector(".copyrow");
@@ -652,7 +707,7 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".tabs");
     const desktopLabels = await page.$$eval(".tabs button .tab-label", (els) =>
       els.map((el) => getComputedStyle(el).display !== "none"));
-    ok(desktopLabels.length === 5 && desktopLabels.every(Boolean),
+    ok(desktopLabels.length === 6 && desktopLabels.every(Boolean),
       "desktop: every tab shows its label");
     await shot("17-dashboard-desktop");
 

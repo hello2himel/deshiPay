@@ -13,6 +13,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Payments tab in the dashboard.** A published page now has a Payments tab with a **locked amount**
+  (`?amount=`), a **preferred amount** (`?preferred=`, prefilled but editable on the customer page), and
+  open/copy actions for each link. It also exports the A4/A5 poster with the set amount baked into the
+  QR, so scanning opens the app at that amount; the amount is printed on the poster. Amounts are capped
+  at ৳50,000. e2e covers the tab, both links, the editable `?preferred` page and decoding the
+  amount-specific poster QR back to ৳750 (233 checks).
+
+### Added
+
 - **Printable A4/A5 poster.** The dashboard's Share tab and the no-account Download step now offer a
   self-contained SVG poster in A4 or A5 portrait, with Download and Print / Save as PDF. It uses the
   owner's static Bangla QR (not the page URL) and the site's branding/type, plus Google Play icons for

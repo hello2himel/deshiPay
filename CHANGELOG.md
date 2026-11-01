@@ -11,6 +11,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ## [Unreleased]
 
+### Added
+
+- **Light/dark toggle in the nav.** A sun/moon button in the header lets visitors force light or dark
+  regardless of their OS setting, remembers the choice in `localStorage` (`deshipay.mode`), and applies
+  before first paint via a tiny `site/public/js/mode.js` (so there is no flash). The button is icon-only
+  in the desktop bar and a labelled row inside the mobile hamburger menu; `gen-themes.js` now emits
+  explicit `html[data-mode="light|dark"]` overrides for all ten themes so the toggle beats
+  `prefers-color-scheme`.
+
 ### Changed
 
 - **Rebrand to DeshiPay, with a wider story.** The site (titles, header, footer, legal pages, customer

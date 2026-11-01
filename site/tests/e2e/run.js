@@ -241,6 +241,21 @@ async function scenarioOnline(browser) {
     await page.keyboard.press("Escape");
     ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "none", "Escape closes the nav menu");
 
+    // Theme toggle lives in the nav (inside the hamburger on mobile).
+    const lightBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    await page.click(".nav-btn");
+    await page.click(".theme-toggle");
+    ok((await page.evaluate(() => document.documentElement.getAttribute("data-mode"))) === "dark", "the nav theme toggle switches to dark");
+    const darkBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    ok(darkBg !== lightBg, "the dark choice changes the page colours");
+    ok((await page.evaluate(() => localStorage.getItem("deshipay.mode"))) === "dark", "the theme choice is remembered");
+    await page.click(".nav-btn");
+    await page.click(".theme-toggle");
+    ok((await page.evaluate(() => document.documentElement.getAttribute("data-mode"))) === "light", "the nav theme toggle switches back to light");
+    ok((await page.evaluate(() => getComputedStyle(document.body).backgroundColor)) === lightBg, "the light choice restores the light colours");
+    // follow the system preference again for the rest of the suite (dark-mode tests)
+    await page.evaluate(() => { localStorage.removeItem("deshipay.mode"); document.documentElement.removeAttribute("data-mode"); });
+
     // The landing demo is the real customer page (PayView), not a static mock.
     ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "landing shows the live payment demo (real customer page)");
     ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "1500", "the live demo starts at ৳1,500");
@@ -485,6 +500,8 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "none", "desktop hides the hamburger");
     ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "flex", "desktop shows the nav inline");
+    ok((await page.$eval(".theme-toggle", (e) => getComputedStyle(e).display !== "none" && e.getBoundingClientRect().width > 0)), "desktop shows the theme toggle in the bar");
+    ok((await page.$eval(".theme-toggle .theme-label", (e) => getComputedStyle(e).display)) === "none", "the desktop theme toggle is icon-only");
     ok((await page.$eval(".top-actions", (e) => getComputedStyle(e).display)) === "flex", "desktop shows the top actions inline");
     await shot("16-landing-desktop");
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });

@@ -76,15 +76,16 @@ step and CI does not need the library toolchain.
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Create the tables, automatically.** Supabase Dashboard → *Project Settings → Integrations → GitHub*, authorize this repository, set **Working directory** to `.`, and enable **Deploy to production**. Every push to `main` then applies the SQL in [`supabase/migrations/`](../supabase/migrations/) automatically. (Manual alternative: paste those files, in filename order, into the SQL editor once, safe to re-run.)
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable** key. Never use the `service_role` key in this app.
-   The site URL, `/app` redirect URLs and the auth options (sign-ups, anonymous sign-ins off, email
-   confirmations off for now, JWT expiry) are versioned in
+   The site URL, `/app` redirect URLs, the auth options (sign-ups on, anonymous sign-ins off,
+   email confirmations on, 6-digit OTP length/expiry, JWT expiry) and the branded email templates under
+   [`supabase/templates/`](../supabase/templates) are versioned in
    [`supabase/config.toml`](../supabase/config.toml) and applied by the same integration, see
    *Supabase project settings (as code)* in [`docs/website.md`](../docs/website.md).
 4. **Authentication → URL Configuration**:
    - **Site URL**: the deployed site, e.g. `https://deshipay.netlify.app` (or your custom domain)
    - **Redirect URLs**: add `https://deshipay.netlify.app/app` (and `http://localhost:8888/app` for local work)
-   These are used by the confirmation and password-reset emails.
-5. **Authentication → Providers → Email**: leave on. If you turn **Confirm email** off, people land straight in the dashboard after signing up; if it's on they get a confirmation mail first. Both work.
+   These are used by the confirmation and password-reset emails (both send a 6-digit code).
+5. **Authentication → Providers → Email**: leave on, and turn **Confirm email** on so new accounts verify with the 6-digit code. If the hosted project's templates show the default Supabase wording, paste the files from [`supabase/templates/`](../supabase/templates) into **Authentication → Emails** (or apply `config.toml` with the Supabase CLI).
 6. Optional: enable **Google** under Providers, then set `GOOGLE_AUTH=true` (see below) to show the button.
 
 ### 2. Netlify

@@ -2,14 +2,14 @@
   "name": "deshipay",
   "private": true,
   "version": "1.0.0",
-  "description": "DeshiPay — payment pages for Bangla QR. Static site for Netlify, auth and page data on Supabase.",
+  "description": "DeshiPay \u2014 payment pages for Bangla QR. Static site for Netlify, auth and page data on Supabase.",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "dev": "node site/scripts/dev-server.js",
     "build": "node site/scripts/build-config.js",
-    "test": "node site/tests/qr.test.js && node site/tests/export.test.js",
+    "test": "node site/tests/qr.test.js && node site/tests/export.test.js && node site/tests/reserved.test.js",
     "test:e2e": "node site/tests/e2e/run.js",
     "themes": "node site/scripts/gen-themes.js"
   },

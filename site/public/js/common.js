@@ -8,10 +8,26 @@
 
   // Keep in sync with public.is_reserved_username() in supabase/migrations/
   var RESERVED = new Set(
-    ("app,api,admin,administrator,login,logout,signin,signup,register,auth,pay,payment,payments,dashboard," +
-      "settings,account,profile,help,support,about,terms,privacy,contact,static,assets,css,js,vendor,img,images," +
-      "fonts,favicon,robots,sitemap,index,home,new,null,undefined,www,mail,status,blog,docs,deshiqr,bkash,nagad," +
-      "rocket,upay,bank,official,security,verify,root,system,staff,team").split(",")
+    (
+      "2fa","about","abuse","account","admin","admin-team","administrator","affiliate","affiliates","agrani","alpha","amex",
+      "api","app","assets","auth","bank","banks","beta","billing","binance","bkash","blog","brac",
+      "bracbank","callback","careers","cart","cause","causes","checkout","citybank","coming-soon","complaint","complaints","contact",
+      "cookies","copyright","css","customer-service","customerservice","dashboard","dbbl","demo","deshi-pay","deshi-qr","deshipay","deshipays",
+      "deshiqr","dev","develop","development","dmca","docs","documentation","donate","donation","donations","email","emv",
+      "emvco","error","errors","eula","false","faq","favicon","features","fonts","forgot","fraud","fund",
+      "funding","funds","gdpr","hello","help","helpdesk","home","hostmaster","how","how-it-works","hsbc","icons",
+      "images","img","impersonation","index","info","internal","invite","invites","invoice","invoices","islami","janata",
+      "jobs","js","legal","license","login","logout","mail","maintenance","manifest","marketing","mastercard","mcash",
+      "media","mfa","moderation","moderator","moderators","mycash","nagad","new","nil","no-reply","none","noreply",
+      "npsb","null","oauth","official","okwallet","order","orders","otp","partner","partners","password","pathaopay",
+      "pay","pay-now","paylink","payment","payment-link","payments","paynow","payoneer","paypal","policy","postmaster","press",
+      "pricing","privacy","private","prod","production","profile","qr","qr-code","qrcode","receipt","receipts","redirect",
+      "referral","referrals","register","report","reset","return","robots","rocket","root","rupali","sales","scam",
+      "scan","secret","secure","security","service-worker","settings","sign-out","signin","signout","signup","sitemap","sonali",
+      "sso","staff","staging","static","status","stripe","subscription","support","surecash","system","taka-qr","takaqr",
+      "tap","team","terms","test","testing","tests","tip","tips","tos","true","trust","trust-safety",
+      "undefined","upay","uploads","vendor","verification","verify","visa","wallet","wallets","webmaster","wise","www"
+    ).split(",")
   );
 
   function client() {

@@ -7,7 +7,7 @@
     "dev": "node scripts/dev-server.js",
     "build": "node scripts/build-config.js",
     "themes": "node scripts/gen-themes.js",
-    "test": "node tests/qr.test.js && node tests/export.test.js",
+    "test": "node tests/qr.test.js && node tests/export.test.js && node tests/reserved.test.js",
     "test:e2e": "node tests/e2e/run.js"
   },
   "engines": {

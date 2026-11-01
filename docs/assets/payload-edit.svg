@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="545" viewBox="0 0 1000 545">
+<rect x="0" y="0" width="1000" height="545" fill="#ffffff"/>
+<rect x="0.75" y="0.75" width="998.5" height="543.5" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" opacity="1"/>
+<rect x="44" y="30" width="6" height="42" rx="3" fill="#047857" stroke="none" stroke-width="1" opacity="1"/>
+<text x="62" y="54" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#0f172a" text-anchor="start" opacity="1">What one edit changes</text>
+<text x="62" y="76" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="12.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">update() walks the tree, applies your edits, keeps 01 consistent and re-seals 63 — nothing else moves.</text>
+<rect x="33" y="112" width="134" height="42" rx="9" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="100.0" y="138" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">payload</text>
+<line x1="172" y1="133" x2="185" y2="133" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 188 133 l -6 -4 l 0 8 z" fill="#94a3b8"/>
+<rect x="193" y="112" width="134" height="42" rx="9" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="260.0" y="138" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">parse TLV</text>
+<line x1="332" y1="133" x2="345" y2="133" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 348 133 l -6 -4 l 0 8 z" fill="#94a3b8"/>
+<rect x="353" y="112" width="134" height="42" rx="9" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="420.0" y="138" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">apply edits</text>
+<line x1="492" y1="133" x2="505" y2="133" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 508 133 l -6 -4 l 0 8 z" fill="#94a3b8"/>
+<rect x="513" y="112" width="134" height="42" rx="9" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="580.0" y="138" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">sync tag 01</text>
+<line x1="652" y1="133" x2="665" y2="133" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 668 133 l -6 -4 l 0 8 z" fill="#94a3b8"/>
+<rect x="673" y="112" width="134" height="42" rx="9" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="740.0" y="138" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12.5" font-weight="500" fill="#334155" text-anchor="middle" opacity="1">re-seal tag 63</text>
+<line x1="812" y1="133" x2="825" y2="133" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 828 133 l -6 -4 l 0 8 z" fill="#94a3b8"/>
+<rect x="833" y="112" width="134" height="42" rx="9" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.4" opacity="1"/>
+<text x="900.0" y="138" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">payload&#x27;</text>
+<text x="44" y="196" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="start" letter-spacing="1.4" opacity="1">field</text>
+<text x="120" y="196" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="start" letter-spacing="1.4" opacity="1">before</text>
+<text x="356" y="196" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="start" letter-spacing="1.4" opacity="1">after</text>
+<text x="600" y="196" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8" text-anchor="start" letter-spacing="1.4" opacity="1">why</text>
+<line x1="44" y1="204" x2="956" y2="204" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
+<text x="44" y="243" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">00 26 52 53 58 59 60 80 81</text>
+<text x="600" y="243" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="12.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">unchanged — copied byte for byte</text>
+<line x1="44" y1="260" x2="956" y2="260" stroke="#e2e8f0" stroke-width="1" stroke-linecap="round"/>
+<rect x="44" y="290" width="34" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.3" opacity="1"/>
+<text x="61.0" y="305.5" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle" opacity="1">01</text>
+<rect x="120" y="288" width="50.8" height="26" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="145.4" y="306" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">&quot;11&quot;</text>
+<line x1="300" y1="301" x2="326" y2="301" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 326 301 l -7 -4.5 l 0 9 z" fill="#94a3b8"/>
+<rect x="356" y="288" width="50.8" height="26" rx="7" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.4" opacity="1"/>
+<text x="381.4" y="306" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#047857" text-anchor="middle" opacity="1">&quot;12&quot;</text>
+<text x="600" y="306" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" opacity="1">static becomes dynamic: 54 now exists</text>
+<rect x="44" y="342" width="34" height="22" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.3" opacity="1"/>
+<text x="61.0" y="357.5" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="11.5" font-weight="700" fill="#047857" text-anchor="middle" opacity="1">54</text>
+<rect x="120" y="340" width="65.19999999999999" height="26" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="4 3" opacity="1"/>
+<text x="152.6" y="358" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#94a3b8" text-anchor="middle" opacity="1">absent</text>
+<line x1="300" y1="353" x2="326" y2="353" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 326 353 l -7 -4.5 l 0 9 z" fill="#94a3b8"/>
+<rect x="356" y="340" width="79.6" height="26" rx="7" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.4" opacity="1"/>
+<text x="395.8" y="358" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#047857" text-anchor="middle" opacity="1">&quot;500.00&quot;</text>
+<text x="600" y="358" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" opacity="1">inserted in tag order, after 53</text>
+<rect x="44" y="394" width="34" height="22" rx="6" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.3" opacity="1"/>
+<text x="61.0" y="409.5" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="11.5" font-weight="700" fill="#6d28d9" text-anchor="middle" opacity="1">62</text>
+<rect x="120" y="392" width="79.6" height="26" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="159.8" y="410" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">&quot;0602FT&quot;</text>
+<line x1="300" y1="405" x2="326" y2="405" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 326 405 l -7 -4.5 l 0 9 z" fill="#94a3b8"/>
+<rect x="356" y="392" width="158.79999999999998" height="26" rx="7" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.4" opacity="1"/>
+<text x="435.4" y="410" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#6d28d9" text-anchor="middle" opacity="1">&quot;0107BILL1230602FT&quot;</text>
+<text x="600" y="410" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" opacity="1">new 62/01, before the existing 62/06</text>
+<rect x="44" y="446" width="34" height="22" rx="6" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.3" opacity="1"/>
+<text x="61.0" y="461.5" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="11.5" font-weight="700" fill="#be123c" text-anchor="middle" opacity="1">63</text>
+<rect x="120" y="444" width="65.19999999999999" height="26" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4" opacity="1"/>
+<text x="152.6" y="462" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" opacity="1">&quot;295D&quot;</text>
+<line x1="300" y1="457" x2="326" y2="457" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M 326 457 l -7 -4.5 l 0 9 z" fill="#94a3b8"/>
+<rect x="356" y="444" width="65.19999999999999" height="26" rx="7" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.4" opacity="1"/>
+<text x="388.6" y="462" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="12" font-weight="400" fill="#be123c" text-anchor="middle" opacity="1">&quot;DB6A&quot;</text>
+<text x="600" y="462" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" opacity="1">checksum re-sealed last</text>
+<text x="44" y="517" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="11.5" font-weight="400" fill="#64748b" text-anchor="start" opacity="1">Everything not listed — account, name, city, currency, country, opaque tokens — is copied byte for byte.</text>
+</svg>

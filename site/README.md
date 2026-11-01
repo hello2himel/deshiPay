@@ -85,7 +85,7 @@ Commit the refreshed vendor files so the static site deploys without the monorep
    deploy offline-only: set `SITE_OFFLINE=true` instead — no accounts, but the "Create my page" flow
    and standalone HTML downloads work). The live site is <https://deshiqr.netlify.app>.
 
-The anon key is public by design; it ends up in the browser. What protects the data is Row Level Security (below).
+The anon key is public by design; it ends up in the browser. What protects the data is Row Level Security (below). On public repos Netlify's secret scanning may flag these values once the build writes `public/js/config.js`; the repo-root `netlify.toml` sets `SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"` (or add that variable in Netlify's UI / use `SECRETS_SCAN_OMIT_PATHS = "site/public/js/config.js"`). Never expose the `service_role` key.
 
 ### 3. Local development
 

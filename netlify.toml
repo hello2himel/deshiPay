@@ -24,6 +24,14 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # SUPABASE_URL and SUPABASE_ANON_KEY are public by design: the anon key ships
+  # in the browser and RLS protects the data. Netlify's sensitive-variable policy
+  # (especially on public repos) still flags them once the build writes them into
+  # site/public/js/config.js, so leave those two keys out of secret scanning.
+  # If this file-level setting is not honoured for your site, add the same
+  # variable in Netlify: Site configuration > Environment variables, all deploy
+  # contexts; SECRETS_SCAN_OMIT_PATHS = "site/public/js/config.js" also works.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"
 
 # ---------------------------------------------------------------
 # Routing

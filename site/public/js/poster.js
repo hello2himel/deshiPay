@@ -124,9 +124,14 @@
     return { id: id, tile: el("rect", { x: x, y: top, width: size, height: size, rx: size * 0.29, fill: "#E9EDEB" }) };
   }
   function logoImage(svg, defs, item, x, top, size) {
-    var c = logoClip(defs, x, top, size);
-    var g = el("g", { "data-logo": item.name, "aria-label": item.name, "clip-path": "url(#" + c.id + ")" });
-    g.appendChild(c.tile);
+    // Transparent brand marks keep their own shape; only app icons get a tile.
+    var bare = item.name === "Nagad" || item.name === "upay";
+    var c = bare ? null : logoClip(defs, x, top, size);
+    var g = el("g", { "data-logo": item.name, "aria-label": item.name });
+    if (c) {
+      g.setAttribute("clip-path", "url(#" + c.id + ")");
+      g.appendChild(c.tile);
+    }
     var img = el("image", { x: x, y: top, width: size, height: size, preserveAspectRatio: "xMidYMid meet" });
     img.setAttribute("href", item.src);
     img.setAttributeNS(XLINK, "xlink:href", item.src);

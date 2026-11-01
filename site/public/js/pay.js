@@ -24,7 +24,8 @@
     var raw = new URLSearchParams(location.search).get("amount");
     if (!raw) return 0;
     var n = parseFloat(window.DeshiQR.sanitizeAmount(raw));
-    return n > 0 && n <= window.DeshiQR.MAX_AMOUNT ? n : 0;
+    var cap = window.DeshiQR.MAX_INPUT_AMOUNT || window.DeshiQR.MAX_AMOUNT;
+    return n > 0 && n <= cap ? n : 0;
   }
 
   // ?method=wallet|bank|qr opens the page on that tab (like ?amount locks it).

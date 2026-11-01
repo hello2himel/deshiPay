@@ -553,6 +553,13 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".qrbox svg");
     ok((await page.$eval(".amt-input", (e) => e.readOnly)) === true, "amount locked with ?amount=500");
 
+    console.log("Amount ceiling");
+    await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".amt-input");
+    await page.type(".amt-input", "60000");
+    ok((await page.$eval(".amt-err", (e) => e.textContent)).includes("50,000"), "amounts above ৳50,000 are refused");
+    ok(!!(await page.$(".qrbox svg")), "the static QR stays visible above the limit");
+
     console.log("Method deep links");
     await page.goto(BASE + "/rahim-traders?method=wallet", { waitUntil: "networkidle0" });
     await page.waitForSelector(".copyrow");

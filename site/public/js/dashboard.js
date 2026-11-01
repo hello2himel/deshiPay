@@ -69,7 +69,8 @@
     return e;
   }
   function parsePresets(str) {
-    return T.bnToEn(str).split(/[,\s]+/).map(Number).filter(function (n) { return n > 0 && n < 1e7 && isFinite(n); }).slice(0, 6);
+    var cap = TQ.MAX_INPUT_AMOUNT || TQ.MAX_AMOUNT;
+    return T.bnToEn(str).split(/[,\s]+/).map(Number).filter(function (n) { return n > 0 && n <= cap && isFinite(n); }).slice(0, 6);
   }
   function toRow() {
     var q = S.qr;
@@ -626,7 +627,7 @@
     amounts.row.addEventListener("click", function () {
       openSheet("Quick amounts", function (card, close) {
         var input = h("input", { class: "input", id: "f-presets", type: "text", inputmode: "numeric", autocomplete: "off", placeholder: "100, 500, 1000, 5000", value: S.presets.join(", ") });
-        var hint = h("p", { class: "hint" }, "Taka, separated by commas. Up to 6. They appear as one-tap buttons on your page.");
+        var hint = h("p", { class: "hint" }, "Taka, separated by commas. Up to 6, and up to ৳50,000 each. They appear as one-tap buttons on your page.");
         var save = h("button", { class: "btn", type: "button", onClick: function () { S.presets = parsePresets(input.value); paintAmounts(); changed(); close(); } }, "Save");
         card.appendChild(h("div", { class: "sheet-form" }, h("label", { class: "label", for: "f-presets" }, "Quick amounts"), input, hint,
           h("div", { class: "sheet-actions" }, save)));
@@ -696,7 +697,12 @@
     qrBox.appendChild(T.qrSvg(url));
     var toggle = h("input", { type: "checkbox", role: "switch", checked: S.published, onChange: function (e) { S.published = e.target.checked; changed(); paintNav(); } });
 
-    amt.addEventListener("input", function () { var s = TQ.sanitizeAmount(amt.value); if (s !== amt.value) amt.value = s; });
+    var amountCap = TQ.MAX_INPUT_AMOUNT || TQ.MAX_AMOUNT;
+    amt.addEventListener("input", function () {
+      var s = TQ.sanitizeAmount(amt.value);
+      if (parseFloat(s) > amountCap) s = String(amountCap);
+      if (s !== amt.value) amt.value = s;
+    });
 
     return h("div", { class: "panel" },
       h("div", { class: "panel-head" }, h("h1", null, "Share your page"), h("p", null, "Send the link, put the QR on your counter, or lock an amount for a specific invoice.")),
@@ -709,10 +715,11 @@
         h("div", { class: "divider" }),
         h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("link")), h("h2", null, "Link with an amount")),
         h("p", { class: "section-sub" }, "The amount is locked on the page, so customers can’t change it."),
-        h("div", { class: "field" }, h("label", { for: "f-linkamt" }, "Amount in taka"), amt),
+        h("div", { class: "field" }, h("label", { for: "f-linkamt" }, "Amount in taka"), amt, h("p", { class: "hint" }, "Up to ৳50,000.")),
         h("button", { class: "btn sec", type: "button", onClick: function () {
           var n = parseFloat(amt.value);
           if (!(n > 0)) { T.toast("Enter an amount first", { error: true, lift: dirty() }); return amt.focus(); }
+          if (n > amountCap) { T.toast("The maximum amount is ৳50,000", { error: true, lift: dirty() }); return amt.focus(); }
           T.copyText(url + "?amount=" + n).then(function (ok) { T.toast(ok ? "Link with " + T.taka(n) + " copied" : "Couldn’t copy", { error: !ok, lift: dirty() }); });
         } }, icon("copy"), "Copy link with amount"),
         h("div", { class: "divider" }),

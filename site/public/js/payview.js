@@ -19,6 +19,7 @@
     var page = initial;
     var method = opts.method || null;
     var amount = opts.fixedAmount > 0 ? String(opts.fixedAmount) : "";
+    var inputLimit = (window.DeshiQR && (window.DeshiQR.MAX_INPUT_AMOUNT || window.DeshiQR.MAX_AMOUNT)) || 50000;
     var qr = {}; // live refs for the QR panel
 
     function methods() {
@@ -51,7 +52,7 @@
       });
 
       var chips = !fixed && page.presets && page.presets.length
-        ? h("div", { class: "chips" }, page.presets.map(function (a) {
+        ? h("div", { class: "chips" }, page.presets.filter(function (a) { return a <= inputLimit; }).map(function (a) {
             return h("button", { class: "chip", type: "button", onClick: function () { input.value = String(a); amount = String(a); draw(); } }, T.taka(a));
           }))
         : null;
@@ -81,9 +82,11 @@
       input_len();
       qr.err.textContent = "";
       if (!(n > 0)) return showBaseQr();
-      if (n > window.DeshiQR.MAX_AMOUNT) {
-        qr.err.textContent = "That’s above the QR limit of ৳99,99,999.99";
-        return empty();
+      if (n > inputLimit) {
+        qr.err.textContent = "That’s above the page limit of ৳50,000.";
+        showBaseQr();
+        qr.help.textContent = "Amounts are capped at ৳50,000. Scan the QR and type the amount in your app, or enter a smaller amount above.";
+        return;
       }
       try {
         var ref = page.ref_len ? window.DeshiQR.makeRef(page.ref_prefix, page.ref_len) : null;

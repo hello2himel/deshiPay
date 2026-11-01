@@ -104,8 +104,7 @@
 .pv-foot { grid-area: foot; display: grid; gap: 10px; justify-items: center; text-align: center; padding-top: 14px; }
 .made-line { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .made-line .brand { color: var(--ink); font-size: 16px; gap: 7px; }
-.made-line .brand i { width: 22px; height: 22px; border-radius: 7px; }
-.made-line .brand i::after { inset: 5px; border-width: 2.5px; }
+.made-line .brand .mark { width: 22px; height: 22px; }
 .made-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 12px; border: 1.5px dashed var(--line); background: transparent; color: var(--muted); font: 600 14px var(--body); text-decoration: none; }
 .made-cta .ic { width: 16px; height: 16px; }
 .made-cta:hover { border-color: var(--accent); color: var(--accent-text); }

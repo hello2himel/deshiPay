@@ -472,7 +472,7 @@ async function scenarioOnline(browser) {
         (await page.$eval(".pv-foot .made-line", (e) => e.innerText)).includes("DeshiPay"),
       "customer-page footer credits DeshiPay"
     );
-    ok((await page.$$eval(".pv-foot .made-brand i", (els) => els.length)) === 1, "the footer uses the DeshiPay logo");
+    ok((await page.$$eval(".pv-foot .made-brand .mark", (els) => els.length)) === 1, "the footer uses the DeshiPay logo");
     ok(
       (await page.$eval(".pv-foot .made-cta", (e) => e.textContent)).includes("Create your own page"),
       "the footer invites visitors to create their own page"

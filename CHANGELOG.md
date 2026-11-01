@@ -39,6 +39,16 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **New DeshiPay mark everywhere.** The supplied rounded-tile mark (white cut-out shape) replaces the old
+  drawn square in the header on every page, the footer brand, the pay-page header, the customer-page
+  "Made with DeshiPay" line and the favicon; standalone exports get it too. It is recoloured to the
+  site's accessible brand green (light `#056B4E`, dark `#34D6A4`, with the on-accent colour for the
+  cut-out) instead of the raw `#00C060`, whose white-on-green is only ~1.95:1. The shape is untouched;
+  the accent-derived fill keeps it consistent with buttons, links and the theme system. The assets are
+  also available as `site/public/mark.svg` (tile) and `mark-square.svg`.
+
+### Changed
+
 - **Payment content is vertically centred.** On narrow screens the landing's live demo now sits in a
   viewport-height section and is centred under the sticky nav; the real customer page centres its
   content block vertically too, so the payment card sits in the middle of the viewport instead of

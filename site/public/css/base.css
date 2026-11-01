@@ -37,8 +37,11 @@ p { margin: 0; }
 
 /* ---------- brand ---------- */
 .brand { display: inline-flex; align-items: center; gap: 9px; font: 800 19px var(--disp); letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
-.brand i { width: 28px; height: 28px; border-radius: 9px; background: var(--accent); display: inline-block; position: relative; flex: none; }
-.brand i::after { content: ""; position: absolute; inset: 7px; border: 3px solid var(--on-accent); border-radius: 2px; }
+.brand .mark { width: 28px; height: 28px; flex: none; display: inline-block; }
+.mark-bg { fill: var(--accent); }
+.mark-fg { fill: var(--on-accent); }
+.foot-brand b { display: inline-flex; align-items: center; gap: 8px; }
+.foot-brand .mark { width: 24px; height: 24px; flex: none; }
 
 /* ---------- buttons ---------- */
 .btn {

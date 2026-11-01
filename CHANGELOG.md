@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The format is based on
 
 ### Added
 
-- **The deshiQR website** — [`site/`](./site/), deployed at <https://deshiqr.netlify.app>: payment
+- **The deshiQR website** — [`site/`](./site/), deployed at <https://deshipay.netlify.app>: payment
   pages for Bangla QR. A merchant drops any Bangla QR, picks a link, and customers visit
   `/<username>`, type an amount and get a ready-to-scan dynamic QR; wallet numbers and bank details
   can sit beside it. Static site (HTML/CSS/JS) on Netlify with accounts and page data on Supabase
@@ -39,7 +39,7 @@ All notable changes to this project are documented here. The format is based on
   [`docs/website.md`](./docs/website.md#automatic-database-migrations).
 
 - **Supabase project settings as code.** [`supabase/config.toml`](./supabase/config.toml) pins the
-  production project's auth settings (site URL `https://deshiqr.netlify.app`, `/app` redirect URLs,
+  production project's auth settings (site URL `https://deshipay.netlify.app`, `/app` redirect URLs,
   JWT expiry, sign-ups enabled, anonymous sign-ins off, email confirmations off until SMTP is set up)
   via a `[remotes.production]` block, plus local-development defaults. The Supabase GitHub integration
   applies these alongside the migrations, so most of the project configuration lives in the repo.

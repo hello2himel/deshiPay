@@ -41,9 +41,9 @@ project_id = "wbnkjhlaitoetaztukiy"
 
 [remotes.production.auth]
 enabled = true
-site_url = "https://deshiqr.netlify.app"
+site_url = "https://deshipay.netlify.app"
 additional_redirect_urls = [
-  "https://deshiqr.netlify.app/app",
+  "https://deshipay.netlify.app/app",
   "http://localhost:8888/app"
 ]
 jwt_expiry = 3600

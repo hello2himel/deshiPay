@@ -6,7 +6,7 @@
 
 Payment pages for **Bangla QR**. Each user signs up, drops one Bangla QR (bKash, Nagad, Rocket, Upay, any bank app), picks a link, and gets a page at `yourdomain.com/username` where customers type an amount and receive a ready-to-scan QR. Wallet numbers and bank details can sit beside it for customers who'd rather copy and send.
 
-- **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshiqr.netlify.app>
+- **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshipay.netlify.app>
 - **Auth + database** on **Supabase** (email/password, Postgres with Row Level Security)
 - **Payload editing in the browser** comes from the repo's `deshiqr` engine (`packages/deshiqr`): the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
 - **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
@@ -67,8 +67,8 @@ Commit the refreshed vendor files so the static site deploys without the monorep
    [`supabase/config.toml`](../supabase/config.toml) and applied by the same integration — see
    *Supabase project settings (as code)* in [`docs/website.md`](../docs/website.md).
 4. **Authentication → URL Configuration**:
-   - **Site URL**: the deployed site, e.g. `https://deshiqr.netlify.app` (or your custom domain)
-   - **Redirect URLs**: add `https://deshiqr.netlify.app/app` (and `http://localhost:8888/app` for local work)
+   - **Site URL**: the deployed site, e.g. `https://deshipay.netlify.app` (or your custom domain)
+   - **Redirect URLs**: add `https://deshipay.netlify.app/app` (and `http://localhost:8888/app` for local work)
    These are used by the confirmation and password-reset emails.
 5. **Authentication → Providers → Email**: leave on. If you turn **Confirm email** off, people land straight in the dashboard after signing up; if it's on they get a confirmation mail first. Both work.
 6. Optional: enable **Google** under Providers, then set `GOOGLE_AUTH=true` (see below) to show the button.
@@ -87,7 +87,7 @@ Commit the refreshed vendor files so the static site deploys without the monorep
 
 4. Deploy. The build fails with a clear message if the two required variables are missing (unless you
    deploy offline-only: set `SITE_OFFLINE=true` instead — no accounts, but the "Create my page" flow
-   and standalone HTML downloads work). The live site is <https://deshiqr.netlify.app>.
+   and standalone HTML downloads work). The live site is <https://deshipay.netlify.app>.
 
 The anon key is public by design; it ends up in the browser. What protects the data is Row Level Security (below). On public repos Netlify's secret scanning may flag these values once the build writes `public/js/config.js`; the repo-root `netlify.toml` sets `SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"` (or add that variable in Netlify's UI / use `SECRETS_SCAN_OMIT_PATHS = "site/public/js/config.js"`). Never expose the `service_role` key.
 

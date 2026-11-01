@@ -17,13 +17,15 @@
    */
   var DEMO_PAGE = {
     username: "demo",
-    title: "Demo Store",
-    message: "Live demo of a real payment page — synthetic data, not a real payment request.",
+    title: "Himel Das",
+    message: "Live demo of a real Bangla QR payment page — this QR pays the account inside it. Try a small amount.",
     theme: "rose",
     presets: [100, 500, 1000, 5000],
-    qr_payload: "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D",
-    qr_name: "DEMO STORE",
-    qr_city: "Dhaka",
+    // Base payload of the demo QR (a real Bangla QR: NPSB account template,
+    // merchant name/city in tags 59/60 and the provider token templates).
+    qr_payload: "00020101021126470014bd.org.bb.npsb010202020420020311018687352695204601653030505802BD5909HIMEL DAS6005Bogra62060602FT80660014bd.org.bb.npsb01445XNCJK94czExK9lJvOzkThJZ1WeRL9ejOv/DpI3gIk8w81660014bd.org.bb.npsb0144OS4dluMwFWQdIe4vJT3fc22f2V7L2grFuN9FjRKYAw==63044901",
+    qr_name: "HIMEL DAS",
+    qr_city: "Bogra",
     ref_prefix: "",
     ref_len: 0,
     wallets: [

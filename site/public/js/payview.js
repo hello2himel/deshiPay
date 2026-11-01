@@ -221,7 +221,15 @@
           ),
           card,
           help,
-          opts.preview ? null : h("footer", { class: "pv-foot" }, "Made with ", h("a", { href: opts.footerHref || "/" }, "DeshiPay"))
+          opts.preview ? null : h("footer", { class: "pv-foot" },
+            h("div", { class: "made-line" },
+              h("span", { class: "made-kicker" }, "Made with"),
+              h("a", { class: "brand made-brand", href: opts.footerHref || "/" }, h("i"), "DeshiPay")
+            ),
+            h("a", { class: "made-cta", href: opts.footerHref || "/" },
+              "Create your own page", icon("next")
+            )
+          )
         )
       );
       root.replaceChildren(tree);

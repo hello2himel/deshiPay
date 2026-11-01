@@ -440,6 +440,16 @@ async function scenarioOnline(browser) {
     ok(state.health > healthBefore, "online payment page probes the backend health endpoint on load");
     ok(!(await page.evaluate(() => document.body.innerText.includes("Temporarily unavailable"))), "online payment page never shows “Temporarily unavailable”");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
+    ok(
+      (await page.$eval(".pv-foot .made-line", (e) => e.innerText)).includes("Made with") &&
+        (await page.$eval(".pv-foot .made-line", (e) => e.innerText)).includes("DeshiPay"),
+      "customer-page footer credits DeshiPay"
+    );
+    ok((await page.$$eval(".pv-foot .made-brand i", (els) => els.length)) === 1, "the footer uses the DeshiPay logo");
+    ok(
+      (await page.$eval(".pv-foot .made-cta", (e) => e.textContent)).includes("Create your own page"),
+      "the footer invites visitors to create their own page"
+    );
     ok(!!(await page.$(".site-foot")), "customer page has the site footer");
     ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/rahim-traders", "online customer page still shows its host/username handle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "customer page uses the chosen theme");
@@ -690,6 +700,10 @@ async function scenarioOffline(browser) {
     ok((await sp.$(".pv-handle")) === null && (await sp.$$(".pv-handle")).length === 0, "standalone page hides the host/username handle");
     ok((await sp.$(".pv-methods")) === null && (await sp.$(".amt-input")) !== null, "standalone page renders the single QR method directly");
     ok((await sp.$eval(".pv-foot a", (e) => e.getAttribute("href"))) === BASE + "/", "standalone footer links back to the generating site");
+    ok(
+      (await sp.$eval(".pv-foot .made-cta", (e) => e.getAttribute("href"))) === BASE + "/",
+      "standalone footer points its create-page CTA at the generating site"
+    );
     await sshot("21-standalone-pay");
 
     await sp.type(".amt-input", "1250");

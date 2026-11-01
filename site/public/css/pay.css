@@ -99,8 +99,14 @@
 .pv-fine { color: var(--muted); font-size: 14px; max-width: 46ch; }
 .pv-caution { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--sunk); box-shadow: inset 0 0 0 1px var(--line); font-size: 14px; max-width: 46ch; }
 .pv-caution .ic { margin-top: 2px; color: var(--muted); }
-.pv-foot { grid-area: foot; text-align: center; color: var(--muted); font-size: 13px; padding-top: 8px; }
-.pv-foot a { color: inherit; }
+.pv-foot { grid-area: foot; display: grid; gap: 10px; justify-items: center; text-align: center; padding-top: 14px; }
+.made-line { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.made-line .brand { color: var(--ink); font-size: 16px; gap: 7px; }
+.made-line .brand i { width: 22px; height: 22px; border-radius: 7px; }
+.made-line .brand i::after { inset: 5px; border-width: 2.5px; }
+.made-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font: 700 14px var(--body); text-decoration: none; }
+.made-cta .ic { width: 16px; height: 16px; }
+.made-cta:hover { filter: brightness(1.07); }
 
 /* ---------- empty / error states ---------- */
 .pv-state { max-width: 440px; margin: 12vh auto 0; padding: 0 20px; text-align: center; display: grid; gap: 14px; justify-items: center; }

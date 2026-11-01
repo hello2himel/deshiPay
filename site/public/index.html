@@ -42,19 +42,8 @@
       <li><span class="ic-tile" id="ic3"></span><span><b>Add wallet numbers or bank details</b> for customers who’d rather copy and send.</span></li>
     </ul>
 
-    <div class="demo" aria-hidden="true">
-      <div class="slip">
-        <div class="slip-top">
-          <div class="slip-to"><span>Pay to</span><b>Rahim Traders</b></div>
-          <div class="amt-static"><span>৳</span><b>1,500</b></div>
-        </div>
-        <div class="cut"></div>
-        <div class="slip-bot center">
-          <div class="qrbox" id="demoQr"></div>
-          <div class="demo-url"><span data-host></span>/rahim</div>
-        </div>
-      </div>
-    </div>
+    <!-- The real customer page, mounted by auth.js with a synthetic demo QR. -->
+    <section class="demo" id="demoPayment" aria-label="Live payment page demo"></section>
 
     <section class="how">
       <h2>How it works</h2>
@@ -71,7 +60,11 @@
 <script src="/js/config.js"></script>
 <script src="/vendor/supabase.js"></script>
 <script src="/vendor/qrcode.js"></script>
+<script src="/vendor/deshiqr.global.js"></script>
+<script src="/js/payload.js"></script>
 <script src="/js/common.js"></script>
+<script src="/js/providers.js"></script>
+<script src="/js/payview.js"></script>
 <script src="/js/auth.js"></script>
 </body>
 </html>

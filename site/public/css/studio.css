@@ -40,13 +40,12 @@
 .mailed .ic-big { width: 56px; height: 56px; border-radius: 18px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
 .mailed .ic-big .ic { width: 28px; height: 28px; }
 
-.demo { --s-ink: #1b1226; --s-muted: #675f75; --s-line: #e6e0ec; --s-sunk: #f4f1f7; max-width: 340px; width: 100%; transform: rotate(-2.2deg); justify-self: center; margin: 14px 0 6px; }
-.demo .slip-bot { padding-bottom: 18px; }
-.demo .amt-static { display: flex; align-items: baseline; gap: 6px; margin-top: 12px; padding-bottom: 4px; border-bottom: 3px solid var(--slip-accent); font-family: var(--disp); }
-.demo .amt-static span { font-size: 30px; font-weight: 800; color: #b3a8c2; }
-.demo .amt-static b { font: 800 50px/1.1 var(--disp); letter-spacing: -0.03em; }
-.demo .qrbox { max-width: 220px; }
-.demo-url { margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 99px; background: var(--s-sunk); font: 700 14px var(--body); color: var(--s-ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The landing demo is the real customer page (PayView), in a phone-ish card. */
+.demo { width: 100%; max-width: 400px; justify-self: center; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--bg); box-shadow: 0 24px 60px -34px var(--shadow); }
+.demo .pv-in { padding: 18px 14px 24px; gap: 16px; }
+.demo .pv-id h1 { font-size: clamp(24px, 8cqi, 36px); }
+/* compact demo: the functional payment card is the point, not the help list */
+.demo .pv-help { display: none; }
 
 .how { display: grid; gap: 16px; margin-top: 8px; }
 .how h2 { font-size: 20px; }
@@ -75,7 +74,7 @@
   .hero-rest { display: contents; }
   .points { grid-area: points; }
   .auth { grid-area: auth; position: static; width: 100%; max-width: 480px; }
-  .demo { grid-area: demo; justify-self: center; align-self: start; position: sticky; top: 92px; margin: 0; }
+  .demo { grid-area: demo; justify-self: center; align-self: start; margin: 0; }
   .how { grid-area: how; margin-top: 12px; }
   .how ol { grid-template-columns: repeat(3, 1fr); gap: 24px; }
   .how li { grid-template-columns: 1fr; }

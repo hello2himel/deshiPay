@@ -64,6 +64,12 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- **The landing page demo is now the real payment page.** Instead of a static mock slip, the right-hand
+  card mounts the actual customer-page component (`PayView`) for a synthetic `DEMO STORE` Bangla QR:
+  visitors can type an amount or use the quick-amount chips and get a real, amount-bearing QR built by
+  the site's own engine, plus Save QR image. It starts at ৳1,500, works with the paused/unreachable
+  offline mode too, and uses no real account data (the page says it is a demo).
+
 - **Theme backgrounds now follow the theme accent.** The generated `themes.css` used to mix a shared
   lavender-white base with only ~5% of the accent, so most themes (especially green, blue and graphite)
   kept a pinkish-white page background. Every surface is now derived from the accent itself: rose →

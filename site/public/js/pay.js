@@ -65,7 +65,7 @@
 
   function unavailable() {
     return state("Temporarily unavailable",
-      "Sorry — payment pages can’t be loaded right now. DeshiPay is temporarily unavailable; please try again in a little while.",
+      "Sorry, payment pages can’t be loaded right now. DeshiPay is temporarily unavailable; please try again in a little while.",
       h("button", { class: "btn", type: "button", onClick: retry }, "Try again"));
   }
 

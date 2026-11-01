@@ -1,5 +1,5 @@
 /*
- * DeshiPay site adapter — the thin layer between these pages and the deshiQR engine.
+ * DeshiPay site adapter: the thin layer between these pages and the deshiQR engine.
  *
  * The payload logic lives in the separate deshiQR engine repo, loaded here as
  * `/vendor/deshiqr.global.js`. This file does not edit, encode or checksum

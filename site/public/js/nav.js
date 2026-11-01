@@ -1,5 +1,5 @@
 /* Mobile nav: puts the header links/actions behind a hamburger menu.
- * Desktop markup is unchanged — the menu wrapper lays them out in a row. */
+ * Desktop markup is unchanged: the menu wrapper lays them out in a row. */
 (function () {
   "use strict";
   var top = document.querySelector(".top");

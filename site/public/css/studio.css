@@ -64,7 +64,7 @@
 .mailed .ic-big .ic { width: 28px; height: 28px; }
 
 /* The landing demo is the real payment widget (PayView), directly on the page:
-   no surrounding card — the slip and its method tabs are the only chrome. */
+   no surrounding card: the slip and its method tabs are the only chrome. */
 .demo { width: 100%; max-width: 420px; justify-self: center; }
 .demo .pv-head { display: none; }
 .demo .pv-help { display: none; }

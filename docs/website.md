@@ -2,7 +2,7 @@
 
 **DeshiPay** is live at **<https://deshipay.netlify.app>**: one page to receive payments, donations and
 support. The live, amount-ready Bangla QR is the headline method, with wallet and bank details beside it.
-The site is built on top of the `deshiqr` payload engine — the library docs
+The site is built on top of the `deshiqr` payload engine, the library docs
 ([format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md))
 describe the engine itself; this page is the operator guide for running and deploying the site.
 
@@ -12,7 +12,7 @@ The full site guide (user flows, customising themes/wallets, security details, t
 ## What it is
 
 - A shop, freelancer, creator or cause signs up, adds the Bangla QR it already owns (bKash, Nagad,
-  Rocket, Upay, any bank app — the QR image or the code text), picks a link such as
+  Rocket, Upay, any bank app, the QR image or the code text), picks a link such as
   `deshipay.netlify.app/shop`, and optionally adds wallet numbers and bank details.
 - Customers open `/shop`, type an amount (Bangla digits work) and get a ready-to-scan dynamic QR with
   the amount baked in; wallet numbers and bank lines are tap-to-copy for anyone who would rather send
@@ -46,21 +46,21 @@ The database schema and Supabase config live at the repo root, not inside `site/
 `supabase/migrations/` (versioned SQL, applied by the Supabase GitHub integration) and
 `supabase/config.toml`.
 
-- **Hosting — Netlify.** The repo-root [`netlify.toml`](../netlify.toml) sets `base = "site"`,
+- **Hosting, Netlify.** The repo-root [`netlify.toml`](../netlify.toml) sets `base = "site"`,
   `publish = "public"`, build command `node scripts/build-config.js`, plus the redirects (`/app`,
   `/favicon.ico`, `/:username` → `pay.html`, in that order) and the security headers/CSP and cache
   headers. The site itself has no build step.
-- **Auth and data — Supabase.** Email/password auth (optionally Google), Postgres with Row Level
+- **Auth and data, Supabase.** Email/password auth (optionally Google), Postgres with Row Level
   Security. The public customer page never reads the table directly: it calls `get_public_page()`, a
   `SECURITY DEFINER` function that returns only public fields for published pages.
-- **Payload editing — the deshiQR engine.** `site/public/vendor/deshiqr.global.js` is a committed copy
+- **Payload editing, the deshiQR engine.** `site/public/vendor/deshiqr.global.js` is a committed copy
   of the browser bundle from the separate [deshiQR](https://github.com/hello2himel/deshiQR) library
   repo; `site/public/js/payload.js` is the thin site adapter (reads the uploaded QR's metadata, calls
   `DeshiQR.update` / `DeshiQR.validate`). Update the copy from a deshiQR release when the engine changes.
 
 ## Deploying
 
-Netlify credentials are not part of the repo — the steps below are the one-time setup. Netlify reads
+Netlify credentials are not part of the repo, the steps below are the one-time setup. Netlify reads
 the repo-root `netlify.toml`; do not override the build command or publish directory in the UI.
 
 1. **Create the Netlify site.** Netlify → *Add new site → Import an existing project* → GitHub →
@@ -84,13 +84,13 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    contexts), or use `SECRETS_SCAN_OMIT_PATHS = "site/public/js/config.js"`. Never commit or expose the
    `service_role` key.
 
-   The build fails with a clear message if the two required variables are missing — unless you
+   The build fails with a clear message if the two required variables are missing, unless you
    deliberately deploy **without a database** by setting `SITE_OFFLINE=true` instead of the two
    Supabase variables. An offline-only deploy has no accounts and no hosted pages; visitors get the
    "Create my page" flow and can download standalone HTML files (the same fallback the site uses when
    Supabase is paused). Add the real Supabase variables and remove `SITE_OFFLINE` later to switch the
    accounts back on.
-3. **Database — automatically from this repo.** One-time: Supabase → *Project Settings →
+3. **Database, automatically from this repo.** One-time: Supabase → *Project Settings →
    Integrations → GitHub*, authorize the repository, set **Working directory** to `.` and enable
    **Deploy to production** (and *Automatic branching* if you want preview databases per branch).
    Every push to `main` then applies the SQL files in
@@ -148,7 +148,7 @@ Besides the schema, the project's auth configuration is versioned in
 
 Top-level sections are local-development defaults; `[remotes.production]` overrides them for the
 production project when the GitHub integration deploys. Change a setting by editing the file and
-pushing to `main` — no dashboard clicking for these values.
+pushing to `main`, no dashboard clicking for these values.
 
 **One-time steps that still need the dashboard** (the integration is a GitHub ↔ Supabase link, so it
 must be authorized by the project owner):
@@ -169,7 +169,7 @@ SMTP. Google sign-in is optional and needs an OAuth client + `GOOGLE_AUTH=true`;
 `service_role` key in the site, Netlify, or the repo.
 
 Verify after the first integration run: `select * from supabase_migrations.schema_migrations;` should
-list `20261101120000`. Free-tier projects pause when idle — the site already handles that with the
+list `20261101120000`. Free-tier projects pause when idle, the site already handles that with the
 offline mode described above.
 
 ## Local development
@@ -177,14 +177,14 @@ offline mode described above.
 From the repo root (Node >= 20; the site needs no npm dependencies):
 
 ```bash
-node site/scripts/dev-server.js    # http://localhost:8888 — mimics the Netlify routing (/app, /<username>)
+node site/scripts/dev-server.js    # http://localhost:8888, mimics the Netlify routing (/app, /<username>)
 node site/tests/qr.test.js         # site engine adapter + page wiring
 node site/tests/export.test.js     # standalone single-file export + escaping
 node site/scripts/gen-themes.js    # regenerate public/css/themes.css (commit the result)
 ```
 
 Supabase config for local work: either edit `site/public/js/config.js` by hand (the committed file
-has placeholders), or export the variables and run the site's build script — it writes the same file:
+has placeholders), or export the variables and run the site's build script, it writes the same file:
 
 ```bash
 export SUPABASE_URL=https://xxxx.supabase.co SUPABASE_ANON_KEY=your-anon-key
@@ -214,11 +214,11 @@ page as HTML* for any published page.
 **“Create your page”** CTA instead of the sign-in form (no accounts involved, and no database-status
 line), and its points/how-it-works copy switches from “claim your address” to “download it and host it
 yourself”. Customers opening a published page while the backend is down get a **“Temporarily
-unavailable”** screen — an apology and a **Try again** button that re-checks the backend and loads the
-page when it is back — rather than a load error. The CTA opens `/app` with
+unavailable”** screen, an apology and a **Try again** button that re-checks the backend and loads the
+page when it is back, rather than a load error. The CTA opens `/app` with
 the same onboarding wizard, running locally: step 1 asks only for the name/business name and an optional
-note — no link/username is requested, because the file will be hosted at an address this site doesn't
-know — and the small host/username line is hidden in the offline preview and the downloaded file. The
+note, no link/username is requested, because the file will be hosted at an address this site doesn't
+know, and the small host/username line is hidden in the offline preview and the downloaded file. The
 draft lives in `localStorage` (`deshiqr.local.v1`), and the wizard ends with a fifth **Download** step
 (the file name comes from the name, e.g. `deshiqr-rahim-traders.html`). People can also open `/app`
 directly.
@@ -234,14 +234,14 @@ Things an operator should know:
 
 - **Generating requires the site to be up**: the browser fetches the site's own CSS/JS to inline them.
   The generated file then works independently and survives the site being down.
-- **Exported copies are frozen** — editing the page in the dashboard does not update an already
+- **Exported copies are frozen**, editing the page in the dashboard does not update an already
   downloaded file; download a fresh copy after changes. Pages published on Supabase are unaffected and
   keep updating live.
 - The health probe uses the configured Supabase host. A custom (non-`*.supabase.co`) API domain would be
   blocked by the CSP `connect-src` in the repo-root `netlify.toml` and the site would read as offline;
   add the host there if you need one.
 - With real placeholder config in local development, the site deliberately looks like an offline/paused
-  deployment — set the environment variables (or edit `site/public/js/config.js`) to test the online
+  deployment, set the environment variables (or edit `site/public/js/config.js`) to test the online
   flow, and mock/abort the probe to test offline behaviour (see the e2e in `site/tests/e2e/run.js`).
 
 ```bash
@@ -264,12 +264,12 @@ engine, so the committed bundle is the source of truth until the next copy.
 ## Security notes
 
 - The **anon key is public by design**: it ends up in `site/public/js/config.js` in the browser. Row
-  Level Security in the migrations is what protects the data — never put the `service_role` key in the
+  Level Security in the migrations is what protects the data, never put the `service_role` key in the
   site or in Netlify env vars.
 - No secrets belong in the repo. `.env` files stay ignored; the site needs no secret to run.
 - The customer page is driven by `get_public_page()` (published pages, public fields only); all user
   text is rendered as text, never as HTML, and there are no inline scripts (hence the CSP).
-- Anyone can claim any free page name, and a page shows whatever name is in the uploaded QR — the
+- Anyone can claim any free page name, and a page shows whatever name is in the uploaded QR, the
   customer page tells payers to check the name in their app before paying. See
   [`site/README.md`](../site/README.md#security-notes) for the impersonation/reporting discussion and
   the reserved-name list (kept in both `supabase/migrations/` and `site/public/js/common.js`).
@@ -284,12 +284,12 @@ own CI lives in the [deshiQR repo](https://github.com/hello2himel/deshiQR).
 
 ## Related
 
-- [`site/README.md`](../site/README.md) — full site guide: user flows, customising, tests,
+- [`site/README.md`](../site/README.md), full site guide: user flows, customising, tests,
   troubleshooting.
-- [`netlify.toml`](../netlify.toml) — routing, headers/CSP, cache headers.
-- [`supabase/migrations/`](../supabase/migrations/) — versioned schema: tables, policies, reserved names.
-- [Format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md) — the payload engine the site edits with (in the deshiQR repo).
-- [SECURITY.md](../SECURITY.md) — the library's security posture.
+- [`netlify.toml`](../netlify.toml), routing, headers/CSP, cache headers.
+- [`supabase/migrations/`](../supabase/migrations/), versioned schema: tables, policies, reserved names.
+- [Format](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md), [API](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md), the payload engine the site edits with (in the deshiQR repo).
+- [SECURITY.md](../SECURITY.md), the library's security posture.
 
 Known limitation: this environment has no Netlify or Supabase credentials, so the deploy described
-above is not performed from the repo — it is a manual, one-time operator step.
+above is not performed from the repo, it is a manual, one-time operator step.

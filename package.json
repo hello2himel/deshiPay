@@ -16,7 +16,7 @@
     "format": "prettier --write .",
     "dev:site": "node site/scripts/dev-server.js",
     "build:site": "pnpm build:libs && node site/scripts/refresh-engine.js",
-    "test:site": "node site/tests/qr.test.js",
+    "test:site": "node site/tests/qr.test.js && node site/tests/export.test.js",
     "check:site": "node site/scripts/refresh-engine.js --check"
   },
   "devDependencies": {

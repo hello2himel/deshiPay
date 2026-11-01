@@ -85,7 +85,7 @@ From the repo root:
 ```bash
 pnpm dev:site      # http://localhost:8888 — mimics the Netlify routing (/app, /<username>)
 pnpm build:site    # build the library, then vendor its browser bundle into site/public/vendor/
-pnpm test:site     # the site engine tests: node site/tests/qr.test.js
+pnpm test:site     # site suites: engine adapter + standalone export (node site/tests/qr.test.js && .../export.test.js)
 pnpm check:site    # verify the vendored bundle matches packages/deshiqr/dist
 ```
 
@@ -101,6 +101,57 @@ A plain static server will show `/app` and `/<username>` as 404: those routes ne
 use the dev server (`site/scripts/dev-server.js`), `netlify dev` (Netlify CLI), or the Netlify deploy
 preview. The site's own commands (`node site/scripts/dev-server.js`, etc.) also work when run from
 inside `site/`.
+
+## Offline mode and the standalone export
+
+The site does not hard-depend on Supabase for a visitor to create a page. On every page load it probes
+the configured project once (`Deshi.checkBackend()` in `site/public/js/common.js`, cached per page):
+
+- no `SUPABASE_URL` / `SUPABASE_ANON_KEY` → offline (no request);
+- otherwise `GET <project>/auth/v1/health` (4 s timeout), falling back to `GET <project>/rest/v1/` with
+  the anon key if that request fails at the network/CORS level (4 s timeout);
+- `540` → **paused** (Supabase free tier auto-pause), `402` → **restricted** (fair-use limits), any
+  other HTTP answer → **online**, both probes unreachable → **offline**.
+
+**Online**: everything behaves as documented above; the Share tab additionally offers *Download your
+page as HTML* for any published page.
+
+**Offline** (`paused`, `restricted`, `unreachable` or `not-configured`): the landing page shows a
+**“Create your page”** CTA instead of the sign-in form (no accounts involved), and its points/how-it-works
+copy switches from “claim your address” to “download it and host it yourself”. The CTA opens `/app` with
+the same onboarding wizard, running locally: step 1 asks only for the name/business name and an optional
+note — no link/username is requested, because the file will be hosted at an address this site doesn't
+know — and the small host/username line is hidden in the offline preview and the downloaded file. The
+draft lives in `localStorage` (`deshiqr.local.v1`), and the wizard ends with a fifth **Download** step
+(the file name comes from the name, e.g. `deshiqr-rahim-traders.html`). People can also open `/app`
+directly.
+
+The download is a **single self-contained HTML file** (`deshiqr-<name>.html`, the name slugified, ~140 KB) containing the
+customer page, all CSS, the vendored `deshiqr` engine, `payload.js`, PayView and the page data embedded
+as `window.DESHIQR_PAGE`. The only external reference is the Google Fonts stylesheet (system/Bengali
+font fallbacks still work); everything else works from `file://` or any static host (Netlify Drop,
+GitHub Pages, ordinary upload). It behaves like `/<username>`: `?amount=500` locks the amount. The small
+“Made with DeshiQR” footer points at the site origin the file was generated on.
+
+Things an operator should know:
+
+- **Generating requires the site to be up**: the browser fetches the site's own CSS/JS to inline them.
+  The generated file then works independently and survives the site being down.
+- **Exported copies are frozen** — editing the page in the dashboard does not update an already
+  downloaded file; download a fresh copy after changes. Pages published on Supabase are unaffected and
+  keep updating live.
+- The health probe uses the configured Supabase host. A custom (non-`*.supabase.co`) API domain would be
+  blocked by the CSP `connect-src` in the repo-root `netlify.toml` and the site would read as offline;
+  add the host there if you need one.
+- With real placeholder config in local development, the site deliberately looks like an offline/paused
+  deployment — set the environment variables (or edit `site/public/js/config.js`) to test the online
+  flow, and mock/abort the probe to test offline behaviour (see the e2e in `site/tests/e2e/run.js`).
+
+```bash
+# optional browser test: online journey + offline CTA/wizard/download + standalone file
+mkdir -p /tmp/deshiqr-e2e && (cd /tmp/deshiqr-e2e && npm i --no-save puppeteer-core)
+NODE_PATH=/tmp/deshiqr-e2e/node_modules CHROME=/path/to/chrome node site/tests/e2e/run.js
+```
 
 ## Refreshing the vendored engine
 

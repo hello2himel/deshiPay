@@ -203,3 +203,6 @@ body.has-bar .studio { padding-bottom: 160px; }
 .bar-msg { min-height: 0; margin: 0 0 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
 .bar-msg:empty { display: none; }
 .bar-msg.bad { color: var(--bad); }
+
+/* offline mode (backend paused/unreachable): the status label stays visible on phones too */
+.user-chip.local { display: block; }

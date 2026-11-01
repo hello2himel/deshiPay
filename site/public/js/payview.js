@@ -215,13 +215,13 @@
           h("header", { class: "pv-head" },
             h("div", { class: "pv-id" },
               h("div", { class: "pv-avatar", "aria-hidden": "true" }, T.monogram(page.title)),
-              h("div", { style: "min-width:0" }, h("h1", null, page.title || "Your name"), h("div", { class: "pv-handle" }, location.host + "/" + (page.username || "yourname")))
+              h("div", { style: "min-width:0" }, h("h1", null, page.title || "Your name"), opts.hideHandle ? null : h("div", { class: "pv-handle" }, location.host + "/" + (page.username || "yourname")))
             ),
             page.message ? h("p", { class: "pv-msg" }, page.message) : null
           ),
           card,
           help,
-          h("footer", { class: "pv-foot" }, opts.preview ? null : ["Made with ", h("a", { href: "/" }, "DeshiQR")])
+          h("footer", { class: "pv-foot" }, opts.preview ? null : ["Made with ", h("a", { href: opts.footerHref || "/" }, "DeshiQR")])
         )
       );
       root.replaceChildren(tree);

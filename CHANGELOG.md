@@ -16,6 +16,18 @@ All notable changes to this project are documented here. The format is based on
   vendored `deshiqr` bundle — the site has no payload engine of its own. Repo-root
   [`netlify.toml`](./netlify.toml) (`base = "site"`) and [`docs/website.md`](./docs/website.md)
   document the deploy; the site appends no new public functions to the package API.
+- **Offline mode and standalone page downloads (website).** On every page load the site probes its
+  Supabase backend (`/auth/v1/health`, with a `/rest/v1/` fallback; free-tier pauses answer HTTP 540).
+  When the backend is paused, restricted, unreachable or not configured, the landing page offers a
+  no-login "Create my page" CTA and the normal `/app` wizard runs locally (no username/link is asked;
+  draft in `localStorage`), with a fifth Download step that saves the customer page as one self-contained
+  `deshiqr-<name>.html` (~140 KB, inlined CSS, QR engine and page data; only Google Fonts
+  external; the host/username line is hidden) that can be hosted anywhere and supports `?amount=`. When the backend is online the site
+  behaves exactly as before, and the Share tab also offers the same HTML download. See
+  [`site/README.md`](./site/README.md#offline-mode-paused-supabase-and-the-standalone-download).
+- **Tests/docs:** `site/tests/export.test.js` (standalone builder: inlining, escaping, contents) and an
+  extended Chromium e2e covering the online journey, the offline CTA/wizard/download and the generated
+  file; `docs/website.md` documents the operator side.
 
 ### Fixed
 

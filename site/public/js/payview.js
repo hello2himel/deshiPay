@@ -214,7 +214,8 @@
         h("div", { class: "pv-in" },
           h("header", { class: "pv-head" },
             h("div", { class: "pv-id" },
-              h("div", { class: "pv-avatar", "aria-hidden": "true" }, T.monogram(page.title)),
+              h("div", { class: "pv-avatar", "aria-hidden": "true" },
+                (page.avatar && T.avatar ? T.avatar(page.avatar) : null) || T.monogram(page.title)),
               h("div", { style: "min-width:0" }, h("h1", null, page.title || "Your name"), opts.hideHandle ? null : h("div", { class: "pv-handle" }, location.host + "/" + (page.username || "yourname")))
             ),
             page.message ? h("p", { class: "pv-msg" }, page.message) : null

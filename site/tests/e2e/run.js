@@ -388,6 +388,9 @@ async function scenarioOnline(browser) {
 
     console.log("Step 4: theme and publish");
     await page.waitForSelector(".themes");
+    await page.waitForSelector(".avatars .avatar-pick");
+    await page.click('.avatar-pick[aria-label="Shop"]');
+    ok((await page.$$eval("#previewBody .pv-avatar svg", (els) => els.length)) === 1, "choosing an avatar updates the live preview");
     await page.click('.swatch[aria-label="Coffee"]');
     ok((await page.$eval(".pv", (e) => e.getAttribute("data-theme"))) === "coffee", "preview switched to the coffee theme");
     await shot("07-step4-look");
@@ -426,6 +429,7 @@ async function scenarioOnline(browser) {
     ok(onlineExport.filename === "deshiqr-rahim-traders.html", "share download filename is deshiqr-<username>.html");
     ok(onlineExport.html.startsWith("<!doctype html>"), "share download is a complete HTML document");
     ok(onlineExport.html.includes("window.DESHIQR_PAGE = {"), "share download embeds window.DESHIQR_PAGE");
+    ok(/"avatar"\s*:\s*"shop"/.test(onlineExport.html), "share download keeps the chosen avatar icon");
     ok(
       onlineExport.html.includes('"title":"Rahim Traders"') && onlineExport.html.includes('"username":"rahim-traders"'),
       "share download carries the published page data"
@@ -440,6 +444,7 @@ async function scenarioOnline(browser) {
     ok(state.health > healthBefore, "online payment page probes the backend health endpoint on load");
     ok(!(await page.evaluate(() => document.body.innerText.includes("Temporarily unavailable"))), "online payment page never shows “Temporarily unavailable”");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
+    ok((await page.$$eval(".pv-avatar svg", (els) => els.length)) === 1, "customer page shows the chosen avatar icon");
     ok(
       (await page.$eval(".pv-caution", (e) => e.innerText)).includes("not a payment processor"),
       "the customer-page caution says DeshiPay is not a payment processor"

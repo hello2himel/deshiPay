@@ -216,6 +216,13 @@ details.more .body { padding: 0 0 14px; display: grid; gap: 10px; font-size: 14p
 .empty-hint { padding: 16px; border-radius: 16px; background: var(--sunk); color: var(--muted); font-size: 14px; }
 
 /* theme picker */
+.avatars { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; max-height: 224px; overflow-y: auto; padding: 2px; }
+.avatar-pick { aspect-ratio: 1; min-height: 46px; padding: 0; border: 1.5px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+.avatar-pick:hover { border-color: var(--accent); }
+.avatar-pick[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); color: var(--accent-text); }
+.avatar-pick .ic { width: 20px; height: 20px; }
+.avatar-pick .avatar-letter { font: 800 15px var(--disp); }
+
 .themes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .swatch { display: grid; justify-items: center; gap: 6px; padding: 10px 2px 8px; background: transparent; border: 0; border-radius: 16px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .swatch .dot { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.25); transition: transform 0.12s; }

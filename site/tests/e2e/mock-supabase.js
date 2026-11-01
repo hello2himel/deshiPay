@@ -9,7 +9,7 @@
   var RESERVED = ["app", "login", "admin", "pay", "api"];
 
   function publicRow(p) {
-    return { username: p.username, title: p.title, message: p.message, theme: p.theme, presets: p.presets, qr_payload: p.qr_payload, qr_name: p.qr_name, qr_city: p.qr_city, ref_prefix: p.ref_prefix, ref_len: p.ref_len, wallets: p.wallets, banks: p.banks };
+    return { username: p.username, title: p.title, message: p.message, avatar: p.avatar, theme: p.theme, presets: p.presets, qr_payload: p.qr_payload, qr_name: p.qr_name, qr_city: p.qr_city, ref_prefix: p.ref_prefix, ref_len: p.ref_len, wallets: p.wallets, banks: p.banks };
   }
 
   function createClient() {

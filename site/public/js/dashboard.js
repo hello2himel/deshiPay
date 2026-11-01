@@ -17,7 +17,7 @@
     { id: "link", tab: "Link", icon: "link", title: "Say who you are", lead: "This is the name customers see, and the address of your page." },
     { id: "qr", tab: "Bangla QR", icon: "qr", title: "Drop your Bangla QR", lead: "Take a screenshot of the QR in your bKash, Nagad, Rocket or bank app and drop it here. We read it right in your browser." },
     { id: "pay", tab: "Wallet & bank", icon: "wallet", title: "Other ways to pay", lead: "Optional. Add a wallet number or bank account for customers who’d rather copy the details." },
-    { id: "look", tab: "Look", icon: "palette", title: "Make it yours", lead: "Pick a colour and the quick amounts your customers will see." }
+    { id: "look", tab: "Look", icon: "palette", title: "Make it yours", lead: "Pick an avatar, a colour and the quick amounts your customers will see." }
   ];
   var DOWNLOAD = { id: "download", tab: "Download", icon: "download", title: "Take your page with you", lead: "Download your payment page as one HTML file. Host it anywhere: Netlify Drop, GitHub Pages, or your own server. No account needed." };
   var SHARE = { id: "share", tab: "Share", icon: "share" };
@@ -36,11 +36,11 @@
 
   function uid() { return Math.random().toString(36).slice(2, 9); }
   function blank() {
-    return { username: "", usernameTouched: false, title: "", message: "", theme: "emerald", presets: [100, 500, 1000, 5000], qr: null, qrInfo: null, wallets: [], banks: [], published: true };
+    return { username: "", usernameTouched: false, title: "", message: "", avatar: "", theme: "emerald", presets: [100, 500, 1000, 5000], qr: null, qrInfo: null, wallets: [], banks: [], published: true };
   }
   function fromRow(r) {
     return {
-      username: r.username, usernameTouched: true, title: r.title, message: r.message || "", theme: r.theme, presets: r.presets || [],
+      username: r.username, usernameTouched: true, title: r.title, message: r.message || "", avatar: r.avatar || "", theme: r.theme, presets: r.presets || [],
       qr: r.qr_payload ? { payload: r.qr_payload, name: r.qr_name || "", city: r.qr_city || "", refPrefix: r.ref_prefix || "", refLen: r.ref_len || 0 } : null,
       qrInfo: null,
       wallets: (r.wallets || []).map(function (w) { return { id: uid(), provider: w.provider, type: w.type, number: w.number }; }),
@@ -73,7 +73,7 @@
   function toRow() {
     var q = S.qr;
     return {
-      username: S.username, title: S.title.trim(), message: S.message.trim(), theme: S.theme, presets: S.presets,
+      username: S.username, title: S.title.trim(), message: S.message.trim(), avatar: S.avatar || "", theme: S.theme, presets: S.presets,
       qr_payload: q ? q.payload : null, qr_name: q ? q.name : null, qr_city: q ? q.city : null,
       ref_prefix: q ? q.refPrefix : "", ref_len: q ? q.refLen : 0,
       wallets: cleanWallets(true), banks: cleanBanks(true), is_published: S.published
@@ -533,6 +533,20 @@
   /* ----- look ----- */
 
   function lookPanel() {
+    var avatars = h("div", { class: "avatars", role: "radiogroup", "aria-label": "Avatar" });
+    function paintAvatars() {
+      var options = [{ id: "", label: "Your initials" }].concat(T.AVATARS);
+      avatars.replaceChildren.apply(avatars, options.map(function (a) {
+        var on = (S.avatar || "") === a.id;
+        return h("button", {
+          class: "avatar-pick", type: "button", role: "radio", "aria-checked": String(on),
+          "aria-label": a.label || "Your initials",
+          onClick: function () { S.avatar = a.id; paintAvatars(); changed(); }
+        }, a.id ? T.avatar(a.id) : h("span", { class: "avatar-letter" }, T.monogram(S.title || "A")));
+      }));
+    }
+    paintAvatars();
+
     var group = h("div", { class: "themes", role: "radiogroup", "aria-label": "Colour theme" });
     function paintThemes() {
       group.replaceChildren.apply(group, T.THEMES.map(function (t, i) {
@@ -557,6 +571,8 @@
     paintThemes();
     return h("div", { class: "panel" }, head("look"),
       h("div", { class: "stack" },
+        h("div", { class: "field" }, h("span", { class: "label" }, "Avatar"), avatars,
+          h("p", { class: "hint" }, "Pick an icon for the top of your page, or keep your initials.")),
         h("div", { class: "field" }, h("span", { class: "label" }, "Colour"), group),
         field("Quick amounts", presets, "Taka, separated by commas. Up to 6. They appear as one-tap buttons on your page.", true)
       ));

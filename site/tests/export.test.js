@@ -54,6 +54,7 @@ function assets(overrides) {
       payload: read("js/payload.js"),
       common: read("js/common.js"),
       providers: read("js/providers.js"),
+      avatars: read("js/avatars.js"),
       payview: read("js/payview.js"),
       pay: read("js/pay.js"),
     },
@@ -82,6 +83,7 @@ const MARKERS = {
     ["payload", "DeshiPay site adapter"],
     ["common", "Shared helpers for every page"],
     ["providers", "Mobile wallets, wallet account types"],
+    ["avatars", "Avatar icon set"],
     ["payview", "PayView renders the customer-facing payment page"],
     ["pay", "Public payment page: /<username>"],
   ],
@@ -243,8 +245,8 @@ test("generates one complete HTML document with pay.html's head and body", () =>
   assert.ok(html.includes('<div id="root"></div>'));
   assert.ok(html.includes("This payment page needs JavaScript to draw the QR code."));
   assert.strictEqual(count(html, "<style>"), 3, "exactly the three stylesheets");
-  assert.strictEqual(count(html, "<script>"), 8, "page data + the seven runtime scripts");
-  assert.strictEqual(count(html, "<script"), 8, "no extra script elements");
+  assert.strictEqual(count(html, "<script>"), 9, "page data + the eight runtime scripts");
+  assert.strictEqual(count(html, "<script"), 9, "no extra script elements");
 });
 
 test("inlines the real CSS files in pay.html order (themes, base, pay)", () => {
@@ -265,13 +267,14 @@ test("inlines every runtime script in pay.html order and never uses src=", () =>
     "js/payload.js",
     "js/common.js",
     "js/providers.js",
+    "js/avatars.js",
     "js/payview.js",
     "js/pay.js",
   ]) {
     assert.ok(inlined(html, rel), rel + " must be inlined verbatim");
   }
   const at = MARKERS.js.map(([, marker]) => html.indexOf(marker));
-  assert.deepStrictEqual(at, [...at].sort((a, b) => a - b), "script order qrcode -> engine -> payload -> common -> providers -> payview -> pay");
+  assert.deepStrictEqual(at, [...at].sort((a, b) => a - b), "script order qrcode -> engine -> payload -> common -> providers -> avatars -> payview -> pay");
   assert.ok(at.every((n) => n >= 0));
   assert.strictEqual(html.indexOf("<script src"), -1);
   assert.strictEqual(/<script\s+[^>]*src=/.test(html), false);
@@ -357,8 +360,8 @@ test("a literal </script in an inlined asset cannot close the script element ear
   const html = E.buildPageHtml(full, broken);
   assert.strictEqual(html.indexOf('var closing = "</script>"'), -1, "literal sequence is guarded");
   assert.ok(html.includes('var closing = "<\\/script>";'), "escaped to <\\/script> (same JS string)");
-  assert.strictEqual(count(html, "<script>"), 8);
-  assert.strictEqual(count(html, "</script>"), 8);
+  assert.strictEqual(count(html, "<script>"), 9);
+  assert.strictEqual(count(html, "</script>"), 9);
 });
 
 /* ---------------- fixtures ---------------- */
@@ -433,6 +436,7 @@ test("downloadPage names the file after the username, then the title slug, then 
     "/js/payload.js": read("js/payload.js"),
     "/js/common.js": read("js/common.js"),
     "/js/providers.js": read("js/providers.js"),
+    "/js/avatars.js": read("js/avatars.js"),
     "/js/payview.js": read("js/payview.js"),
     "/js/pay.js": read("js/pay.js"),
     "/favicon.svg": read("favicon.svg"),

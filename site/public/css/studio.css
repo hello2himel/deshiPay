@@ -58,8 +58,9 @@
 .demo { width: 100%; max-width: 420px; justify-self: center; }
 .demo .pv-head { display: none; }
 .demo .pv-help { display: none; }
-/* the demo is for scanning, not saving: no Save QR image button/note */
-.demo .slip-actions, .demo .slip-help { display: none; }
+/* the demo is for scanning, not saving: no Save QR image button, but the
+   "paying from this phone?" note stays */
+.demo .slip-actions { display: none; }
 /* the demo is just the payment widget: no page header, how-to or footer tracks */
 .demo .pv-in { grid-template-areas: "card"; }
 

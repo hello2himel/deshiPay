@@ -159,7 +159,7 @@ details.more .body { padding: 0 0 14px; display: grid; gap: 10px; font-size: 14p
 .entry-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .entry-head b { font: 800 17px var(--disp); display: flex; align-items: center; gap: 10px; }
 .entry-head .dot { width: 14px; height: 14px; border-radius: 5px; flex: none; }
-.grid2 { display: grid; gap: 14px; }
+.grid2 { display: grid; gap: 14px; align-items: start; }
 @media (min-width: 560px) { .grid2 { grid-template-columns: 1fr 1fr; } .grid2 .span2 { grid-column: 1 / -1; } }
 .add { border: 2px dashed var(--line); background: transparent; color: var(--accent-text); border-radius: 18px; min-height: 56px; font: 700 16px var(--body); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: border-color 0.15s, background 0.15s; }
 .add:hover { border-color: var(--accent); background: var(--accent-soft); }

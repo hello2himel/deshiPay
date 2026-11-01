@@ -10,6 +10,11 @@ coverage/
 .vscode/
 .idea/
 
+# Website (site/ — static site in this monorepo, built by Netlify; see docs/website.md)
+site/node_modules/
+site/.netlify/
+site/tests/e2e/shots/
+
 # Python (python/ package)
 __pycache__/
 *.py[cod]

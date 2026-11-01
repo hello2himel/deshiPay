@@ -7,7 +7,14 @@ import {
   RECOMMENDED_TAGS,
   fieldWarnings,
 } from "./fields.ts";
-import { type Field, findValue, normalize, parse, parseSubfields } from "./tlv.ts";
+import {
+  type Field,
+  type ParsedPayload,
+  findValue,
+  normalize,
+  parseSubfields,
+  parseWithMode,
+} from "./tlv.ts";
 
 export type { DeshiQrIssue } from "./errors.ts";
 
@@ -83,14 +90,16 @@ function validatePayload(
     return report();
   }
 
-  let fields: Field[];
+  let parsed: ParsedPayload;
   try {
-    fields = parse(text);
+    parsed = parseWithMode(text);
   } catch (error) {
     if (DeshiQrError.is(error)) errors.push(issue(error.code, error.message, error.tag));
     else errors.push(issue("BAD_TLV", error instanceof Error ? error.message : "Malformed payload."));
     return report();
   }
+  const fields = parsed.fields;
+  const mode = parsed.mode;
 
   // ---- checksum ---------------------------------------------------------
   const last = fields[fields.length - 1];
@@ -108,7 +117,7 @@ function validatePayload(
     const field = fields.find((candidate) => candidate.tag === tag);
     if (!field) continue;
     try {
-      parsedTemplates.set(tag, parseSubfields(field.value));
+      parsedTemplates.set(tag, parseSubfields(field.value, mode));
     } catch {
       parsedTemplates.set(tag, null);
     }

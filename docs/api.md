@@ -279,7 +279,7 @@ static `DeshiQrError.is(error)` type guard.
 | `DUPLICATE_TAG`     | throws   | error      | The same tag appears twice at the same level.                                                  |
 | `BAD_AMOUNT`        | throws   | —          | Amount is not a number/numeric string, `≤ 0`, `> 99,999,999.99`, or has more than 2 decimals.  |
 | `BAD_TAG`           | throws   | —          | Invalid tag path, tag `63`, or a nested path whose parent is missing/not valid TLV.            |
-| `BAD_VALUE`         | throws   | —          | Value is not a string/number where allowed, or its encoded value is longer than 99 characters. |
+| `BAD_VALUE`         | throws   | —          | Value is not a string/number where allowed, or its encoded value is longer than 99 units (UTF-8 bytes in a byte-counted payload, characters in a character-counted one). |
 
 `BAD_AMOUNT`, `BAD_TAG` and `BAD_VALUE` are edit errors and are raised by `update` only; `validate`
 checks the payload itself and reports the rest. Only the first edit error is thrown (edits are applied
@@ -337,12 +337,17 @@ Runnable examples: [`../examples/node.mjs`](../examples/node.mjs),
   checksum differ; everything else is byte-identical. Tests pin this on a synthetic non-bKash layout.
 - **Idempotent and stateless.** The same payload + edits give the same output, and `update(payload, {})`
   reproduces the payload exactly. No storage, no I/O, no network.
+- **Byte- or character-counted lengths.** EMVCo/NPSB payloads count each field's `LL` in UTF-8 bytes
+  (so non-ASCII values such as Bangla merchant names work); payloads from producers that count
+  characters are auto-detected and preserved on write. See
+  [`format.md`](./format.md#encoding).
 - **No QR rendering.** deshiQR returns the payload string; encode/render the QR with your own tool.
 - **No merchant verification or payment confirmation.** Payloads are public data. Keep the base
   payload on your trusted side, verify where it came from, and compare the name the payer's app shows
   with the shop's name. A QR is an instruction to pay, not proof that money moved.
-- **Limits.** Payload ≤ 4096 characters; any encoded value ≤ 99 characters; amount `0.01`–
-  `99,999,999.99` with at most 2 decimals.
+- **Limits.** Payload ≤ 4096 characters; any encoded value ≤ 99 units (UTF-8 bytes in a byte-counted
+  payload, characters in a character-counted one); amount `0.01`–`99,999,999.99` with at most 2
+  decimals.
 - **Provider formats can change.** Test a small amount in the provider app before shipping a pay page.
 
 ## Related

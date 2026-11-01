@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The deshiQR website** — [`site/`](./site/), deployed at <https://deshiqr.netlify.app>: payment
+  pages for Bangla QR. A merchant drops any Bangla QR, picks a link, and customers visit
+  `/<username>`, type an amount and get a ready-to-scan dynamic QR; wallet numbers and bank details
+  can sit beside it. Static site (HTML/CSS/JS) on Netlify with accounts and page data on Supabase
+  (email/password auth, Postgres + Row Level Security). Payload editing in the browser runs the
+  vendored `deshiqr` bundle — the site has no payload engine of its own. Repo-root
+  [`netlify.toml`](./netlify.toml) (`base = "site"`) and [`docs/website.md`](./docs/website.md)
+  document the deploy; the site appends no new public functions to the package API.
+
+### Fixed
+
+- **UTF-8 byte-length TLV support (real Bangla QR payloads).** EMVCo/NPSB payloads count each field's
+  `LL` length in UTF-8 bytes, so payloads with non-ASCII values — a Bangla merchant name in tag `59`,
+  a Bangla city in `60` — used to fail with `MISSING_FIELD`/`BAD_TLV`. The engine now parses by byte
+  offsets (`TextEncoder`/`TextDecoder`), accepts and preserves byte-counted payloads, and still
+  auto-detects and round-trips legacy character-counted payloads. Lengths, nested templates (`26`,
+  `62`), duplicate-tag checks and the 99-unit field limit all use the detected unit; `update()` writes
+  back with the same unit, and all-ASCII payloads are byte-identical to before. Mirrored in the
+  Python package. See [`docs/format.md`](./docs/format.md#encoding).
+
 ## [0.1.0] — 2026-11-01
 
 First public release. One job: **load a Bangla QR payload, edit any tag, and get the updated payload
@@ -64,3 +88,4 @@ back.** Early and deliberately small: no QR generation, no payload reading, no U
   provider. It does not confirm payments: a QR is an instruction to pay, not proof that money moved.
 
 [0.1.0]: https://github.com/hello2himel/deshiQR/releases/tag/v0.1.0
+[Unreleased]: https://github.com/hello2himel/deshiQR/compare/v0.1.0...HEAD

@@ -29,16 +29,19 @@ from .tlv import (
     CRC_TAG,
     MAX_VALUE_LENGTH,
     Field,
+    LengthMode,
+    ParsedPayload,
     encode_fields,
     find_field,
     insert_sorted,
     is_hex_checksum,
     is_tag_path,
     normalize,
-    parse,
     parse_subfields,
+    parse_with_mode,
     path_components,
     remove_all,
+    value_length,
 )
 from .validate import (
     WarningsOption,
@@ -246,6 +249,7 @@ def _apply_at(
     segments: List[str],
     full_path: str,
     value: Optional[str],
+    mode: LengthMode,
 ) -> None:
     """Apply one edit at the first ``segments[0]`` field, mirroring ``applyAt``."""
     head = segments[0]
@@ -261,7 +265,7 @@ def _apply_at(
             if index != -1:
                 remove_all(fields, head)
             return
-        if len(value) > MAX_VALUE_LENGTH:
+        if value_length(value, mode) > MAX_VALUE_LENGTH:
             raise _too_long(full_path)
         if index != -1:
             fields[index] = Field(head, value)
@@ -274,24 +278,28 @@ def _apply_at(
         raise _bad_parent(full_path)
 
     try:
-        children = parse_subfields(parent.value)
+        children = parse_subfields(parent.value, mode)
     except DeshiQrError:
         raise _bad_parent(full_path) from None
 
-    _apply_at(children, rest, full_path, value)
+    _apply_at(children, rest, full_path, value, mode)
 
     if len(children) == 0:
         del fields[index]
         return
 
-    encoded = encode_fields(children)
-    if len(encoded) > MAX_VALUE_LENGTH:
+    encoded = encode_fields(children, mode)
+    if value_length(encoded, mode) > MAX_VALUE_LENGTH:
         raise _too_long(full_path)
     fields[index] = Field(head, encoded)
 
 
-def _check_input(text: str) -> List[Field]:
-    """Validate the payload before editing, raising the documented input errors."""
+def _check_input(text: str) -> ParsedPayload:
+    """Validate the payload before editing, raising the documented input errors.
+
+    Returns the parsed fields together with the detected length unit; the unit
+    is reused for every nested parse and for re-encoding the result.
+    """
     if len(text) == 0:
         raise DeshiQrError("EMPTY_PAYLOAD", "The payload is empty.")
     if len(text) > MAX_PAYLOAD_LENGTH:
@@ -299,7 +307,8 @@ def _check_input(text: str) -> List[Field]:
             "UNSUPPORTED", "The payload is longer than 4096 characters."
         )
 
-    fields = parse(text)
+    parsed = parse_with_mode(text)
+    fields = parsed.fields
 
     last = fields[-1] if fields else None
     if last is None or last.tag != CRC_TAG:
@@ -317,8 +326,8 @@ def _check_input(text: str) -> List[Field]:
     if crc16(text[:-4]) != last.value.upper():
         raise DeshiQrError("CHECKSUM_MISMATCH", "The checksum does not match.", CRC_TAG)
 
-    assert_no_duplicate_tags(fields)
-    return fields
+    assert_no_duplicate_tags(fields, parsed.mode)
+    return parsed
 
 
 def _set_top_level(fields: List[Field], tag: str, value: str) -> None:
@@ -350,6 +359,10 @@ def update(
     are applied first so a tag path for the same target wins. Tag 63 is never
     editable: the checksum is dropped and re-sealed automatically.
 
+    Field lengths may be UTF-8 byte counts (the EMVCo/NPSB rule) or legacy
+    character counts; the unit is auto-detected and the result is re-encoded in
+    the same unit, so non-ASCII (Bangla) payloads round-trip either way.
+
     Raises :class:`~deshiqr.errors.DeshiQrError` for invalid input, invalid
     edits, or a result that fails validation. Warnings never block the edit;
     they are surfaced according to ``options``.
@@ -358,16 +371,18 @@ def update(
 
     # ---- input checks (throw, in this order) ------------------------------
     text = normalize(payload)
-    fields = _check_input(text)
+    parsed = _check_input(text)
+    fields = parsed.fields
+    mode = parsed.mode
 
     # ---- apply edits -------------------------------------------------------
     alias_edits, tag_path_edits = _resolve_edits(edits)
     working = [field for field in fields if field.tag != CRC_TAG]
 
     for path, value in alias_edits:
-        _apply_at(working, path_components(path), path, value)
+        _apply_at(working, path_components(path), path, value, mode)
     for path, value in tag_path_edits:
-        _apply_at(working, path_components(path), path, value)
+        _apply_at(working, path_components(path), path, value, mode)
 
     # ---- point of initiation follows the amount ---------------------------
     edited = alias_edits + tag_path_edits
@@ -377,8 +392,8 @@ def update(
         has_amount = find_field(working, "54") is not None
         _set_top_level(working, "01", "12" if has_amount else "11")
 
-    # ---- re-seal -----------------------------------------------------------
-    body = encode_fields(working) + "6304"
+    # ---- re-seal (same length unit as the input) --------------------------
+    body = encode_fields(working, mode) + "6304"
     result = body + crc16(body)
 
     # ---- validate the result: errors throw, warnings are surfaced ---------

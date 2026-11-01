@@ -13,7 +13,11 @@
     "test": "pnpm build:libs && pnpm -r --if-present test",
     "check:globals": "node scripts/check-globals.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev:site": "node site/scripts/dev-server.js",
+    "build:site": "pnpm build:libs && node site/scripts/refresh-engine.js",
+    "test:site": "node site/tests/qr.test.js",
+    "check:site": "node site/scripts/refresh-engine.js --check"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

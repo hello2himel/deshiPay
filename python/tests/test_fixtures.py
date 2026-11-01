@@ -9,6 +9,10 @@ import _support  # noqa: F401
 from deshiqr.crc import crc16
 from fixtures import (
     BAD_CHECKSUM_PAYLOAD,
+    BANGLA_BYTE_AMOUNT_100_PAYLOAD,
+    BANGLA_BYTE_PAYLOAD,
+    BANGLA_CHAR_AMOUNT_100_PAYLOAD,
+    BANGLA_CHAR_PAYLOAD,
     DUMMY_REFERENCE,
     DYNAMIC_PAYLOAD,
     GENERIC_PAYLOAD,
@@ -36,6 +40,10 @@ class FixtureShapeTests(unittest.TestCase):
             LONG_NAME_PAYLOAD,
             GENERIC_PAYLOAD,
             PAYLOAD_DEMO_GENERIC_AMOUNT,
+            BANGLA_BYTE_PAYLOAD,
+            BANGLA_CHAR_PAYLOAD,
+            BANGLA_BYTE_AMOUNT_100_PAYLOAD,
+            BANGLA_CHAR_AMOUNT_100_PAYLOAD,
         ):
             with self.subTest(payload=payload[:20]):
                 self.assertEqual(payload[-8:-4], "6304")

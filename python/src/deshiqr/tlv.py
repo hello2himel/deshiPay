@@ -6,6 +6,11 @@ length. Templates carry a nested TLV value. Parsing is strict: malformed input
 raises :class:`~deshiqr.errors.DeshiQrError` with code ``BAD_TLV`` instead of
 silently truncating.
 
+The standard (EMVCo/NPSB) counts ``LL`` in **UTF-8 bytes**, so a Bangla
+character is three units. Some producers count characters instead; the parser
+auto-detects which unit a payload uses by parsing and re-encoding it (bytes
+first, then characters) and rejects a payload that round-trips in neither.
+
 This module is internal. Only the two public functions are supported API.
 """
 
@@ -13,11 +18,23 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from .errors import DeshiQrError
 
-#: The format allows at most 99 characters per field value.
+#: How ``LL`` lengths are counted: ``"bytes"`` is the EMVCo/NPSB rule (and the
+#: default); ``"chars"`` is the legacy per-character count. Both are identical
+#: for all-ASCII payloads.
+LengthMode = Literal["bytes", "chars"]
+
+LENGTH_MODE_BYTES: LengthMode = "bytes"
+LENGTH_MODE_CHARS: LengthMode = "chars"
+
+#: Default length unit for encoding: bytes (identical to chars for ASCII).
+DEFAULT_LENGTH_MODE: LengthMode = LENGTH_MODE_BYTES
+
+#: The format allows at most 99 units per field value (UTF-8 bytes in
+#: ``"bytes"`` mode, characters in ``"chars"`` mode).
 MAX_VALUE_LENGTH = 99
 
 #: Tag that always holds the checksum, and is always re-sealed after edits.
@@ -33,6 +50,14 @@ class Field:
 
     tag: str
     value: str
+
+
+@dataclass
+class ParsedPayload:
+    """A parsed payload level plus the detected length unit."""
+
+    fields: List[Field]
+    mode: LengthMode
 
 
 def normalize(payload: object) -> str:
@@ -57,19 +82,33 @@ def is_hex_checksum(value: object) -> bool:
     return isinstance(value, str) and re.fullmatch(r"[0-9A-Fa-f]{4}", value) is not None
 
 
-def parse(payload: object) -> List[Field]:
-    """Parse a TLV string into fields, preserving order.
+def byte_length(value: str) -> int:
+    """UTF-8 byte length of a string."""
+    return len(value.encode("utf-8"))
 
-    Normalizes (trims) the input like the JavaScript implementation; empty input
-    raises ``EMPTY_PAYLOAD`` and malformed input raises ``BAD_TLV``.
-    """
-    text = normalize(payload)
-    if len(text) == 0:
-        raise DeshiQrError("EMPTY_PAYLOAD", "The payload is empty.")
+
+def value_length(value: str, mode: LengthMode = DEFAULT_LENGTH_MODE) -> int:
+    """Length of a value in ``mode``'s unit (bytes by default)."""
+    return byte_length(value) if mode == LENGTH_MODE_BYTES else len(value)
+
+
+def _parse_in_mode(text: str, mode: LengthMode) -> List[Field]:
+    """Walk a non-empty payload level in one length mode."""
+    if mode == LENGTH_MODE_BYTES:
+        data = text.encode("utf-8")
+        total = len(data)
+
+        def unit_slice(start: int, end: int) -> str:
+            return data[start:end].decode("utf-8", "replace")
+
+    else:
+        total = len(text)
+
+        def unit_slice(start: int, end: int) -> str:
+            return text[start:end]
 
     fields: List[Field] = []
     offset = 0
-    total = len(text)
 
     while offset < total:
         if offset + 4 > total:
@@ -78,7 +117,7 @@ def parse(payload: object) -> List[Field]:
                 "Malformed payload: truncated field at offset {}.".format(offset),
             )
 
-        tag = text[offset : offset + 2]
+        tag = unit_slice(offset, offset + 2)
         if _TAG_RE.fullmatch(tag) is None:
             raise DeshiQrError(
                 "BAD_TLV",
@@ -86,7 +125,7 @@ def parse(payload: object) -> List[Field]:
                 tag,
             )
 
-        raw_length = text[offset + 2 : offset + 4]
+        raw_length = unit_slice(offset + 2, offset + 4)
         if _LENGTH_RE.fullmatch(raw_length) is None:
             raise DeshiQrError(
                 "BAD_TLV",
@@ -108,23 +147,76 @@ def parse(payload: object) -> List[Field]:
                 tag,
             )
 
-        fields.append(Field(tag, text[value_start:value_end]))
+        fields.append(Field(tag, unit_slice(value_start, value_end)))
         offset = value_end
 
     return fields
 
 
-def parse_subfields(value: str) -> List[Field]:
-    """Parse a nested template value; an empty value is an empty (valid) template."""
+def parse_with_mode(payload: object) -> ParsedPayload:
+    """Parse a payload and detect how its ``LL`` lengths are counted.
+
+    ``"bytes"`` is tried first (the EMVCo/NPSB rule), then ``"chars"`` for
+    legacy character-counted producers; the first unit that makes
+    ``encode_fields(fields, mode) == payload`` wins. All-ASCII payloads
+    round-trip in both units and therefore detect as ``"bytes"``. If neither
+    unit round-trips, the first error (the byte attempt's, when there is one) is
+    raised, keeping the historical ``BAD_TLV`` behaviour.
+    """
+    text = normalize(payload)
+    if len(text) == 0:
+        raise DeshiQrError("EMPTY_PAYLOAD", "The payload is empty.")
+
+    first_error: Optional[DeshiQrError] = None
+    for mode in (LENGTH_MODE_BYTES, LENGTH_MODE_CHARS):
+        try:
+            fields = _parse_in_mode(text, mode)
+            if encode_fields(fields, mode) == text:
+                return ParsedPayload(fields, mode)
+        except DeshiQrError as error:
+            if first_error is None:
+                first_error = error
+
+    if first_error is not None:
+        raise first_error
+    raise DeshiQrError("BAD_TLV", "Malformed payload: unrecognised length encoding.")
+
+
+def detect_length_mode(payload: object) -> LengthMode:
+    """Detect only the length unit of a payload level."""
+    return parse_with_mode(payload).mode
+
+
+def parse(payload: object, mode: Optional[LengthMode] = None) -> List[Field]:
+    """Parse a TLV string into fields, preserving order.
+
+    Normalizes (trims) the input like the JavaScript implementation; empty input
+    raises ``EMPTY_PAYLOAD`` and malformed input raises ``BAD_TLV``. Without
+    ``mode`` the length unit is auto-detected (bytes first, then chars).
+    """
+    text = normalize(payload)
+    if len(text) == 0:
+        raise DeshiQrError("EMPTY_PAYLOAD", "The payload is empty.")
+    if mode is None:
+        return parse_with_mode(text).fields
+    return _parse_in_mode(text, mode)
+
+
+def parse_subfields(value: str, mode: Optional[LengthMode] = None) -> List[Field]:
+    """Parse a nested template value; an empty value is an empty (valid) template.
+
+    Pass the parent payload's ``mode`` to keep the template in the same length
+    unit; without one the unit is auto-detected.
+    """
     if len(value) == 0:
         return []
-    return parse(value)
+    return parse(value, mode)
 
 
-def parse_template(value: str, path: str) -> List[Field]:
+def parse_template(value: str, path: str, mode: Optional[LengthMode] = None) -> List[Field]:
     """Parse a template value, raising ``BAD_TLV`` tagged with ``path`` on failure."""
     try:
-        return parse_subfields(value)
+        return parse_subfields(value, mode)
     except DeshiQrError:
         raise DeshiQrError(
             "BAD_TLV",
@@ -133,8 +225,8 @@ def parse_template(value: str, path: str) -> List[Field]:
         ) from None
 
 
-def encode_field(field: Field) -> str:
-    """Encode one field as ``TTLLVV…``."""
+def encode_field(field: Field, mode: LengthMode = DEFAULT_LENGTH_MODE) -> str:
+    """Encode one field as ``TTLLVV…``; the length unit defaults to UTF-8 bytes."""
     tag = field.tag
     value = field.value
     if not isinstance(tag, str) or _TAG_RE.fullmatch(tag) is None:
@@ -149,18 +241,19 @@ def encode_field(field: Field) -> str:
             "Value for tag {} must be a string.".format(tag),
             tag,
         )
-    if len(value) > MAX_VALUE_LENGTH:
+    length = value_length(value, mode)
+    if length > MAX_VALUE_LENGTH:
         raise DeshiQrError(
             "BAD_VALUE",
             "Value for tag {} is longer than {} characters.".format(tag, MAX_VALUE_LENGTH),
             tag,
         )
-    return tag + "{:02d}".format(len(value)) + value
+    return tag + "{:02d}".format(length) + value
 
 
-def encode_fields(fields: List[Field]) -> str:
-    """Encode a list of fields back into a TLV string."""
-    return "".join(encode_field(field) for field in fields)
+def encode_fields(fields: List[Field], mode: LengthMode = DEFAULT_LENGTH_MODE) -> str:
+    """Encode a list of fields back into a TLV string; defaults to UTF-8 bytes."""
+    return "".join(encode_field(field, mode) for field in fields)
 
 
 def find_field(fields: List[Field], tag: str) -> Optional[Field]:

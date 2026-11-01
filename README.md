@@ -8,12 +8,51 @@ like.
 
 deshiQR does not generate QR codes, read merchant semantics, or handle payments. It ships as
 zero-dependency libraries for JavaScript/TypeScript and Python, and as a browser bundle on GitHub
-Pages. There is no server and no database; it never holds funds, stores data, or confirms payments.
+Pages. The library has no server and no database; it never holds funds, stores data, or confirms
+payments.
+
+The repo also ships a website — payment pages for Bangla QR at <https://deshiqr.netlify.app>. That
+website adds accounts and pages on Supabase on top of this library; the library itself stays a payload
+engine. See [Website](#website).
 
 [![CI](https://github.com/hello2himel/deshiQR/actions/workflows/ci.yml/badge.svg)](https://github.com/hello2himel/deshiQR/actions/workflows/ci.yml)
 [![npm: deshiqr](https://img.shields.io/npm/v/deshiqr?label=deshiqr)](https://www.npmjs.com/package/deshiqr)
 [![PyPI: deshiqr](https://img.shields.io/pypi/v/deshiqr?label=deshiqr)](https://pypi.org/project/deshiqr/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+## Website
+
+The repo also ships a website: **<https://deshiqr.netlify.app>** — payment pages for Bangla QR. A
+merchant drops any Bangla QR (bKash, Nagad, Rocket, Upay, any bank app), picks a link, and customers
+visit `/username`, type an amount and get a ready-to-scan dynamic QR. Wallet numbers and bank details
+can sit beside it for customers who would rather copy and send.
+
+Source: [`site/`](./site). It is a plain static site (HTML/CSS/JS, no bundler) deployed on
+**Netlify**, with accounts and page data on **Supabase** (email/password auth, Postgres + Row Level
+Security). Payload editing in the browser uses this repo's engine: the
+`site/public/vendor/deshiqr.global.js` bundle is built from [`packages/deshiqr`](./packages/deshiqr)
+and refreshed whenever the library changes.
+
+Keep the two apart. The *library* — npm `deshiqr`, PyPI `deshiqr`, the GitHub Pages bundle — is two
+functions with no I/O: no server, no database, no UI, no payload reading. The *website* is the product
+built on top of it: UI, accounts, storage and the customer page. The page only shows payment details;
+there is no payment confirmation or money handling.
+
+### Deploying the website
+
+Netlify reads the repo-root [`netlify.toml`](./netlify.toml): `base = "site"`, `publish = "public"`,
+build command `node scripts/build-config.js`, which writes `site/public/js/config.js` from the
+`SUPABASE_URL` and `SUPABASE_ANON_KEY` environment variables (optionally `GOOGLE_AUTH=true`).
+
+1. Import this GitHub repo into Netlify and name the site `deshiqr` (so the URL is
+   <https://deshiqr.netlify.app>).
+2. Set the environment variables above in the Netlify UI.
+3. Run [`site/supabase/schema.sql`](./site/supabase/schema.sql) in the Supabase SQL editor, and add
+   `https://deshiqr.netlify.app/app` (plus `http://localhost:8888/app` for local work) to the Supabase
+   Auth redirect URLs.
+
+Full operator guide (local development, refreshing the vendored engine bundle, troubleshooting):
+[docs/website.md](./docs/website.md). The site's own guide is [`site/README.md`](./site/README.md).
 
 ## Payload anatomy
 
@@ -112,8 +151,8 @@ Warning codes include `MISSING_TAG`, `UNKNOWN_TAG`, `BAD_FIELD_VALUE`, `FIELD_TO
 
 ## The API on GitHub Pages (no server)
 
-deshiQR has no server, no database and no HTTP endpoint. The same two functions ship as a static
-browser bundle, published to GitHub Pages by [`.github/workflows/pages.yml`](./.github/workflows/pages.yml):
+The deshiQR library has no server, no database and no HTTP endpoint. The same two functions ship as a
+static browser bundle, published to GitHub Pages by [`.github/workflows/pages.yml`](./.github/workflows/pages.yml):
 
 ```html
 <script src="https://hello2himel.github.io/deshiQR/deshiqr.global.js"></script>
@@ -186,6 +225,7 @@ See [`examples/README.md`](./examples/README.md) for how to run each one.
 | ---------------------------------------- | ----------------------------------------------------------------------------- |
 | [`packages/deshiqr`](./packages/deshiqr) | npm `deshiqr` — `update` + `validate`, zero deps, ESM/CJS/types + IIFE bundle |
 | [`python`](./python)                     | PyPI `deshiqr` — Python 3.9+ port of the same two functions                   |
+| [`site`](./site)                         | the website — [deshiqr.netlify.app](https://deshiqr.netlify.app)              |
 | [`cdn`](./cdn)                           | demo page for the GitHub Pages browser bundle                                 |
 | [`examples`](./examples)                 | one example per platform                                                      |
 | [`docs`](./docs)                         | format, API reference, self-hosting, demo payloads                            |
@@ -196,6 +236,7 @@ See [`examples/README.md`](./examples/README.md) for how to run each one.
 - [Payload format](./docs/format.md) — every field, the checksum rule, a worked edit.
 - [API reference](./docs/api.md) — `update`/`validate`, edit rules, warning and error codes.
 - [Hosting on GitHub Pages](./docs/self-hosting.md) — publish the browser bundle and demo yourself.
+- [Website](./docs/website.md) — deploy and run `site/` on Netlify + Supabase.
 - [Demo payloads](./docs/demo-payloads.md) — the synthetic fixtures used in tests and docs.
 - [Python package](./python/README.md) — `pip install deshiqr`, same two functions.
 - [Security policy](./SECURITY.md) — what deshiQR does and does not protect.
@@ -206,8 +247,9 @@ See [`examples/README.md`](./examples/README.md) for how to run each one.
 `0.1.0` — early and deliberately small. The payload editor is provider-agnostic by construction: it
 only changes the tags you edit plus `01` and the checksum, so it works with any Bangla QR payload that
 is well-formed TLV. There is no QR encoding, no payload reading, no merchant lookup, and no payment
-confirmation. The packages are published from this repo on a `v*` tag; until a version is on the
-registry, use the GitHub Pages bundle or build from source.
+confirmation in the library. (The website in [`site/`](./site) reads the QR you upload and gives you a
+UI; its payload edits still go through this engine.) The packages are published from this repo on a
+`v*` tag; until a version is on the registry, use the GitHub Pages bundle or build from source.
 
 ## License
 

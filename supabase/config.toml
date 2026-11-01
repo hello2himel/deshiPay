@@ -1,14 +1,56 @@
 # Supabase project configuration for the DeshiQR website.
 #
-# The database schema is versioned in supabase/migrations/ and is applied
-# automatically by the Supabase GitHub integration: Project Settings >
-# Integrations > GitHub > connect this repository with Working directory ".",
-# then enable "Deploy to production". Every push to the production branch
-# applies any migration that has not been applied yet.
+#   schema    -> supabase/migrations/*.sql  (applied by the Supabase GitHub integration)
+#   auth/API  -> sections below             (applied to the production project through the
+#                                            integration's [remotes.production] block)
 #
-# For local development: `supabase start` (uses supabase/migrations/ and
-# supabase/seed.sql if present) and `supabase db push` for a linked project.
+# One-time setup in the Supabase dashboard:
+#   Project Settings > Integrations > GitHub > authorize hello2himel/deshiQR,
+#   Working directory ".", enable "Deploy to production".
+# From then on, a push/merge to main applies pending migrations and this config.
 project_id = "deshiqr"
 
 [db.migrations]
 enabled = true
+
+# ---------------------------------------------------------------------------
+# Local development defaults (`supabase start`, `supabase db push`).
+# ---------------------------------------------------------------------------
+[auth]
+enabled = true
+site_url = "http://localhost:8888"
+additional_redirect_urls = ["http://localhost:8888/app"]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = true
+# Turn confirmations on once custom SMTP is configured; until then sign-up goes
+# straight to the dashboard instead of depending on the rate-limited built-in mailer.
+enable_confirmations = false
+double_confirm_changes = true
+
+# ---------------------------------------------------------------------------
+# Production project (wbnkjhlaitoetaztukiy). These keys override the defaults
+# above for the production branch when the GitHub integration deploys it.
+# The block name is arbitrary; project_id must be the production project ref.
+# ---------------------------------------------------------------------------
+[remotes.production]
+project_id = "wbnkjhlaitoetaztukiy"
+
+[remotes.production.auth]
+enabled = true
+site_url = "https://deshiqr.netlify.app"
+additional_redirect_urls = [
+  "https://deshiqr.netlify.app/app",
+  "http://localhost:8888/app"
+]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[remotes.production.auth.email]
+enable_signup = true
+enable_confirmations = false
+double_confirm_changes = true

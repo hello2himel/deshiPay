@@ -62,6 +62,10 @@ Commit the refreshed vendor files so the static site deploys without the monorep
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Create the tables — automatically.** Supabase Dashboard → *Project Settings → Integrations → GitHub*, authorize this repository, set **Working directory** to `.`, and enable **Deploy to production**. Every push to `main` then applies the SQL in [`supabase/migrations/`](../supabase/migrations/) automatically. (Manual alternative: paste those files, in filename order, into the SQL editor once — safe to re-run.)
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable** key. Never use the `service_role` key in this app.
+   The site URL, `/app` redirect URLs and the auth options (sign-ups, anonymous sign-ins off, email
+   confirmations off for now, JWT expiry) are versioned in
+   [`supabase/config.toml`](../supabase/config.toml) and applied by the same integration — see
+   *Supabase project settings (as code)* in [`docs/website.md`](../docs/website.md).
 4. **Authentication → URL Configuration**:
    - **Site URL**: the deployed site, e.g. `https://deshiqr.netlify.app` (or your custom domain)
    - **Redirect URLs**: add `https://deshiqr.netlify.app/app` (and `http://localhost:8888/app` for local work)

@@ -120,6 +120,49 @@ The schema is versioned in [`supabase/migrations/`](../supabase/migrations/) and
   `supabase db push` to apply the same migrations from a machine. The `SITE_OFFLINE` site build and
   the website are unaffected by migrations.
 
+## Supabase project settings (as code)
+
+Besides the schema, the project's auth configuration is versioned in
+[`supabase/config.toml`](../supabase/config.toml):
+
+| Setting | Value |
+| --- | --- |
+| `project_id` / production remote | `wbnkjhlaitoetaztukiy` (production project ref) |
+| Auth `site_url` | `https://deshiqr.netlify.app` |
+| Redirect URLs | `https://deshiqr.netlify.app/app`, `http://localhost:8888/app` |
+| JWT expiry | 3600 s (1 hour) |
+| Sign-ups | enabled (email provider) |
+| Anonymous sign-ins | disabled |
+| Email confirmations | **off** for now (sign-up lands straight in the dashboard; turn on after custom SMTP is configured) |
+| Email change confirmation | confirm on both old and new address |
+| Local defaults | `site_url = http://localhost:8888` for `supabase start` |
+
+Top-level sections are local-development defaults; `[remotes.production]` overrides them for the
+production project when the GitHub integration deploys. Change a setting by editing the file and
+pushing to `main` — no dashboard clicking for these values.
+
+**One-time steps that still need the dashboard** (the integration is a GitHub ↔ Supabase link, so it
+must be authorized by the project owner):
+
+1. *Project Settings → Integrations → GitHub* → authorize `hello2himel/deshiQR`, set **Working
+   directory** `.`, enable **Deploy to production** (optionally *Automatic branching* for PR preview
+   databases and required migration checks).
+2. Confirm the resulting **Authentication → URL Configuration** shows the site URL and redirects
+   above. If the `[remotes.production]` block was skipped (e.g. the project ref changed), set those
+   three values by hand.
+3. Netlify: `SUPABASE_URL` + `SUPABASE_ANON_KEY` (public anon/publishable key only) and
+   `SECRETS_SCAN_OMIT_KEYS=SUPABASE_URL,SUPABASE_ANON_KEY`; deploy.
+
+**Nothing else needs configuring:** the app uses no Storage buckets, Realtime channels, Edge Functions,
+Database Webhooks or cron jobs. Postgres, RLS and the public RPC functions come from
+`supabase/migrations/`. Email delivery uses Supabase's built-in sender (rate limited) until you add
+SMTP. Google sign-in is optional and needs an OAuth client + `GOOGLE_AUTH=true`; never put the
+`service_role` key in the site, Netlify, or the repo.
+
+Verify after the first integration run: `select * from supabase_migrations.schema_migrations;` should
+list `20261101120000`. Free-tier projects pause when idle — the site already handles that with the
+offline mode described above.
+
 ## Local development
 
 From the repo root:

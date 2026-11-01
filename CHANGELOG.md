@@ -67,9 +67,10 @@ All notable changes to this project are documented here. The format is based on
 - **The landing page demo is now the real payment page.** Instead of a static mock slip, the right-hand
   card mounts the actual customer-page component (`PayView`) exactly the way `pay.html` does, for a
   synthetic `DEMO STORE` Bangla QR with demo wallet and bank details: the full page — QR / Wallet / Bank
-  method tabs, amount + quick-amount chips, a real amount-bearing QR built by the site's engine, Save QR
-  image, the "How to pay" section and the footer. It starts at ৳1,500, works with the
-  paused/unreachable offline mode too, and uses no real account data (the page says it is a demo).
+  method tabs, amount + quick-amount chips, a real amount-bearing QR built by the site's engine and
+  Save QR image (the page-only "How to pay" block and footer are left off the homepage demo). It starts
+  at ৳1,500, works with the paused/unreachable offline mode too, and uses no real account data (the
+  page says it is a demo).
 
 - **Theme backgrounds now follow the theme accent.** The generated `themes.css` used to mix a shared
   lavender-white base with only ~5% of the accent, so most themes (especially green, blue and graphite)

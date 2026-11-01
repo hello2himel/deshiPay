@@ -221,7 +221,7 @@
           ),
           card,
           help,
-          h("footer", { class: "pv-foot" }, opts.preview ? null : ["Made with ", h("a", { href: opts.footerHref || "/" }, "DeshiQR")])
+          opts.preview ? null : h("footer", { class: "pv-foot" }, "Made with ", h("a", { href: opts.footerHref || "/" }, "DeshiQR"))
         )
       );
       root.replaceChildren(tree);

@@ -22,10 +22,10 @@ All notable changes to this project are documented here. The format is based on
   no-login "Create my page" CTA and the normal `/app` wizard runs locally (no username/link is asked;
   draft in `localStorage`), with a fifth Download step that saves the customer page as one self-contained
   `deshiqr-<name>.html` (~140 KB, inlined CSS, QR engine and page data; only Google Fonts
-  external; the host/username line is hidden) that can be hosted anywhere and supports `?amount=`. When the backend is online the site
-  behaves exactly as before, and the Share tab also offers the same HTML download. See
-  Payment pages opened by customers while the backend is down show a friendly "Temporarily unavailable"
-  screen with a Try again button instead of a load error. See
+  external; the host/username line is hidden) that can be hosted anywhere and supports `?amount=`. When
+  the backend is online the site behaves exactly as before, and the Share tab also offers the same HTML
+  download. Payment pages opened by customers while the backend is down show a friendly "Temporarily
+  unavailable" screen with a Try again button instead of a load error. See
   [`site/README.md`](./site/README.md#offline-mode-paused-supabase-and-the-standalone-download).
 - **Tests/docs:** `site/tests/export.test.js` (standalone builder: inlining, escaping, contents) and an
   extended Chromium e2e covering the online journey, the offline CTA/wizard/download and the generated

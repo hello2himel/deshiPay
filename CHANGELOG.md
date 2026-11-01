@@ -1,10 +1,25 @@
 # Changelog
 
-All notable changes to this project are documented here. The format is based on
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
+All notable changes to **DeshiPay** (the payment-page website) are documented here. The format is
+based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> **Repo split (2026-11-02).** The payload engine (npm/PyPI `deshiqr`, browser bundle, its docs and
+> release workflows) now lives in its own repo: **[hello2himel/deshiQR](https://github.com/hello2himel/deshiQR)**.
+> This repo is **DeshiPay**, the website. Entries below span the combined history; engine-only work
+> from before the split is catalogued in the engine repo.
+
 ## [Unreleased]
+
+### Changed
+
+- **Repo split: the engine moved out.** This repository is now **DeshiPay** (the payment-page site);
+  the payload engine — npm/PyPI `deshiqr`, the TypeScript/Python packages, the browser bundle, its
+  docs (format, API, demo payloads, Pages self-hosting), examples, cdn demo and release workflows —
+  lives in the new public repo **[hello2himel/deshiQR](https://github.com/hello2himel/deshiQR)**.
+  The site still vendors the engine's browser bundle, so deployment is unchanged; the netlify build,
+  Supabase migrations and all site code stay here. Goodbye monorepo tooling: no pnpm workspace, no
+  local library build, and CI now runs only the site suites plus a generated-themes freshness check.
 
 ### Added
 
@@ -115,7 +130,7 @@ All notable changes to this project are documented here. The format is based on
   white, amber → cream, olive → pale green, graphite → cool grey — with matching dark-mode backgrounds,
   borders, secondary buttons and soft tints. Contrast checks still pass for every theme.
 
-## [0.1.0] — 2026-11-01
+## 0.1.0 — 2026-11-01
 
 First public release. One job: **load a Bangla QR payload, edit any tag, and get the updated payload
 back.** Early and deliberately small: no QR generation, no payload reading, no UI, no database.
@@ -174,5 +189,5 @@ back.** Early and deliberately small: no QR generation, no payload reading, no U
 - deshiQR does not take custody of funds, hold balances, route money, or act as a payment service
   provider. It does not confirm payments: a QR is an instruction to pay, not proof that money moved.
 
-[0.1.0]: https://github.com/hello2himel/deshiQR/releases/tag/v0.1.0
-[Unreleased]: https://github.com/hello2himel/deshiQR/compare/v0.1.0...HEAD
+
+

@@ -2,12 +2,18 @@
 
 /* ---------- top bar ---------- */
 .top { position: sticky; top: 0; z-index: 40; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
-.top-in { max-width: 1120px; margin: 0 auto; padding: 0 16px; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.top-links { display: none; align-items: center; gap: 22px; margin-left: auto; margin-right: 22px; }
+.top-in { max-width: 1120px; margin: 0 auto; padding: 0 16px; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; }
+.top-links { display: none; align-items: center; gap: 22px; }
 .top-links a { color: var(--muted); font: 600 14px var(--body); text-decoration: none; white-space: nowrap; }
 .top-links a:hover { color: var(--ink); }
-@media (min-width: 720px) { .top-links { display: flex; } }
 .top-actions { display: flex; align-items: center; gap: 8px; }
+.top-menu { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+.nav-btn { display: none; width: 44px; height: 44px; flex: none; border: 0; border-radius: 12px; background: var(--sunk); color: var(--ink); align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 0; }
+.nav-btn span { display: block; width: 18px; height: 2px; border-radius: 2px; background: currentColor; transition: transform 0.18s ease, opacity 0.18s ease; }
+.top.open .nav-btn span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.top.open .nav-btn span:nth-child(2) { opacity: 0; }
+.top.open .nav-btn span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (min-width: 720px) { .top-links { display: flex; } }
 .top .btn.sm { min-height: 44px; }
 .user-chip { display: none; font-size: 14px; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 720px) { .user-chip { display: block; } }
@@ -72,6 +78,18 @@
 .how li b { display: block; font: 700 17px var(--disp); }
 .how li span { color: var(--muted); font-size: 15px; }
 .land-foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 719px) {
+  .nav-btn { display: flex; }
+  .top-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 45; flex-direction: column; align-items: stretch; gap: 10px; margin: 0; padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--bg); border-top: 1px solid var(--line); box-shadow: 0 24px 40px -26px var(--shadow); }
+  .top.open .top-menu { display: flex; }
+  .top-menu .top-links { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+  .top-menu .top-links a { display: flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: 10px; font-size: 15px; }
+  .top-menu .top-links a:hover { background: var(--sunk); color: var(--ink); }
+  .top-menu .top-actions { flex-direction: column; align-items: stretch; gap: 8px; }
+  .top-menu .top-actions .btn { width: 100%; justify-content: center; }
+  .top-menu .top-actions .user-chip { width: 100%; justify-content: center; min-height: 40px; }
+}
 
 @media (min-width: 900px) {
   /* Desktop: a single left column (hero, points, then sign-up where the old QR

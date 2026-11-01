@@ -226,6 +226,14 @@ async function scenarioOnline(browser) {
     );
     ok(!!(await page.$(".top-actions a[href='/login']")), "the top nav offers a create-page action");
     ok(!!(await page.$(".top-actions a[href='/login?mode=signin']")), "the top nav offers a sign-in action");
+    ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "flex", "mobile shows a hamburger menu button");
+    ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "none", "the mobile nav menu starts collapsed");
+    await page.click(".nav-btn");
+    ok((await page.$eval(".top", (e) => e.classList.contains("open"))) === true, "the hamburger opens the nav menu");
+    ok((await page.$eval(".nav-btn", (e) => e.getAttribute("aria-expanded"))) === "true", "the hamburger reports its expanded state");
+    ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "flex", "the open menu shows the nav elements");
+    await page.keyboard.press("Escape");
+    ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "none", "Escape closes the nav menu");
 
     // The landing demo is the real customer page (PayView), not a static mock.
     ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "landing shows the live payment demo (real customer page)");
@@ -459,11 +467,19 @@ async function scenarioOnline(browser) {
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await page.goto(BASE + "/app", { waitUntil: "networkidle0" });
     await page.waitForSelector(".top-actions button");
-    await page.click(".top-actions button");
+    ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "flex", "dashboard uses the hamburger on mobile");
+    ok((await page.$eval(".top-actions", (e) => !!e.closest(".top-menu"))) === true, "dashboard actions live inside the nav menu on mobile");
+    ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "none", "dashboard menu is collapsed on mobile");
+    await page.click(".nav-btn");
+    await page.waitForSelector(".top.open .top-actions button");
+    await page.click(".top.open .top-actions button");
     await page.waitForFunction(() => location.pathname === "/", { timeout: 5000 });
     // signed out now, so this is a real landing page (a signed-in visitor is redirected to /app)
     await page.setViewport({ width: 1280, height: 860, deviceScaleFactor: 1 });
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
+    ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "none", "desktop hides the hamburger");
+    ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "flex", "desktop shows the nav inline");
+    ok((await page.$eval(".top-actions", (e) => getComputedStyle(e).display)) === "flex", "desktop shows the top actions inline");
     await shot("16-landing-desktop");
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await page.goto(BASE + "/login?mode=signin", { waitUntil: "networkidle0" });
@@ -529,6 +545,11 @@ async function scenarioOffline(browser) {
     await page.waitForSelector("#f-title", { timeout: 10000 });
     ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 1 of 5 · Name"), "local wizard has five steps and step 1 is “Name”");
     ok((await page.$eval("#topActions .user-chip", (e) => e.textContent)).trim() === "Offline mode", "dashboard shows the “Offline mode” chip");
+    ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "flex", "offline dashboard uses the hamburger on mobile");
+    ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "none", "offline dashboard menu starts collapsed");
+    await page.click(".nav-btn");
+    ok((await page.$eval("#topActions .user-chip", (e) => getComputedStyle(e).display)) !== "none", "opening the menu shows the mode chip");
+    await page.keyboard.press("Escape");
     ok((await page.$("#topActions button")) === null, "no sign-out button without an account");
     ok((await page.$("#f-user")) === null, "local mode has no username/link input");
     ok((await page.$("#userAffix")) === null && (await page.$("#userStatus")) === null, "local mode has no link affix or availability status");

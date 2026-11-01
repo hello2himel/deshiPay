@@ -13,6 +13,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Automatic push of auth config + email templates.** Added
+  `.github/workflows/supabase-auth-config.yml`: once the repository has a `SUPABASE_ACCESS_TOKEN`
+  secret, changes to `supabase/config.toml` or `supabase/templates/**` run `supabase config push`
+  against production, applying email confirmations, OTP settings, auth URLs and the branded mail
+  templates. Without the secret the job is a no-op; the GitHub integration alone only applies
+  migrations.
+
+### Added
+
 - **Email + password sign-up verified by an emailed 6-digit code.** The unified `/login` form keeps
   email + password (existing accounts sign in), but a new account is created as unconfirmed and the
   card switches to a code screen; `verifyOtp(type: "signup")` confirms it and signs in. "Forgot

@@ -458,6 +458,10 @@ async function scenarioOnline(browser) {
     ok(!(await page.evaluate(() => document.body.innerText.includes("Temporarily unavailable"))), "online payment page never shows “Temporarily unavailable”");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
     ok(
+      (await page.$eval(".pv-caution", (e) => e.innerText)).includes("not a payment processor"),
+      "the customer-page caution says DeshiPay is not a payment processor"
+    );
+    ok(
       (await page.$eval(".pv-foot .made-line", (e) => e.innerText)).includes("Made with") &&
         (await page.$eval(".pv-foot .made-line", (e) => e.innerText)).includes("DeshiPay"),
       "customer-page footer credits DeshiPay"

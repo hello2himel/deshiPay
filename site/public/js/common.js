@@ -242,7 +242,7 @@
     if (RESERVED.has(u)) return "That name is reserved, try another";
     return "";
   }
-  // "+880 1868-735269" / "8801868735269" / "১৭০০০০০০০০০" -> "01868735269"
+  // "+880 1700-000000" / "8801700000000" / "০১৭০০০০০০০০" -> "01700000000"
   function normalizePhone(s) {
     var d = bnToEn(s).replace(/\D/g, "");
     if (d.length === 13 && d.indexOf("880") === 0) d = "0" + d.slice(3);

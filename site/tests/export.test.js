@@ -126,7 +126,7 @@ const full = {
   qr_city: "বগুড়া",
   ref_prefix: "ABCDEFGHIJ",
   ref_len: 20,
-  wallets: [{ provider: "bkash", type: "personal", number: "01868735269" }],
+  wallets: [{ provider: "bkash", type: "personal", number: "01700000000" }],
   banks: [
     {
       bank: "BRAC Bank",

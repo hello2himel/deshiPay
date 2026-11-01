@@ -29,6 +29,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Footer disclaimer.** The footer blurb now opens with **"Not a payment processor."** and spells out
+  what DeshiPay is: just a page that shows the live QR and wallet/bank details, with customers paying
+  from their own banking app. It appears under the brand on every page.
+
+### Changed
+
 - **Customer-page footer is a real call to action.** Instead of the tiny "Made with DeshiPay" text, every
   customer page (and every downloaded standalone page) now ends with the DeshiPay logo + wordmark
   ("Made with DeshiPay") and a **Create your own page** button linking to the site that generated the

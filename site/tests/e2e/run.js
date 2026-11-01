@@ -294,6 +294,10 @@ async function scenarioOnline(browser) {
       footLinks.includes("/terms") && footLinks.includes("/privacy") && footLinks.includes("/contact"),
       "the landing footer links to terms, privacy and contact"
     );
+    ok(
+      (await page.$eval(".foot-brand", (e) => e.innerText)).includes("Not a payment processor"),
+      "the footer clearly says DeshiPay is not a payment processor"
+    );
     const abuseLinks = await page.$$eval(".site-foot a[href^='mailto:']", (els) => els.map((e) => e.getAttribute("href")));
     ok(
       abuseLinks.some((h) => h.includes("stargzr.science@gmail.com") && decodeURIComponent(h).toLowerCase().includes("report abuse")),

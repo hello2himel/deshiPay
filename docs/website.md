@@ -21,7 +21,8 @@ The full site guide (user flows, customising themes/wallets, security details, t
 
 ```
 site/                     static site (plain HTML/CSS/JS, no bundler, no dependencies)
-  public/index.html       landing page + sign up / sign in
+  public/index.html       landing page (hero, live demo, "Create your page" CTA)
+  public/login.html       sign up / sign in (served at /login)
   public/app.html         dashboard (served at /app)
   public/pay.html         customer page (served at /<username>)
   public/terms.html       terms of service

@@ -1,4 +1,4 @@
-/* Landing page: sign up, sign in, reset password. */
+/* Landing-page demo + the sign-in / sign-up page (login.html at /login). */
 (function () {
   "use strict";
   var T = window.Deshi, h = T.h, icon = T.icon;
@@ -7,7 +7,10 @@
   var notice = document.getElementById("setupNotice");
 
   document.querySelectorAll("[data-host]").forEach(function (el) { el.textContent = location.host; });
-  [["ic1", "scan"], ["ic2", "link"], ["ic3", "wallet"]].forEach(function (p) { document.getElementById(p[0]).appendChild(icon(p[1])); });
+  [["ic1", "scan"], ["ic2", "link"], ["ic3", "wallet"]].forEach(function (p) {
+    var el = document.getElementById(p[0]);
+    if (el) el.appendChild(icon(p[1]));
+  });
 
   /* ----- live payment demo -----
    * The actual customer page (PayView), mounted with a synthetic Bangla QR from
@@ -67,36 +70,10 @@
     );
   }
 
-  // The landing usually advertises the hosted service (your own address, a live
-  // link). That isn’t true offline, so those bits are rewritten in place; the
-  // markup, classes and the decorative slip stay untouched.
-  function offlineCopy() {
-    // Bullet 2 promised <this-site>/yourname — download and host it instead.
-    var icon2 = document.getElementById("ic2");
-    var bullet = icon2 && icon2.parentNode && icon2.parentNode.children[1];
-    if (bullet) bullet.replaceChildren(h("b", null, "Take it with you."), " Download one HTML file and host it at your own address.");
-
-    // "How it works": no link to pick and no page we host.
-    function setStep(li, title, text) {
-      var wrap = li && li.children[0];
-      if (!wrap || wrap.children.length < 2) return;
-      wrap.children[0].textContent = title;
-      wrap.children[1].textContent = text;
-    }
-    var steps = document.querySelectorAll(".how ol li");
-    setStep(steps[1], "Make it yours", "Pick a name and the colour that feels like you.");
-    setStep(steps[2], "Download it", "One self-contained HTML file you can host anywhere.");
-
-    // (The demo is the real customer page now, so it has no host/username strip
-    // that could imply this site hosts the page.)
-  }
-
   // No login, no sign-up: the same wizard at /app runs without an account and
   // ends with a downloadable single HTML file. The status detail (paused,
   // restricted, unreachable) is deliberately left out of the card.
   function renderOffline() {
-    notice.replaceChildren();
-    offlineCopy();
     card.replaceChildren(
       h("h2", null, "Create your page"),
       h("p", { class: "sub" }, "Sign-in is offline right now, but you can still build your payment page and download it as one HTML file to host yourself."),
@@ -105,9 +82,10 @@
   }
 
   function setupNotice() {
-    notice.replaceChildren(
-      h("div", { class: "notice bad" }, icon("alert"), h("span", null, "Supabase isn’t connected yet. Add your project URL and anon key to public/js/config.js, or set the SUPABASE_URL and SUPABASE_ANON_KEY environment variables. The README has the 5-minute setup."))
-    );
+    var box = h("div", { class: "notice bad" }, icon("alert"), h("span", null, "Supabase isn’t connected yet. Add your project URL and anon key to public/js/config.js, or set the SUPABASE_URL and SUPABASE_ANON_KEY environment variables. The README has the 5-minute setup."));
+    if (notice) { notice.replaceChildren(box); return true; }
+    card.replaceChildren(box);
+    return false;
   }
 
   function friendly(err) {
@@ -219,6 +197,8 @@
   }
 
   function boot() {
+    // The landing page only mounts the demo; the auth form lives on /login.
+    if (!card) return;
     paintLoading();
     var probe = typeof T.checkBackend === "function"
       ? T.checkBackend()
@@ -227,8 +207,8 @@
       if (!backend.online) return renderOffline();
       sb = T.client();
       if (!sb) {
-        setupNotice();
-        return render();
+        if (setupNotice()) render();
+        return;
       }
       sb.auth.getSession().then(function (r) {
         if (r.data && r.data.session) location.replace("/app");

@@ -198,9 +198,9 @@ async function scenarioOnline(browser) {
 
     console.log("Landing + sign up");
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    // The landing renders only after the backend health probe resolves.
-    await page.waitForSelector("#email", { timeout: 10000 });
-    ok(state.health > 0, "landing probes /auth/v1/health before showing sign-in");
+    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
+    ok(state.health === 0, "the landing itself makes no backend probe");
     const onlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
       onlineLandingText.includes("Get your own address") && onlineLandingText.includes("Pick your link") && onlineLandingText.includes("Share it"),
@@ -244,7 +244,7 @@ async function scenarioOnline(browser) {
       ok(!!(await page.$(".site-foot")), path + " has the site footer");
     }
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForSelector("#email", { timeout: 10000 });
+    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
 
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {
@@ -254,6 +254,10 @@ async function scenarioOnline(browser) {
     const qrFile = path.join(SHOTS, "input-qr.png");
     fs.writeFileSync(qrFile, Buffer.from(b64, "base64"));
 
+    // The sign-in/sign-up form lives on its own page now.
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".cta-home a[href='/login']")]);
+    await page.waitForSelector("#email", { timeout: 10000 });
+    ok(state.health > 0, "login page probes /auth/v1/health before showing sign-in");
     await page.type("#email", "owner@example.com");
     await page.type("#pw", "correct-horse-1");
     await page.click("form button[type=submit]");
@@ -434,10 +438,10 @@ async function scenarioOnline(browser) {
     await page.waitForFunction(() => location.pathname === "/", { timeout: 5000 });
     // signed out now, so this is a real landing page (a signed-in visitor is redirected to /app)
     await page.setViewport({ width: 1280, height: 860, deviceScaleFactor: 1 });
-    await page.waitForSelector("#email", { timeout: 10000 });
+    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
     await shot("16-landing-desktop");
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-    await page.goto(BASE + "/?mode=signin", { waitUntil: "networkidle0" });
+    await page.goto(BASE + "/login?mode=signin", { waitUntil: "networkidle0" });
     await page.waitForSelector("#email", { timeout: 10000 });
     await page.type("#email", "owner@example.com");
     await page.type("#pw", "wrong-password");
@@ -462,34 +466,16 @@ async function scenarioOffline(browser) {
     const shot = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: false });
     const shotFull = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: true });
 
-    console.log("Landing: offline CTA, no login");
+    console.log("Landing + offline sign-in page");
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForFunction(() => !!document.querySelector('#auth a[href="/app"]'), { timeout: 10000 });
-    ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline landing shows no sign-in / sign-up form");
-    ok((await page.$eval('#auth a[href="/app"]', (e) => e.textContent)).includes("Create my page"), "offline landing offers the “Create my page” CTA");
-    ok((await page.$eval("#auth h2", (e) => e.textContent)) === "Create your page", "offline landing heading explains what to do");
-    ok((await page.$("#auth .notice")) === null, "offline landing card has no database-status notice");
-    ok((await page.$eval("#setupNotice", (e) => e.textContent.trim())) === "", "the setup notice stays empty in offline mode");
-    ok((await page.$eval("#auth .sub", (e) => e.textContent)).includes("Sign-in is offline right now"), "offline landing explains why sign-in is unavailable");
-    ok(state.supa.length >= 2 && state.supa.every(isProbe), "the landing probed health + fallback and nothing else (" + state.supa.length + " requests)");
+    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline landing has no sign-in / sign-up form");
+    ok(state.supa.length === 0, "the landing makes no backend request");
     const offlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
-      offlineLandingText.includes("Take it with you") && offlineLandingText.includes("host it at your own address"),
-      "offline landing points copy becomes “Take it with you”"
+      offlineLandingText.includes("Get your own address") && offlineLandingText.includes("Pick your link"),
+      "the landing keeps its normal marketing copy in offline mode"
     );
-    ok(!offlineLandingText.includes("Get your own address"), "offline landing drops the hosted-address promise");
-    const howItWorks = await page.$$eval(".how ol li", (els) => els.map((e) => e.innerText));
-    ok(
-      howItWorks[1].includes("Make it yours") && howItWorks[1].includes("Pick a name and the colour that feels like you."),
-      "offline how-it-works step 2 is “Make it yours”"
-    );
-    ok(
-      howItWorks[2].includes("Download it") && howItWorks[2].includes("One self-contained HTML file you can host anywhere."),
-      "offline how-it-works step 3 is “Download it”"
-    );
-    ok(!offlineLandingText.includes("Pick your link") && !offlineLandingText.includes("Share it"), "offline landing no longer promises picking a link or a live share");
-    const offlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
-    ok(offlineHosts.length === 0, "offline landing no longer shows a hosted address");
     ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "offline landing still shows the live payment demo");
     await page.waitForSelector(".demo .qrbox svg", { timeout: 5000 });
     ok(true, "the offline live demo draws its real QR");
@@ -502,6 +488,16 @@ async function scenarioOffline(browser) {
     }, PAYLOAD);
     const qrFile = path.join(SHOTS, "input-qr-offline.png");
     fs.writeFileSync(qrFile, Buffer.from(b64, "base64"));
+
+    console.log("Login page: offline create-page card");
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".cta-home a[href='/login']")]);
+    await page.waitForSelector('#auth a[href="/app"]', { timeout: 10000 });
+    ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline login page shows no sign-in form");
+    ok((await page.$eval("#auth h2", (e) => e.textContent)) === "Create your page", "offline login page heading explains what to do");
+    ok((await page.$eval('#auth a[href="/app"]', (e) => e.textContent)).includes("Create my page"), "offline login page offers the “Create my page” CTA");
+    ok((await page.$("#auth .notice")) === null, "offline login card has no database-status notice");
+    ok((await page.$eval("#auth .sub", (e) => e.textContent)).includes("Sign-in is offline right now"), "offline login page explains why sign-in is unavailable");
+    ok(state.supa.length >= 2 && state.supa.every(isProbe), "the login page probed health + fallback and nothing else (" + state.supa.length + " requests)");
 
     console.log("Local wizard: no account, same steps");
     await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click('#auth a[href="/app"]')]);
@@ -673,7 +669,7 @@ async function scenarioRecovery(browser) {
 
     // Same-origin page first, to seed the mocked database with one published page.
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForFunction(() => !!document.querySelector('#auth a[href="/app"]'), { timeout: 10000 });
+    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
     await page.evaluate((payload) => {
       localStorage.setItem("mock.supa", JSON.stringify({
         users: [],

@@ -15,6 +15,10 @@
 .land-main { display: contents; }
 .hero-top { grid-area: top; display: grid; gap: 18px; }
 .auth { grid-area: auth; }
+/* dedicated sign-in / sign-up page */
+.auth-page { max-width: 480px; margin: 0 auto; padding: 40px 16px 8px; display: grid; gap: 18px; }
+.auth-page .auth { box-shadow: 0 24px 60px -30px var(--shadow); }
+.cta-home .btn { margin-top: 2px; }
 .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); }
 .hero-top h1 { font-size: clamp(34px, 9vw, 60px); line-height: 1; }
 .hero-top h1 em { font-style: normal; color: var(--accent-text); }

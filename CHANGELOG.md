@@ -51,11 +51,11 @@ All notable changes to this project are documented here. The format is based on
   new pages) shares a useful footer with Product (home, how it works, create a page), Legal (terms,
   privacy) and Support (contact, open-source) links, plus the "not a payment processor" line.
 
-- **The sign-in form moved off the homepage.** The landing page now shows a single
-  "Create your page" card/button instead of the full sign-up/sign-in form (the form is its own page at
-  `/login`, with the same sign-up / sign-in / reset flows). This declutters the homepage — fewer
-  competing buttons — and keeps it a landing page. `/login` is routed by Netlify and the dev server,
-  and the footer's "Create a page" link points at it.
+- **The sign-in form moved off the homepage.** The landing page now shows just one "Create your page"
+  arrow button under the hero text instead of the full sign-up/sign-in form (the form is its own page
+  at `/login`, with the same sign-up / sign-in / reset flows). This declutters the homepage — one
+  clear action, no card — and keeps it a landing page. `/login` is routed by Netlify and the dev
+  server, and the footer's "Create a page" link points at it.
 
 - **The top navbar now does something.** On the landing and info pages the bar carries real navigation
   — How it works, Demo and FAQ (anchor/route links) — plus Sign in and a compact Create page button;

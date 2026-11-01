@@ -44,6 +44,13 @@ All notable changes to this project are documented here. The format is based on
   via a `[remotes.production]` block, plus local-development defaults. The Supabase GitHub integration
   applies these alongside the migrations, so most of the project configuration lives in the repo.
 
+- **Legal and support pages, plus a real site footer.** The website now has Terms of service
+  (`/terms`), Privacy policy (`/privacy`) and a Contact & FAQ page (`/contact`), served from
+  `site/public/*.html` with pretty URLs (Netlify + dev-server rewrites), a static `sitemap.xml`, and
+  a `/terms`-etc. entry in `robots.txt`. Every page (landing, dashboard, customer pages, 404 and the
+  new pages) shares a useful footer with Product (home, how it works, create a page), Legal (terms,
+  privacy) and Support (contact, open-source) links, plus the "not a payment processor" line.
+
 ### Fixed
 
 - **Netlify secret scanning false positive on the public Supabase values.** The build writes

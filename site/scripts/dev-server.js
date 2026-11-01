@@ -32,6 +32,8 @@ function resolve(urlPath) {
   if (fs.existsSync(abs) && fs.statSync(abs).isFile()) return abs;
   if (p === "/app") return path.join(root, "app.html");
   if (p === "/favicon.ico") return path.join(root, "favicon.svg");
+  const pretty = { "/terms": "terms.html", "/privacy": "privacy.html", "/contact": "contact.html" };
+  if (pretty[p]) return path.join(root, pretty[p]);
   if (/^\/[^/.]+\/?$/.test(p)) return path.join(root, "pay.html");
   return null;
 }

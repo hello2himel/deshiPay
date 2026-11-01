@@ -136,3 +136,29 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
+
+/* ---------- site footer (every page) ---------- */
+.site-foot { border-top: 1px solid var(--line); margin-top: 56px; }
+.site-foot-in { max-width: 1120px; margin: 0 auto; padding: 30px 16px; display: flex; flex-wrap: wrap; gap: 28px; justify-content: space-between; align-items: flex-start; }
+.foot-brand { display: grid; gap: 8px; max-width: 34ch; }
+.foot-brand b { font: 800 19px var(--disp); letter-spacing: -0.02em; }
+.foot-brand p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.foot-cols { display: flex; flex-wrap: wrap; gap: 44px; }
+.foot-col { display: grid; gap: 8px; align-content: start; }
+.foot-col b { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.foot-col a { color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 500; }
+.foot-col a:hover { color: var(--accent-text); text-decoration: underline; }
+.site-foot-base { border-top: 1px solid var(--line); }
+.site-foot-base .site-foot-in { padding-top: 14px; padding-bottom: 20px; color: var(--muted); font-size: 13px; gap: 8px; }
+@media (min-width: 900px) { .site-foot { margin-top: 72px; } }
+
+/* ---------- legal / info pages ---------- */
+.legal { max-width: 780px; margin: 0 auto; padding: 40px 16px 8px; display: grid; gap: 12px; align-content: start; }
+.legal h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; }
+.legal .updated { color: var(--muted); font-size: 13px; margin: 0 0 4px; }
+.legal .lede { color: var(--muted); font-size: 16px; margin: 0 0 10px; max-width: 62ch; }
+.legal h2 { font-size: 22px; margin-top: 20px; }
+.legal p, .legal li { font-size: 15.5px; line-height: 1.65; margin: 0; }
+.legal ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.legal code { font-family: var(--mono); font-size: 13px; }
+.legal .callout { margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--accent-soft); font-size: 14px; }

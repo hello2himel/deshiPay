@@ -559,6 +559,12 @@ async function scenarioOnline(browser) {
       viewport: window.innerHeight,
     }));
     ok(desktopHero.hero >= desktopHero.viewport - Math.ceil(desktopHero.nav), "desktop hero also fills the viewport below the nav");
+    const demoCentre = await page.evaluate(() => {
+      const hero = document.querySelector(".hero-top").getBoundingClientRect();
+      const demo = document.querySelector(".demo").getBoundingClientRect();
+      return Math.abs((demo.top + demo.height / 2) - (hero.top + hero.height / 2));
+    });
+    ok(demoCentre < 40, "the desktop hero demo is vertically centred in the hero (off by " + Math.round(demoCentre) + "px)");
     ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "none", "desktop hides the hamburger");
     ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "flex", "desktop shows the nav inline");
     ok((await page.$eval(".theme-toggle", (e) => getComputedStyle(e).display !== "none" && e.getBoundingClientRect().width > 0)), "desktop shows the theme toggle in the bar");

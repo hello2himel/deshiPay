@@ -225,11 +225,7 @@ async function scenarioOnline(browser) {
     const onlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
     ok(onlineHosts.length > 0 && onlineHosts.every((t) => t === "localhost:8899"), "online landing shows this site’s host");
     ok(!onlineLandingText.includes("Take it with you") && !onlineLandingText.includes("your-site.com"), "online landing has no offline-only copy");
-    const topLinks = await page.$$eval(".top-links a", (els) => els.map((e) => e.getAttribute("href")));
-    ok(
-      topLinks.includes("/#features") && topLinks.includes("/#demo") && topLinks.includes("/#faq"),
-      "the top nav uses the bar: features, demo and FAQ"
-    );
+    ok((await page.$$eval(".top-links", (els) => els.length)) === 0, "the top bar has no section links, only the actions");
     ok(!!(await page.$(".top-actions a[href='/login']")), "the top nav offers a create-page action");
     ok(!!(await page.$(".top-actions a[href='/login?mode=signin']")), "the top nav offers a sign-in action");
     ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "flex", "mobile shows a hamburger menu button");

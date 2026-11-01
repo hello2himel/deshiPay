@@ -1,24 +1,23 @@
-name: Publish browser bundle (CDN)
+name: Publish browser bundle (GitHub Pages)
 
-# Hosts the plain-<script> build on GitHub Pages:
-#   https://<owner>.github.io/deshiQR/deshiqr.global.js
-# The bundle exposes window.DeshiQR with `update(payload, edits)` and `validate(payload)`.
+# The static "API": GitHub Pages serves the browser bundle and an interactive demo.
+#   https://<owner>.github.io/deshiQR/deshiqr.global.js   → window.DeshiQR.update/validate
+#   https://<owner>.github.io/deshiQR/                    → demo page (payload + edits in, new payload out)
 #
-# Why this exists: raw.githubusercontent.com serves text/plain with X-Content-Type-Options:
-# nosniff, so browsers refuse to execute it from <script src>. GitHub Pages serves the same
-# file with the correct JavaScript content type. The primary CDN path is still npm via
-# jsDelivr/unpkg (published by release.yml); this workflow needs no package publish.
+# GitHub Pages is static-only: it cannot run server-side functions. The edit logic runs in the
+# visitor's browser (this bundle) or in the consumer's own Node/Python process (npm/PyPI packages).
+# There is no HTTP endpoint to deploy.
+#
+# Why GitHub Pages: raw.githubusercontent.com serves text/plain with X-Content-Type-Options:
+# nosniff, so browsers refuse to execute it from <script src>. Pages serves the same file with the
+# correct JavaScript content type. npm/jsDelivr/unpkg remain the primary package path.
 #
 # Setup: repository Settings → Pages → Build and deployment → Source: GitHub Actions.
-# Run manually (workflow_dispatch) or push a v* tag.
-#
-# If you later deploy a website to Pages, copy this bundle into that site's build output
-# (or move this workflow's artifacts under a /cdn/ subdirectory) so the URL above keeps
-# working.
+# Runs on every push to main (and manually); no package publish needed.
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -27,7 +26,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-cdn
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -52,7 +51,7 @@ jobs:
       - name: Verify the browser bundle
         run: node scripts/check-globals.mjs
 
-      - name: Assemble the CDN site
+      - name: Assemble the Pages site
         run: |
           mkdir -p site
           cp cdn/index.html site/index.html

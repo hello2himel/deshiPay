@@ -34,9 +34,6 @@ jobs:
       - name: Verify the browser bundle
         run: node scripts/check-globals.mjs
 
-      - name: Verify the update API logic
-        run: pnpm check:api
-
       - name: Test
         run: pnpm test
 

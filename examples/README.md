@@ -1,6 +1,6 @@
 # deshiQR examples
 
-One runnable example per platform. All of them do the same thing: **load a Bangla QR payload, apply
+Runnable examples — all static, no server required. All of them do the same thing: **load a Bangla QR payload, apply
 edits, print the updated payload and its warnings.** None of them render a QR code — the payload is
 just a string, so encode/render it however you like.
 
@@ -9,13 +9,12 @@ Every example uses the **same synthetic demo payload** from
 STORE`, city `Dhaka`, dummy NPSB tokens. Never paste a real merchant payload into an example, a test
 fixture or a docs page.
 
-| Example                                  | Platform                                   | Run it                                                   |
-| ---------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
-| [`browser.html`](./browser.html)         | browser, single bundle, no build step      | `pnpm build`, then open the file in a browser            |
-| [`node.mjs`](./node.mjs)                 | Node 22+ (ESM)                             | `pnpm build && node examples/node.mjs`                   |
-| [`python.py`](./python.py)               | Python 3.9+                                | `python3 examples/python.py` (or `pip install ./python`) |
-| [`http.sh`](./http.sh)                   | `curl` against the stateless HTTP endpoint | `./examples/http.sh <endpoint>`                          |
-| [`../cdn/index.html`](../cdn/index.html) | the GitHub Pages bundle demo               | published with the bundle by `.github/workflows/cdn.yml` |
+| Example                                  | Platform                              | Run it                                                     |
+| ---------------------------------------- | ------------------------------------- | ---------------------------------------------------------- |
+| [`browser.html`](./browser.html)         | browser, single bundle, no build step | `pnpm build`, then open the file in a browser              |
+| [`node.mjs`](./node.mjs)                 | Node 22+ (ESM)                        | `pnpm build && node examples/node.mjs`                     |
+| [`python.py`](./python.py)               | Python 3.9+                           | `python3 examples/python.py` (or `pip install ./python`)   |
+| [`../cdn/index.html`](../cdn/index.html) | the GitHub Pages bundle demo          | published with the bundle by `.github/workflows/pages.yml` |
 
 The public contract is in [`docs/api.md`](../docs/api.md); the field table and a worked edit are in
 [`docs/format.md`](../docs/format.md).
@@ -88,21 +87,6 @@ python3 examples/python.py
 It uses `from deshiqr import update, validate` with the same semantics, the same edit keys
 (`customerLabel` stays camelCase) and the same error/warning codes. Warnings go to
 `warnings.warn(…, DeshiQrWarning)` by default, or to `UpdateOptions(on_warning=…)`.
-
-## 4. `http.sh`
-
-```bash
-# local: `supabase functions serve update` in another terminal
-./examples/http.sh
-
-# deployed function:
-./examples/http.sh "https://<project-ref>.supabase.co/functions/v1/update"
-```
-
-It POSTs `{ "payload": "…", "edits": { "amount": 500, "reference": "BILL123" }, "warnings": true }`
-and prints the JSON response: `{ ok, payload, warnings }` on success, or
-`{ ok: false, error: { code, message, tag } }` on failure. Deploy steps:
-[`docs/self-hosting.md`](../docs/self-hosting.md).
 
 ## Notes
 

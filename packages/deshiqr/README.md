@@ -120,14 +120,6 @@ const { ok, errors, warnings } = validate(payload, { warnings: true });
 `UNKNOWN_MCC`, `STATIC_WITH_AMOUNT`, `DYNAMIC_WITHOUT_AMOUNT`, and `RISKY_EDIT`
 (from `update` only). All warnings are suppressible with the `warnings` option.
 
-## HTTP endpoint
-
-The same two operations are available as a stateless edge function:
-`POST /functions/v1/update` with `{ payload, edits?, warnings? }` returns
-`{ ok: true, payload, warnings }` (or `{ ok: false, error: { code, message, tag? } }`).
-See [`docs/api.md`](https://github.com/hello2himel/deshiQR/blob/main/docs/api.md)
-and [`docs/format.md`](https://github.com/hello2himel/deshiQR/blob/main/docs/format.md).
-
 ## Guarantees
 
 - Zero dependencies, environment-agnostic (Node, browser, Deno, edge runtimes).

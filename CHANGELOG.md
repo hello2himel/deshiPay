@@ -28,29 +28,24 @@ back.** Early and deliberately small: no QR generation, no payload reading, no U
     `MISSING_FIELD`, `CHECKSUM_MISMATCH`, `DUPLICATE_TAG`, `BAD_AMOUNT`, `BAD_TAG`, `BAD_VALUE`.
 - One browser bundle for plain `<script src>` pages, no bundler required:
   `dist/deshiqr.global.js` → `window.DeshiQR` with `update` and `validate`. Served by jsDelivr/unpkg
-  through npm and mirrored on GitHub Pages by `.github/workflows/cdn.yml`;
+  through npm and mirrored on GitHub Pages by `.github/workflows/pages.yml`;
   `scripts/check-globals.mjs` pins its behaviour in a browser-only sandbox.
 - `python/` — zero-dependency Python 3.9+ package (`pip install deshiqr`) with the same two functions,
   the same edit keys (camelCase aliases stay camelCase), the same error/warning codes, dataclass
   options (`UpdateOptions`, `ValidateOptions`), `DeshiQrError`/`.code`, an `unittest` suite and PyPI
   trusted-publishing workflow.
-- `update` edge function — the stateless HTTP API: `POST /functions/v1/update` with
-  `{ payload, edits?, warnings? }` → `{ ok: true, payload, warnings }`, or
-  `{ ok: false, error: { code, message, tag? } }`. No database, no secrets, CORS `*` by default
-  (`DESHIQR_CORS_ORIGIN`), 16 KB request-body limit. `pnpm check:api` runs its request-independent
-  tests.
 - Documentation for the single purpose: `README.md`, [`docs/format.md`](./docs/format.md) (the full
   field table, checksum rule, worked edit), [`docs/api.md`](./docs/api.md) (functions, edit rules,
-  warning/error codes, HTTP contract), [`docs/self-hosting.md`](./docs/self-hosting.md),
+  warning/error codes), [`docs/self-hosting.md`](./docs/self-hosting.md) (GitHub Pages hosting),
   [`docs/demo-payloads.md`](./docs/demo-payloads.md), and one example per platform in
-  [`examples`](./examples) (browser, Node, Python, `curl`) plus the [`cdn`](./cdn) demo page.
-- CI (typecheck, build, tests, browser-bundle check, HTTP-function logic, Python 3.9 + 3.13) and
-  release pipelines: npm with provenance for the single `deshiqr` package (`release.yml`), PyPI via
-  trusted publishing (`release-python.yml`), and GitHub Pages browser-bundle publishing (`cdn.yml`).
+  [`examples`](./examples) (browser, Node, Python) plus the [`cdn`](./cdn) demo page.
+- CI (typecheck, build, tests, browser-bundle check, Python 3.9 + 3.13) and release pipelines: npm
+  with provenance for the single `deshiqr` package (`release.yml`), PyPI via trusted publishing
+  (`release-python.yml`), and GitHub Pages browser-bundle publishing (`pages.yml`, on push to `main`).
 - Provider-agnostic editing by construction: only the tags the caller edits, tag `01` (for amount
   edits) and the re-sealed checksum change; everything else — account template, name, city, currency,
   country, opaque token templates — is byte-identical. Pinned by tests on a synthetic non-bKash
-  layout in both languages and the HTTP function.
+  layout in both languages.
 
 ### Changed
 

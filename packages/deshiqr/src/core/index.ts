@@ -1,7 +1,7 @@
 /**
  * Internal barrel for the payload core. The public API is re-exported from
- * `src/index.ts`; the edge function imports this module through the vendored
- * copy in `supabase/functions/_vendor/core`.
+ * `src/index.ts`. This module is the single source of truth for the browser bundle
+ * (`src/global.ts`) and the Python port.
  */
 export { DeshiQrError } from "./errors.ts";
 export type { DeshiQrCode, DeshiQrIssue } from "./errors.ts";

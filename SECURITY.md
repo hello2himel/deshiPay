@@ -1,6 +1,6 @@
 # Security policy
 
-DeshiPay is the **website** (Netlify + Supabase) for payment pages built on Bangla QR payloads. The
+DeshiPay is the **website** (Netlify + Supabase) where people and businesses receive payments, donations and support through payment pages built on Bangla QR payloads. The
 payload engine is a separate project: [deshiQR](https://github.com/hello2himel/deshiQR).
 
 ## What DeshiPay is, in security terms

@@ -1,5 +1,5 @@
 /*
- * DeshiQR site adapter — the thin layer between these pages and the repo's engine.
+ * DeshiPay site adapter — the thin layer between these pages and the deshiQR engine.
  *
  * The payload logic lives in the separate deshiQR engine repo, loaded here as
  * `/vendor/deshiqr.global.js`. This file does not edit, encode or checksum
@@ -15,7 +15,7 @@
  *     supplies display metadata and picks the legacy error message
  *
  * Load order: `/vendor/deshiqr.global.js` first, then `/js/payload.js`.
- * Browser: augments the bundle's `window.DeshiQR`. Node: `module.exports`
+ * Browser: augments the engine bundle's `window.DeshiQR`. Node: `module.exports`
  * (evaluate the vendored bundle and set `globalThis.DeshiQR` before requiring).
  */
 (function (root, factory) {

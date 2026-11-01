@@ -13,6 +13,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Rebrand to DeshiPay, with a wider story.** The site (titles, header, footer, legal pages, customer
+  page, exported standalone files) is now branded **DeshiPay**, and the copy no longer frames the
+  product as a QR tool: it is a complete way to receive **payments, donations and support** for shops,
+  freelancers, creators and causes. The live, amount-ready Bangla QR stays the headline method, with
+  wallet and bank details beside it; the landing, login, terms, privacy, contact/FAQ, README and docs
+  reflect that. The engine repo keeps its own name (`deshiQR`) and is linked as the QR engine.
+
 - **Mobile navigation.** On narrow screens the header no longer packs `Sign in` / `Create page` (or the
   dashboard's `View page` / account / `Sign out`) into the bar: a hamburger button opens a menu with
   the nav links and actions, and closes on Escape, an outside click or after choosing an item. Desktop

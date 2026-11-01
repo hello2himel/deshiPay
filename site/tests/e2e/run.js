@@ -199,6 +199,8 @@ async function scenarioOnline(browser) {
     console.log("Landing + sign up");
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
+    ok((await page.title()).includes("DeshiPay"), "the landing page title is DeshiPay");
+    ok((await page.$eval(".brand", (e) => e.textContent.trim())) === "DeshiPay", "the header brand is DeshiPay");
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
     ok(
@@ -215,6 +217,10 @@ async function scenarioOnline(browser) {
     ok(
       onlineLandingText.includes("Get your own address") && onlineLandingText.includes("Pick your link") && onlineLandingText.includes("Share it"),
       "online landing keeps the hosted-address copy"
+    );
+    ok(
+      onlineLandingText.includes("payments, donations and support") && onlineLandingText.includes("bank details"),
+      "landing positions DeshiPay as a complete way to receive money (QR + wallet + bank), not just a QR tool"
     );
     const onlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
     ok(onlineHosts.length > 0 && onlineHosts.every((t) => t === "localhost:8899"), "online landing shows this site’s host");

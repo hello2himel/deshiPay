@@ -1,6 +1,6 @@
 # Contributing to DeshiPay
 
-Thanks for helping with the website. This repo is the payment-page site; the payload engine lives in
+Thanks for helping with the website. This repo is the payment-page site for receiving payments, donations and support; the payload engine lives in
 [deshiQR](https://github.com/hello2himel/deshiQR).
 
 ## The hard rule: no real payment data

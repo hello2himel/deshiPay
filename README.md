@@ -18,24 +18,58 @@ Pages. There is no server and no database; it never holds funds, stores data, or
 ## Payload anatomy
 
 A Bangla QR payload is a flat run of **TLV** fields — tag, length, value — glued together with no
-separators and no terminator, then sealed by a checksum. Every field is four ASCII characters plus its
-value, and a length counts characters — nested subtrees included:
+separators and no terminator, and sealed by a checksum. Below is the synthetic `DEMO STORE` fixture
+from [docs/demo-payloads.md](./docs/demo-payloads.md) — one payload, 265 characters, every value fake —
+wrapped at tag boundaries. Each `┬───` marks a field's tag and length (`TTLL`); beneath it: the tag,
+its name, its properties, and the value it carries.
 
-![Payload anatomy: tag, length and value; tag 26 carrying a 47-character subtree; and the synthetic DEMO STORE fixture unfolded as a tree](docs/assets/payload-anatomy.png)
+```text
+000201010211
+┬───  ┬───
+│     └── 01 · point of initiation · 2 digits: "11" static, "12" dynamic · "11"
+└── 00 · payload format · exactly 2 digits, always "01" · "01"
 
-The tree above is the synthetic `DEMO STORE` fixture from
-[docs/demo-payloads.md](./docs/demo-payloads.md): 265 characters, every value fake.
+26470014bd.org.bb.npsb01020202042002031101000000000
+┬───┬───              ┬───  ┬───    ┬───
+│   │                 │     │       └── 26/03 · account identifier · alphanumeric, 4–34 · "01000000000"
+│   │                 │     └── 26/02 · scheme / variant · 4 digits · "2002"
+│   │                 └── 26/01 · template version · 2 digits · "02"
+│   └── 26/00 · institution AID · ASCII, ≤ 32 · "bd.org.bb.npsb"
+└── 26 · account template · TLV subtree (47 characters)
 
-### What one edit changes
+5204601653030505802BD
+┬───    ┬───   ┬───
+│       │      └── 58 · country · ISO 3166-1 alpha-2 · "BD"
+│       └── 53 · currency · ISO 4217 numeric, here BDT · "050"
+└── 52 · merchant category code · 4 digits · "6016"
 
-`update` never rebuilds the payload from scratch. It walks the tree, applies your edits, keeps `01`
-consistent and re-seals `63` last:
+5910DEMO STORE6005Dhaka62060602FT
+┬───          ┬───     ┬───┬───
+│             │        │   └── 62/06 · customer label · text · "FT"
+│             │        └── 62 · additional data · TLV subtree (6 characters), optional
+│             └── 60 · merchant city · text, 1–15 · "Dhaka"
+└── 59 · merchant name · text, 1–25 · "DEMO STORE"
 
-![What one edit changes: the update pipeline, and a before/after view of the four fields that move](docs/assets/payload-edit.png)
+80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=
+┬───┬───              ┬───
+│   │                 └── 80/01 · token · base64, opaque · "ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE="
+│   └── 80/00 · institution AID · ASCII · "bd.org.bb.npsb"
+└── 80 · token template A · TLV subtree (66 characters), opaque
 
-Everything not shown as changing — account, name, city, currency, country, opaque tokens — is copied
-byte for byte. The full field table and every known value are in
-[docs/format.md](./docs/format.md#field-table).
+81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=
+┬───┬───              ┬───
+│   │                 └── 81/01 · token · base64, opaque · "ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE="
+│   └── 81/00 · institution AID · ASCII · "bd.org.bb.npsb"
+└── 81 · token template B · TLV subtree (66 characters), opaque
+
+6304295D
+┬───
+└── 63 · CRC-16/CCITT-FALSE · 4 uppercase hex, computed over all the rest · "295D"
+```
+
+The final `63` field is a CRC-16/CCITT-FALSE over everything before it; `update` always re-seals it.
+An amount edit flips `01` to `12`, inserts `54` after `53`, and re-seals `63` — everything else is
+copied byte for byte. The full field table is in [docs/format.md](./docs/format.md#field-table).
 
 ## The API: two functions
 

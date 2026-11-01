@@ -79,6 +79,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **QR blur-in on every refresh.** The "develop" blur/fade animation (previously only on the first QR
+  draw) now replays whenever the QR is rebuilt: typing an amount, tapping a quick amount, clearing the
+  amount back to the static QR, or any other redraw. Reduced-motion users still get the QR without the
+  animation.
+
+### Changed
+
 - **Empty amount shows the static QR.** On a payment page (or standalone export) with no amount entered, the
   QR panel now renders the owner's amount-free Bangla QR instead of an empty placeholder, with the note
   "No amount set. Scan this QR and type the amount in your payment app, or enter one above for a

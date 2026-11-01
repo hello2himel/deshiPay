@@ -42,9 +42,9 @@
 .mailed .ic-big { width: 56px; height: 56px; border-radius: 18px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
 .mailed .ic-big .ic { width: 28px; height: 28px; }
 
-/* The landing demo is the real customer page (PayView) in a card. The
-   page-only tail (How to pay + caution + footer) is left out of the homepage. */
-.demo { width: 100%; max-width: 420px; justify-self: center; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--bg); box-shadow: 0 24px 60px -34px var(--shadow); }
+/* The landing demo is the real payment widget (PayView), directly on the page:
+   no surrounding card — the slip and its method tabs are the only chrome. */
+.demo { width: 100%; max-width: 420px; justify-self: center; }
 .demo .pv-head { display: none; }
 .demo .pv-help { display: none; }
 /* the demo is just the payment widget: no page header, how-to or footer tracks */

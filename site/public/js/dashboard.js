@@ -753,57 +753,60 @@
     var url = T.pageUrl(originalUsername);
     var limit = TQ.MAX_INPUT_AMOUNT || TQ.MAX_AMOUNT;
     var amount = h("input", { class: "input", id: "f-pay-amount", type: "text", inputmode: "decimal", autocomplete: "off", placeholder: "e.g. 1500" });
-    var preferred = h("input", { class: "input", id: "f-pay-preferred", type: "text", inputmode: "decimal", autocomplete: "off", placeholder: "e.g. 500" });
-    var lockedOpen = h("a", { class: "btn sec", id: "pay-locked-open", target: "_blank", rel: "noopener" }, icon("external"), "Open locked page");
-    var lockedCopy = h("button", { class: "btn sec", id: "pay-locked-copy", type: "button" }, icon("copy"), "Copy locked link");
-    var preferredOpen = h("a", { class: "btn sec", id: "pay-preferred-open", target: "_blank", rel: "noopener" }, icon("external"), "Open preferred page");
-    var preferredCopy = h("button", { class: "btn sec", id: "pay-preferred-copy", type: "button" }, icon("copy"), "Copy preferred link");
+    var lock = h("input", { type: "checkbox", role: "switch", id: "f-pay-lock", checked: true, "aria-label": "Lock payment amount" });
+    var openBtn = h("a", { class: "btn sec", id: "pay-open", target: "_blank", rel: "noopener" }, icon("external"), "Open locked page");
+    var copyBtn = h("button", { class: "btn sec", id: "pay-copy", type: "button" }, icon("copy"), "Copy locked link");
+    var modeHint = h("p", { class: "section-sub", id: "pay-mode-hint" }, "The amount is fixed on the page, so the customer can’t change it.");
 
-    function value(el) {
-      var n = parseFloat(TQ.sanitizeAmount(el.value));
+    function value() {
+      var n = parseFloat(TQ.sanitizeAmount(amount.value));
       return n > 0 && n <= limit ? n : 0;
     }
-    function clean(el) {
-      var s = TQ.sanitizeAmount(el.value);
+    function clean() {
+      var s = TQ.sanitizeAmount(amount.value);
       if (parseFloat(s) > limit) s = String(limit);
-      if (s !== el.value) el.value = s;
+      if (s !== amount.value) amount.value = s;
+    }
+    function link() {
+      var n = value();
+      return n ? url + (lock.checked ? "?amount=" : "?preferred=") + n : "";
     }
     function sync() {
-      var n = value(amount), p = value(preferred);
-      lockedOpen.href = n ? url + "?amount=" + n : "#";
-      preferredOpen.href = p ? url + "?preferred=" + p : "#";
-      [ [lockedOpen, !n], [lockedCopy, !n], [preferredOpen, !p], [preferredCopy, !p] ].forEach(function (x) {
-        x[0].setAttribute("aria-disabled", String(x[1]));
-      });
+      var n = value(), href = link();
+      openBtn.href = href || "#";
+      openBtn.setAttribute("aria-disabled", String(!n));
+      copyBtn.setAttribute("aria-disabled", String(!n));
+      T.fill(openBtn, icon("external"), lock.checked ? "Open locked page" : "Open preferred page");
+      T.fill(copyBtn, icon("copy"), lock.checked ? "Copy locked link" : "Copy preferred link");
+      modeHint.textContent = lock.checked
+        ? "The amount is fixed on the page, so the customer can’t change it."
+        : "The page opens with this amount filled in, but the customer can edit it.";
     }
-    function copy(urlToCopy, label) {
-      T.copyText(urlToCopy).then(function (ok) { T.toast(ok ? label + " copied" : "Couldn’t copy", { error: !ok, lift: dirty() }); });
-    }
-    amount.addEventListener("input", function () { clean(amount); sync(); if (poster) poster.repaint(); });
-    preferred.addEventListener("input", function () { clean(preferred); sync(); });
-    lockedOpen.addEventListener("click", function (e) { if (!value(amount)) e.preventDefault(); });
-    preferredOpen.addEventListener("click", function (e) { if (!value(preferred)) e.preventDefault(); });
-    lockedCopy.addEventListener("click", function () { if (value(amount)) copy(url + "?amount=" + value(amount), "Locked link"); });
-    preferredCopy.addEventListener("click", function () { if (value(preferred)) copy(url + "?preferred=" + value(preferred), "Preferred link"); });
+    amount.addEventListener("input", function () { clean(); sync(); if (poster) poster.repaint(); });
+    lock.addEventListener("change", function () { sync(); });
+    openBtn.addEventListener("click", function (e) { if (!value()) e.preventDefault(); });
+    copyBtn.addEventListener("click", function () {
+      var href = link();
+      if (!href) return;
+      T.copyText(href).then(function (ok) { T.toast(ok ? "Payment link copied" : "Couldn’t copy", { error: !ok, lift: dirty() }); });
+    });
 
-    var poster = posterPanel(function () { return value(amount); });
+    var poster = posterPanel(function () { return value(); });
     sync();
 
     return h("div", { class: "panel" },
-      h("div", { class: "panel-head" }, h("h1", null, "Request a payment"), h("p", null, "Make a link or a printed QR for a specific amount. Use a locked amount for an invoice, or a preferred amount the customer can change.")),
+      h("div", { class: "panel-head" }, h("h1", null, "Request a payment"), h("p", null, "Make a link or a printed QR for a specific amount. Lock the amount for an invoice, or leave the lock off to prefill it and let the customer edit it.")),
       h("div", { class: "stack" },
-        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("link")), h("h2", null, "Locked amount")),
-        h("p", { class: "section-sub" }, "The amount is fixed on the page, so the customer can’t change it."),
-        h("div", { class: "field" }, h("label", { for: "f-pay-amount" }, "Set amount in taka"), amount, h("p", { class: "hint" }, "Up to ৳50,000. Open the page now, or copy the link for an invoice.")),
-        h("div", { class: "row-actions" }, lockedOpen, lockedCopy),
-        h("div", { class: "divider" }),
-        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("wallet")), h("h2", null, "Preferred amount")),
-        h("p", { class: "section-sub" }, "The page opens with this amount filled in, but the customer can edit it. Leave blank for no prefill."),
-        h("div", { class: "field" }, h("label", { for: "f-pay-preferred" }, "Preferred amount in taka"), preferred, h("p", { class: "hint" }, "Optional. Up to ৳50,000.")),
-        h("div", { class: "row-actions" }, preferredOpen, preferredCopy),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("lock")), h("h2", null, "Payment amount")),
+        h("div", { class: "field" }, h("label", { for: "f-pay-amount" }, "Amount in taka"), amount, h("p", { class: "hint" }, "Up to ৳50,000. Open the page now, or copy the link for an invoice.")),
+        h("label", { class: "switch" },
+          h("span", null, h("b", null, icon("lock"), "Lock payment amount"), h("span", { class: "d" }, "On: the customer can’t change the amount. Off: it is prefilled and editable.")),
+          lock, h("span", { class: "track" })),
+        modeHint,
+        h("div", { class: "row-actions" }, openBtn, copyBtn),
         h("div", { class: "divider" }),
         h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Poster with this amount")),
-        h("p", { class: "section-sub" }, "A4 or A5 portrait with the set amount baked into the QR, so the app opens with the amount filled in. Download or print it."),
+        h("p", { class: "section-sub" }, "A4 or A5 portrait with the amount baked into the QR, so the app opens with the amount filled in. Download or print it."),
         poster
       ));
   }

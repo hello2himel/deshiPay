@@ -8,8 +8,41 @@
 
   document.querySelectorAll("[data-host]").forEach(function (el) { el.textContent = location.host; });
   [["ic1", "scan"], ["ic2", "link"], ["ic3", "wallet"]].forEach(function (p) { document.getElementById(p[0]).appendChild(icon(p[1])); });
-  var demo = document.getElementById("demoQr");
-  if (demo && window.qrcode) demo.appendChild(T.qrSvg(location.origin + "/"));
+
+  /* ----- live payment demo -----
+   * The actual customer page (PayView), mounted with a synthetic Bangla QR from
+   * docs/demo-payloads.md. Visitors can type an amount and get a real,
+   * amount-bearing QR built by the same engine the site uses — no real account
+   * data, and nothing here talks to Supabase.
+   */
+  var DEMO_PAGE = {
+    username: "demo",
+    title: "Demo Store",
+    message: "Live demo — type an amount to generate a real QR. Synthetic demo data, not a real payment request.",
+    theme: "rose",
+    presets: [100, 500, 1000],
+    qr_payload: "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D",
+    qr_name: "DEMO STORE",
+    qr_city: "Dhaka",
+    ref_prefix: "",
+    ref_len: 0,
+    wallets: [],
+    banks: []
+  };
+
+  function mountDemo() {
+    var host = document.getElementById("demoPayment");
+    if (!host || !window.PayView) return;
+    window.PayView.mount(host, DEMO_PAGE, { preview: true, hideHandle: true });
+    // Show a real amount-bearing QR straight away so the demo looks alive; the
+    // visitor can edit the amount or use the quick-amount chips.
+    var amount = host.querySelector(".amt-input");
+    if (amount) {
+      amount.value = "1500";
+      amount.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+  mountDemo();
 
   var mode = new URLSearchParams(location.search).get("mode") === "signin" ? "signin" : "signup";
   var busy = false;
@@ -44,8 +77,8 @@
     setStep(steps[1], "Make it yours", "Pick a name and the colour that feels like you.");
     setStep(steps[2], "Download it", "One self-contained HTML file you can host anywhere.");
 
-    // The demo slip shows "host/rahim"; don’t imply this site will host the page.
-    document.querySelectorAll("[data-host]").forEach(function (el) { el.textContent = "your-site.com"; });
+    // (The demo is the real customer page now, so it has no host/username strip
+    // that could imply this site hosts the page.)
   }
 
   // No login, no sign-up: the same wizard at /app runs without an account and

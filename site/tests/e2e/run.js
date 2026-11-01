@@ -209,6 +209,15 @@ async function scenarioOnline(browser) {
     const onlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
     ok(onlineHosts.length > 0 && onlineHosts.every((t) => t === "localhost:8899"), "online landing shows this site’s host");
     ok(!onlineLandingText.includes("Take it with you") && !onlineLandingText.includes("your-site.com"), "online landing has no offline-only copy");
+
+    // The landing demo is the real customer page (PayView), not a static mock.
+    ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "landing shows the live payment demo (real customer page)");
+    ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "1500", "the live demo starts at ৳1,500");
+    await page.waitForSelector(".demo .qrbox svg", { timeout: 5000 });
+    ok(true, "the live demo draws its real amount-bearing QR");
+    const demoChips = await page.$$(".demo .chip");
+    if (demoChips[1]) await demoChips[1].click();
+    ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the live demo’s quick amounts update the amount");
     await shot("01-landing-mobile");
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {
@@ -452,8 +461,10 @@ async function scenarioOffline(browser) {
     );
     ok(!offlineLandingText.includes("Pick your link") && !offlineLandingText.includes("Share it"), "offline landing no longer promises picking a link or a live share");
     const offlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
-    ok(offlineHosts.length > 0 && offlineHosts.every((t) => t === "your-site.com"), "offline landing points at your-site.com instead of this host");
-    ok((await page.$eval(".demo-url", (e) => e.textContent)).replace(/\s+/g, "") === "your-site.com/rahim", "offline demo slip shows your-site.com/rahim");
+    ok(offlineHosts.length === 0, "offline landing no longer shows a hosted address");
+    ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "offline landing still shows the live payment demo");
+    await page.waitForSelector(".demo .qrbox svg", { timeout: 5000 });
+    ok(true, "the offline live demo draws its real QR");
     await shot("18-offline-landing");
 
     // fixture QR image for the wizard (rendered by the app itself, from the landing page)

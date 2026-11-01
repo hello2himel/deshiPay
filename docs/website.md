@@ -178,10 +178,16 @@ The OTP policy and template wiring live in [`supabase/config.toml`](../supabase/
 invite and reauthentication. Subject lines are set next to each template in `config.toml`.
 
 - **Local (`supabase start`)** picks the templates up from `config.toml` directly.
-- **Hosted project:** the GitHub integration applies migrations; auth email templates and the
-  confirmation setting are safest applied from **Authentication → Emails** in the dashboard (paste the
-  file contents and set the subjects) or with `supabase config push`/the CLI. The built-in sender is
-  rate limited; configure custom SMTP before relying on it for real traffic.
+- **Hosted project, automatic (recommended):** the GitHub integration only applies **migrations**; it
+  does not push `config.toml` auth settings or mail templates. The repo ships
+  [`.github/workflows/supabase-auth-config.yml`](../.github/workflows/supabase-auth-config.yml) for
+  this: add a Supabase personal access token as the repo secret `SUPABASE_ACCESS_TOKEN` (one time),
+  and pushes touching `supabase/config.toml` or `supabase/templates/**` run
+  `supabase config push --project-ref <production-ref> --yes`. That applies confirmations, OTP
+  length/expiry, auth URLs and the branded mail templates. Without the secret the job is a no-op.
+- **Hosted project, manual:** paste the template files into **Authentication → Emails** (subjects in
+  `config.toml`), turn **Confirm email** on and set OTP length 6 / expiry 600 by hand.
+- The built-in sender is rate limited; configure custom SMTP before relying on it for real traffic.
 - Templates use `{{ .Token }}` for the 6-digit code and `{{ .ConfirmationURL }}` for the link fallback.
   The reauthentication template is included for the dashboard even though it is not in `config.toml`.
 

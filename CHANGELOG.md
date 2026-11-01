@@ -39,6 +39,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Full-height homepage hero.** The first landing section (hero copy/CTA and the live demo) now fills
+  at least `100svh` minus the sticky nav height (`100vh` fallback), with its content vertically centred
+  and the demo aligned to it, so the first screen is a complete hero instead of a short strip. The
+  points/features continue below the fold. Mobile and desktop are both covered by e2e height checks.
+
+### Changed
+
 - **Reserved usernames expanded from 68 to 216.** The list now also protects route/anchor names
   (`features`, `faq`, `demo`, `login`, `checkout`...), auth/system words, support/moderation/reporting
   addresses (`abuse`, `report`, `dmca`, `trust-safety`...), platform/brand variants

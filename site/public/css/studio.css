@@ -25,9 +25,15 @@
 /* =====================================================================
    Landing
    ===================================================================== */
-.land { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 28px; align-items: start; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "points" "demo" "features" "faq" "cta"; }
+.land { max-width: 1120px; margin: 0 auto; padding: 0 16px 56px; display: grid; gap: 28px; align-items: start; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "points" "demo" "features" "faq" "cta"; }
 .land-main { display: contents; }
-.hero-top { grid-area: top; display: grid; gap: 18px; }
+.hero-top {
+  grid-area: top; display: grid; gap: 18px; align-content: center;
+  padding-top: 28px;
+  /* fill the first screen below the sticky nav */
+  min-height: calc(100vh - 65px);
+  min-height: calc(100svh - 65px - env(safe-area-inset-top, 0px));
+}
 /* anchors from the top nav / footer land below the sticky header */
 #features, #faq, #demo { scroll-margin-top: 84px; }
 .auth { grid-area: auth; }
@@ -116,8 +122,9 @@
     grid-template-columns: minmax(0, 1fr) 420px;
     grid-template-areas: "main demo" "features features" "faq faq" "cta cta";
     column-gap: 72px;
-    padding-top: 56px;
   }
+  .hero-top { padding-top: 56px; }
+  .demo { align-self: center; }
   .land-main {
     grid-area: main;
     display: grid;

@@ -515,6 +515,14 @@ async function scenarioOnline(browser) {
     ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/rahim-traders", "online customer page still shows its host/username handle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "customer page uses the chosen theme");
     await shot("10-pay-empty");
+    await page.waitForSelector(".qrbox svg", { timeout: 5000 });
+    const baseDecoded = await decodeOnScreenQr(page);
+    const baseInfo = baseDecoded ? Q.inspect(baseDecoded) : { ok: false };
+    ok(baseInfo.ok && baseInfo.srcAmount === 0, "without an amount the page shows the static QR for the app's own amount");
+    ok(
+      (await page.$eval(".slip-help", (e) => e.textContent)).includes("type the amount in your payment app"),
+      "the page explains that the payer can type the amount in their app"
+    );
     await page.type(".amt-input", "১২৫০");
     ok((await page.$eval(".amt-input", (e) => e.value)) === "1250", "Bangla digits typed in the amount are converted");
     await page.waitForSelector(".qrbox svg");

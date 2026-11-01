@@ -13,6 +13,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Mobile navigation.** On narrow screens the header no longer packs `Sign in` / `Create page` (or the
+  dashboard's `View page` / account / `Sign out`) into the bar: a hamburger button opens a menu with
+  the nav links and actions, and closes on Escape, an outside click or after choosing an item. Desktop
+  keeps the inline row; the menu is wired up by the new `site/public/js/nav.js` and is available on
+  every page with a header (landing, login, dashboard, legal pages, 404), with `aria-expanded`/`aria-controls`.
+
 - **Repo split: the engine moved out.** This repository is now **DeshiPay** (the payment-page site);
   the payload engine — npm/PyPI `deshiqr`, the TypeScript/Python packages, the browser bundle, its
   docs (format, API, demo payloads, Pages self-hosting), examples, cdn demo and release workflows —

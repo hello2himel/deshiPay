@@ -1,8 +1,8 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 /**
- * Public types for `deshiqr-qr`.
+ * Public types for the deshiQR QR engine.
  *
  * The encoder is a from-scratch implementation of ISO/IEC 18004 "QR Code"
  * (byte mode only) with no runtime dependencies. See `README.md` for the API

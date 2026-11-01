@@ -1,8 +1,8 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 /**
- * `deshiqr-qr` — a dependency-free QR Code encoder (ISO/IEC 18004).
+ * The deshiQR QR engine — a dependency-free QR Code encoder (ISO/IEC 18004).
  *
  * Public contract (see `docs/architecture.md` §4 in the deshiQR repository):
  *   - `encode(text, options?)`        -> QrMatrix

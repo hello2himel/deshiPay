@@ -1,5 +1,5 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 /**
  * Renderers for encoded QR matrices: deterministic SVG and a terminal view.

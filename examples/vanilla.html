@@ -105,10 +105,10 @@
     <div class="row">
       <div class="panel">
         <!--
-          The custom element bundle is built by `pnpm build:libs`
-          (packages/element/dist/deshiqr-element.global.js, global name `DeshiQrElement`).
-          In production you can serve the same file from a CDN, e.g.:
-            https://cdn.jsdelivr.net/npm/deshiqr-element/dist/deshiqr-element.global.js
+          The single bundle is built by `pnpm build:libs`
+          (packages/deshiqr/dist/deshiqr.global.js, global name `DeshiQR`; it also registers
+          `<deshiqr-pay>`). In production you can serve the same file from a CDN, e.g.:
+            https://cdn.jsdelivr.net/npm/deshiqr/dist/deshiqr.global.js
         -->
         <deshiqr-pay
           id="pay"
@@ -192,6 +192,6 @@
         }
       });
     </script>
-    <script src="../packages/element/dist/deshiqr-element.global.js" defer></script>
+    <script src="../packages/deshiqr/dist/deshiqr.global.js" defer></script>
   </body>
 </html>

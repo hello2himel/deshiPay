@@ -1,4 +1,4 @@
-name: Release npm packages
+name: Release npm package
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   publish:
-    name: publish deshiqr, deshiqr-qr, deshiqr-element
+    name: publish deshiqr
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,14 +30,13 @@ jobs:
         run: |
           pnpm typecheck
           pnpm test
+          pnpm check:qr-api
+          node scripts/check-globals.mjs
 
-      - name: Build libraries
-        run: pnpm build:libs
+      - name: Build
+        run: pnpm build
 
       - name: Publish
-        run: |
-          pnpm --filter deshiqr publish --access public --provenance --no-git-checks
-          pnpm --filter deshiqr-qr publish --access public --provenance --no-git-checks
-          pnpm --filter deshiqr-element publish --access public --provenance --no-git-checks
+        run: pnpm --filter deshiqr publish --access public --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

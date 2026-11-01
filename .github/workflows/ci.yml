@@ -28,18 +28,38 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Build packages, element and web app
+      - name: Build the deshiqr package
         run: pnpm build
+
+      - name: Verify the browser bundle
+        run: node scripts/check-globals.mjs
+
+      - name: Verify the amount→QR API logic
+        run: pnpm check:qr-api
 
       - name: Test
         run: pnpm test
 
-      - name: Verify Supabase schema and RLS policies
-        run: node scripts/check-sql.mjs
+  python:
+    name: python package (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Upload web build
-        uses: actions/upload-artifact@v4
+      - uses: actions/setup-python@v5
         with:
-          name: deshiqr-web
-          path: apps/web/dist
-          retention-days: 7
+          python-version: ${{ matrix.python-version }}
+
+      - name: Test
+        working-directory: python
+        run: python -m unittest discover -s tests -v
+
+      - name: Verify packaging
+        working-directory: python
+        run: |
+          python -m pip install --upgrade build
+          python -m build --sdist --wheel --outdir dist

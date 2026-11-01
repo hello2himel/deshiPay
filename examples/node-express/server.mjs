@@ -9,12 +9,11 @@
  *   POST /order                 { amount, note?, reference? } -> { id, amount, reference, payload, qr_svg }
  *   GET  /order/:id             order status (pending | paid)
  *   GET  /order/:id/qr.svg      the QR image (also returned inline by POST /order)
- *   POST /order/:id/paid        manual "mark paid" stub (the confirmation gap: see docs/security.md)
- *   GET  /                      tiny HTML UI to try it in a browser
+ *   POST /order/:id/paid        manual "mark paid" stub (confirmation is your job: deshiQR
+ *                               only encodes what the payer should send)
  *
- * The payload/QR code comes from the workspace libraries:
- *   packages/core (npm: deshiqr)      parse/derive/validate
- *   packages/qr   (npm: deshiqr-qr)   QR encoder + SVG renderer
+ * The payload/QR code comes from the workspace package (npm: deshiqr):
+ *   packages/deshiqr   payload derivation + QR encoder + SVG renderer
  *
  * Run from the repo root:
  *   pnpm build:libs
@@ -26,8 +25,8 @@
 import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
-// Resolve the workspace packages whether they are linked (installed as deps) or only built
-// locally (`pnpm build:libs` writes packages/*/dist). Dynamic import keeps the fallback honest.
+// Resolve the workspace package whether it is linked (installed as a dep) or only built
+// locally (`pnpm build:libs` writes packages/deshiqr/dist). Dynamic import keeps the fallback honest.
 async function loadLibrary(name, builtPath) {
   try {
     return await import(name);
@@ -36,9 +35,17 @@ async function loadLibrary(name, builtPath) {
   }
 }
 
-const { MAX_AMOUNT, amountToField, build, formatTaka, referenceFrom, validate, verifyChecksum } =
-  await loadLibrary("deshiqr", "../../packages/core/dist/index.js");
-const { encode, toSvg } = await loadLibrary("deshiqr-qr", "../../packages/qr/dist/index.js");
+const {
+  MAX_AMOUNT,
+  amountToField,
+  build,
+  encode,
+  formatTaka,
+  referenceFrom,
+  toSvg,
+  validate,
+  verifyChecksum,
+} = await loadLibrary("deshiqr", "../../packages/deshiqr/dist/index.js");
 
 // Synthetic static payload from docs/demo-payloads.md — account 01000000000, DEMO STORE.
 const DEMO_STATIC_PAYLOAD =
@@ -257,8 +264,8 @@ const server = createServer(async (request, response) => {
         return;
       }
       if (request.method === "POST" && action === "/paid") {
-        // Manual confirmation stub. In production this is the merchant pressing "mark paid" in
-        // the dashboard after checking their bKash/Nagad statement. It is NOT a payment API.
+        // Manual confirmation stub. In production this is your own admin flow marking an order
+        // paid after checking the provider statement. It is NOT a payment API.
         order.status = "paid";
         order.paidAt = new Date().toISOString();
         sendJson(response, 200, {

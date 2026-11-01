@@ -1,5 +1,5 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 import { crc16 } from "./crc.ts";
 import { DeshiQrError, type DeshiQrCode } from "./errors.ts";
@@ -40,7 +40,7 @@ function safeSubfields(value: string): Field[] | null {
 
 /**
  * Non-throwing, thorough validation. Collects every problem instead of stopping
- * at the first one, which is what the setup wizard needs to guide a user.
+ * at the first one, so a form can show everything that is wrong at once.
  */
 export function validate(payload: string): ValidationReport {
   const errors: DeshiQrIssue[] = [];

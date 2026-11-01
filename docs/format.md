@@ -36,27 +36,32 @@ covering their whole subtree.
 Tags not listed here are still allowed (they are preserved, and reported with an `UNKNOWN_TAG`
 warning). `alias` is the key you can pass in `edits` instead of the tag path.
 
-| Tag/path   | Name                   | Alias           | Syntax                    | Length | Known values / notes                                               |
-| ---------- | ---------------------- | --------------- | ------------------------- | ------ | ------------------------------------------------------------------ |
-| `00`       | payload format         | —               | exactly `01`              | 2      | `01`                                                               |
-| `01`       | point of initiation    | —               | `11` static, `12` dynamic | 2      | auto-set by amount edits unless explicitly edited                  |
-| `26`       | account template       | —               | TLV subtree               | ≤ 99   | keep; edit sub-tags below at own risk                              |
-| `26/00`    | institution AID        | `institution`   | ASCII                     | ≤ 32   | `bd.org.bb.npsb` (NPSB Bangla QR); other providers unverified      |
-| `26/01`    | template version       | —               | 2 digits                  | 2      | `02` in samples                                                    |
-| `26/02`    | scheme/variant         | —               | 4 digits                  | 4      | `2002` in samples                                                  |
-| `26/03`    | account identifier     | `account`       | alphanumerics             | 4–34   | bKash sample: 11 digits; synthetic `01000000000`                   |
-| `52`       | merchant category code | `mcc`           | 4 digits                  | 4      | `5411` grocery, `6016` financial, `5999` general                   |
-| `53`       | currency               | `currency`      | ISO 4217 numeric          | 3      | `050` BDT, `356` INR, `764` THB, `840` USD, `978` EUR              |
-| `54`       | amount                 | `amount`        | decimal, 2 dp             | 1–13   | `0.01`–`99999999.99`; no silent rounding                           |
-| `58`       | country                | `country`       | ISO 3166-1 alpha-2        | 2      | `BD`                                                               |
-| `59`       | merchant name          | `name`          | text                      | 1–25   | exactly as issued on the merchant QR                               |
-| `60`       | merchant city          | `city`          | text                      | 1–15   | e.g. `Dhaka`                                                       |
-| `62`       | additional data        | —               | TLV subtree               | ≤ 99   | optional                                                           |
-| `62/01`    | reference / bill no.   | `reference`     | printable ASCII           | 1–32   | bKash dynamic QRs use 25 chars                                     |
-| `62/06`    | customer label         | `customerLabel` | text                      | ≤ 99   | `FT` in bKash samples                                              |
-| `80`, `81` | token templates        | —               | TLV subtree               | ≤ 99   | opaque; `00` AID, `01` base64 token (~44 chars); preserve verbatim |
-| `63`       | CRC-16/CCITT-FALSE     | —               | 4 uppercase hex           | 4      | computed automatically; edits rejected                             |
-| other      | unknown tag            | tag path        | any                       | ≤ 99   | allowed with `UNKNOWN_TAG` warning                                 |
+| Tag/path   | Name                   | Alias           | Syntax                    | Length | Known values / notes                                                                                                                        |
+| ---------- | ---------------------- | --------------- | ------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `00`       | payload format         | —               | exactly `01`              | 2      | `01`                                                                                                                                        |
+| `01`       | point of initiation    | —               | `11` static, `12` dynamic | 2      | auto-set by amount edits unless explicitly edited                                                                                           |
+| `26`       | account template       | —               | TLV subtree               | ≤ 99   | keep; edit sub-tags below at own risk                                                                                                       |
+| `26/00`    | institution AID        | `institution`   | ASCII                     | ≤ 32   | `bd.org.bb.npsb` (NPSB Bangla QR); other providers unverified                                                                               |
+| `26/01`    | template version       | —               | 2 digits                  | 2      | `02` in samples                                                                                                                             |
+| `26/02`    | scheme/variant         | —               | 4 digits                  | 4      | `2002` in samples                                                                                                                           |
+| `26/03`    | account identifier     | `account`       | alphanumerics             | 4–34   | format constraint; samples use 11 digits (synthetic `01000000000`)                                                                          |
+| `52`       | merchant category code | `mcc`           | 4 digits                  | 4      | examples: `5411` grocery, `6016` financial institutions, `5999` specialty retail; merchant/provider chooses                                 |
+| `53`       | currency               | `currency`      | ISO 4217 numeric          | 3      | `050` = BDT (the Bangla QR currency). Other ISO codes (`356`, `764`, `840`, `978`) are accepted structurally but unverified for this format |
+| `54`       | amount                 | `amount`        | decimal, exactly 2 dp     | 4–11   | `0.01`–`99999999.99` (max 8 integer digits + `.` + 2 decimals); no silent rounding                                                          |
+| `58`       | country                | `country`       | ISO 3166-1 alpha-2        | 2      | `BD`                                                                                                                                        |
+| `59`       | merchant name          | `name`          | text                      | 1–25   | exactly as issued on the merchant QR                                                                                                        |
+| `60`       | merchant city          | `city`          | text                      | 1–15   | e.g. `Dhaka`                                                                                                                                |
+| `62`       | additional data        | —               | TLV subtree               | ≤ 99   | optional                                                                                                                                    |
+| `62/01`    | reference / bill no.   | `reference`     | printable ASCII           | 1–32   | e.g. `BILL123`; bKash dynamic QRs typically use 25 characters (verify per account type)                                                     |
+| `62/06`    | customer label         | `customerLabel` | text                      | ≤ 99   | `FT` in bKash samples                                                                                                                       |
+| `80`, `81` | token templates        | —               | TLV subtree               | ≤ 99   | opaque; `00` AID, `01` base64 token (~44 chars); preserve verbatim                                                                          |
+| `63`       | CRC-16/CCITT-FALSE     | —               | 4 uppercase hex           | 4      | computed automatically; edits rejected                                                                                                      |
+| other      | unknown tag            | tag path        | any                       | ≤ 99   | allowed with `UNKNOWN_TAG` warning                                                                                                          |
+
+Lengths and character sets in this table are **format constraints** enforced by the editor. Values
+under "known values" are illustrative examples, not a complete registry: a merchant or provider may
+use other MCCs, and only `050` (BDT) is verified as the Bangla QR currency here. Fixtures in this repo
+are synthetic; never derive the field table from a real merchant payload.
 
 ### Editing risk
 
@@ -132,7 +137,7 @@ What changed:
 | `62/01` reference        | absent   | `BILL123`                | `reference` alias                 |
 | `62` subtree             | `0602FT` | `0107BILL1230602FT`      | inserted in sub-tag order (01,06) |
 | `63` checksum            | `295D`   | `DB6A`                   | re-sealed after the edit          |
-| everything else          | —        | unchanged, byte for byte | only edited tags differ           |
+| everything else          | —        | unchanged, byte for byte | only the rows above differ        |
 
 Removing the amount is the inverse edit: `update(amountOnlyPayload, { amount: null })` drops `54` and
 sets `01` back to `11`, re-sealing the checksum. Applied to the amount-only output `…63049781`, the

@@ -15,8 +15,9 @@ deshiQR does exactly two things:
 
 - **`update(payload, edits, options?) → string`** — load a Bangla QR payload,
   edit any tag by alias or tag path, and get the re-sealed payload back. The
-  checksum is always recomputed; everything you did not edit stays byte-for-byte
-  identical.
+  checksum is always recomputed; everything else (account template, name, city,
+  tokens) stays byte-for-byte identical, except tag `01` when an amount edit makes
+  it consistent.
 - **`validate(payload, options?) → { ok, errors, warnings }`** — non-throwing,
   thorough validation with stable machine-readable codes.
 

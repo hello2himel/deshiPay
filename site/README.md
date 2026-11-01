@@ -154,7 +154,8 @@ has **Download your page as HTML** so a published page can always be saved as a 
 When it is **offline**:
 
 - The landing page shows a **“Create your page”** card instead of sign-in. There is no login or sign-up,
-  and the landing copy no longer promises a hosted address (“Take it with you”, “Download it”).
+  no database-status line, and the landing copy no longer promises a hosted address (“Take it with
+  you”, “Download it”).
 - **Create my page** opens `/app` with the **same four-step wizard**, without an account: name and
   title, Bangla QR upload/paste, wallets/banks, colour and quick amounts. Step 1 asks only for the
   name/business name and an optional note — **no link/username is asked at all** (there is no hosted
@@ -165,6 +166,12 @@ When it is **offline**:
   inside it. Only the web fonts are loaded from the internet; everything else works offline and from
   `file://`.
 - The draft is kept in `localStorage` under `deshiqr.local.v1`, so a reload does not lose the work.
+
+**Visitors on existing pages.** While the database is down, opening any published page
+(`/<username>`) shows a friendly **“Temporarily unavailable”** screen — “Sorry — payment pages can’t be
+loaded right now. DeshiQR is temporarily unavailable; please try again in a little while.” — with a
+**Try again** button that re-checks and loads the page once the backend is back. It is not a broken
+page and it never shows the customer a database error.
 
 **Hosting the file.** It is a plain static file: drag it onto Netlify Drop, put it in a GitHub Pages
 repository, or upload it anywhere you already host files. `/page.html?amount=500` locks the amount, just

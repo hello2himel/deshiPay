@@ -71,8 +71,11 @@
   }
 
   // Promise<{ configured, online, reason, status }>, cached for this page load.
-  function checkBackend() {
-    if (_backend) return _backend;
+  // checkBackend({ force: true }) drops the cache and probes again (used by a
+  // "Try again" button); calling it without options keeps the cached answer.
+  function checkBackend(options) {
+    if (!(options && options.force) && _backend) return _backend;
+    _backend = null;
     if (!configured) {
       _backend = Promise.resolve({ configured: false, online: false, reason: "not-configured", status: null });
       return _backend;

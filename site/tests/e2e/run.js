@@ -1,19 +1,22 @@
 /*
  * UI smoke test. Drives the real pages in headless Chrome against a mocked
- * Supabase and runs TWO scenarios:
+ * Supabase and runs THREE scenarios:
  *
  *   1. ONLINE  — the original journey: landing, sign up, onboarding, publish,
  *                the Share tab (including the new HTML download), the customer
- *                page, and scanning the QR it draws.
+ *                page (one health probe per load), and scanning the QR it draws.
  *   2. OFFLINE — a paused/unreachable backend: landing "Create my page" CTA,
- *                the auth-free local wizard, the Download step, then the
- *                downloaded standalone HTML opened from file:// (title, theme,
- *                amount -> QR scanned, ?amount= lock, no network but the fonts).
+ *                the auth-free local wizard, the Download step, the downloaded
+ *                standalone HTML opened from file:// (title, theme, amount -> QR
+ *                scanned, ?amount= lock, no network but the fonts), and a live
+ *                payment page showing "Temporarily unavailable" with Try again.
+ *   3. RECOVERY — a live payment page opened while the backend is down, then the
+ *                backend comes back and Try again renders the customer page.
  *
  * The Supabase client is mocked (tests/e2e/mock-supabase.js); config.js is
  * stubbed. The online scenario answers the backend health probe with 200; the
- * offline scenario aborts every request to the Supabase host, which is what the
- * site sees when a free-tier project is paused or the network is down.
+ * offline scenarios abort every request to the Supabase host (state.down), which
+ * is what the site sees when a free-tier project is paused or the network is down.
  *
  * Setup (once, outside the repo — do not add puppeteer-core to the repo):
  *
@@ -72,12 +75,14 @@ const PAYLOAD = body0 + H.crc16(body0);
 
 /* ---------------- shared page plumbing ---------------- */
 
-// One page per scenario, in its own (incognito) browser context so the two
-// scenarios never share localStorage (mock session, local draft, ...).
+// One page per scenario, in its own (incognito) browser context so the scenarios
+// never share localStorage (mock session, local draft, ...). state.down starts as
+// the scenario asks; flipping it mid-scenario lets the RECOVERY scenario bring the
+// mocked backend back up behind the payment page's "Try again" button.
 async function newScenarioPage(browser, offline) {
   const ctx = await browser.createBrowserContext();
   const page = await ctx.newPage();
-  const state = { offline, supa: [], health: 0, errors: [] };
+  const state = { down: !!offline, supa: [], health: 0, errors: [] };
   await page.setRequestInterception(true);
   page.on("request", (req) => serve(req, state));
   page.on("pageerror", (e) => state.errors.push("pageerror: " + e.message));
@@ -102,10 +107,10 @@ function serve(req, state) {
   if (u.includes("fonts.gstatic.com")) return req.abort();
   if (u.includes("supabase.co")) {
     state.supa.push(u);
-    // Offline: abort the probe (and the fallback), like a paused project or a
-    // dead network. Online: answer the auth health endpoint as a simple,
-    // CORS-readable request (no custom headers, so no preflight).
-    if (state.offline) return req.abort();
+    // Down: abort the probe (and the fallback), like a paused project or a dead
+    // network. Up: answer the auth health endpoint as a simple, CORS-readable
+    // request (no custom headers, so no preflight).
+    if (state.down) return req.abort();
     const clean = u.split("?")[0];
     if (clean.endsWith("/auth/v1/health") || /\/rest\/v1\/?$/.test(clean)) {
       state.health++;
@@ -307,8 +312,11 @@ async function scenarioOnline(browser) {
     await shotFull("09-share-download");
 
     console.log("Customer page (mobile)");
+    const healthBefore = state.health;
     await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
     await page.waitForSelector(".pv h1");
+    ok(state.health > healthBefore, "online payment page probes the backend health endpoint on load");
+    ok(!(await page.evaluate(() => document.body.innerText.includes("Temporarily unavailable"))), "online payment page never shows “Temporarily unavailable”");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
     ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/rahim-traders", "online customer page still shows its host/username handle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "customer page uses the chosen theme");
@@ -404,7 +412,9 @@ async function scenarioOffline(browser) {
     ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline landing shows no sign-in / sign-up form");
     ok((await page.$eval('#auth a[href="/app"]', (e) => e.textContent)).includes("Create my page"), "offline landing offers the “Create my page” CTA");
     ok((await page.$eval("#auth h2", (e) => e.textContent)) === "Create your page", "offline landing heading explains what to do");
-    ok((await page.$eval("#auth .notice", (e) => e.textContent)).includes("can’t reach the database"), "offline landing explains the database is unreachable");
+    ok((await page.$("#auth .notice")) === null, "offline landing card has no database-status notice");
+    ok((await page.$eval("#setupNotice", (e) => e.textContent.trim())) === "", "the setup notice stays empty in offline mode");
+    ok((await page.$eval("#auth .sub", (e) => e.textContent)).includes("Sign-in is offline right now"), "offline landing explains why sign-in is unavailable");
     ok(state.supa.length >= 2 && state.supa.every(isProbe), "the landing probed health + fallback and nothing else (" + state.supa.length + " requests)");
     const offlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
@@ -563,11 +573,85 @@ async function scenarioOffline(browser) {
 
     ok(sstate.net.length > 0 && sstate.net.every((u) => /fonts\.(googleapis|gstatic)\.com/.test(u)), "standalone page loads nothing but the web fonts");
     ok(sstate.errors.length === 0, "standalone page has no console or page errors" + (sstate.errors.length ? "\n         " + sstate.errors.join("\n         ") : ""));
+
+    console.log("Live payment page while the backend is down");
+    // Close the standalone tab and make the main page active again: Puppeteer
+    // waits for a stable bounding box with requestAnimationFrame before clicking,
+    // and a background tab's rAF can be throttled (the click would hang).
+    await sp.close();
+    await page.bringToFront();
+    await page.goto(BASE + "/some-shop", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".pv-state h1", { timeout: 10000 });
+    ok((await page.$eval(".pv-state h1", (e) => e.textContent)) === "Temporarily unavailable", "a payment page opened while the backend is down says “Temporarily unavailable”");
+    const unavailableText = await page.$eval(".pv-state p", (e) => e.textContent);
+    ok(unavailableText.includes("Sorry") && /try again/i.test(unavailableText), "the unavailable state apologises and asks the visitor to try again");
+    ok((await page.$eval(".pv-state button", (e) => e.textContent)).includes("Try again"), "the unavailable state offers a “Try again” button");
+    ok((await page.$(".pv h1")) === null, "no customer page is rendered while the backend is down");
+    await shot("24-offline-pay-unavailable");
+    const supaBeforeRetry = state.supa.length;
+    await page.click(".pv-state button");
+    await page.waitForFunction(
+      () => document.querySelector(".pv-state h1") && document.querySelector(".pv-state h1").textContent === "Temporarily unavailable",
+      { timeout: 15000 }
+    );
+    ok(true, "Try again keeps the unavailable state while the backend is still down");
+    ok(state.supa.length > supaBeforeRetry && state.supa.every(isProbe), "Try again forces a fresh health probe, and makes no other Supabase call");
   } catch (e) {
     console.error("  FAIL exception: " + e.message);
     fails++;
   }
   noErrors(state, "offline journey");
+  await ctx.close();
+}
+
+/* ================= recovery: Try again after the backend comes back ================= */
+
+async function scenarioRecovery(browser) {
+  console.log("\n=== Scenario 3: payment page recovers when the backend comes back ===");
+  const { ctx, page, state } = await newScenarioPage(browser, true);
+  try {
+    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    const shot = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: false });
+
+    // Same-origin page first, to seed the mocked database with one published page.
+    await page.goto(BASE + "/", { waitUntil: "networkidle0" });
+    await page.waitForFunction(() => !!document.querySelector('#auth a[href="/app"]'), { timeout: 10000 });
+    await page.evaluate((payload) => {
+      localStorage.setItem("mock.supa", JSON.stringify({
+        users: [],
+        session: null,
+        profiles: [{
+          username: "some-shop", title: "Recovery Shop", message: "We are back online.",
+          theme: "coffee", presets: [100, 500, 1000], qr_payload: payload, qr_name: "RAHIM TRADERS",
+          qr_city: "Bogra", ref_prefix: "", ref_len: 0, wallets: [], banks: [], is_published: true
+        }]
+      }));
+    }, PAYLOAD);
+
+    console.log("Down: the unavailable state");
+    await page.goto(BASE + "/some-shop", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".pv-state h1", { timeout: 10000 });
+    ok((await page.$eval(".pv-state h1", (e) => e.textContent)) === "Temporarily unavailable", "recovery test starts from “Temporarily unavailable”");
+    await shot("25-pay-unavailable");
+
+    console.log("Backend returns: Try again loads the page");
+    state.down = false;
+    const probesBefore = state.health;
+    await page.click(".pv-state button");
+    await page.waitForSelector(".pv h1", { timeout: 15000 });
+    ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Recovery Shop", "Try again renders the customer page once the backend is back");
+    ok(state.health > probesBefore, "the recovered page came from a fresh, successful health probe");
+    ok(!(await page.evaluate(() => document.body.innerText.includes("Temporarily unavailable"))), "the unavailable state is gone after recovery");
+    ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/some-shop", "the recovered live page shows its host/username handle");
+    await page.type(".amt-input", "500");
+    await page.waitForSelector(".qrbox svg");
+    await shot("26-pay-recovered");
+    ok(true, "the recovered page still draws its payment QR");
+  } catch (e) {
+    console.error("  FAIL exception: " + e.message);
+    fails++;
+  }
+  noErrors(state, "recovery journey");
   await ctx.close();
 }
 
@@ -580,6 +664,7 @@ async function main() {
   try {
     await scenarioOnline(browser);
     await scenarioOffline(browser);
+    await scenarioRecovery(browser);
   } finally {
     await browser.close();
     server.kill();

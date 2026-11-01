@@ -117,8 +117,11 @@ the configured project once (`Deshi.checkBackend()` in `site/public/js/common.js
 page as HTML* for any published page.
 
 **Offline** (`paused`, `restricted`, `unreachable` or `not-configured`): the landing page shows a
-**“Create your page”** CTA instead of the sign-in form (no accounts involved), and its points/how-it-works
-copy switches from “claim your address” to “download it and host it yourself”. The CTA opens `/app` with
+**“Create your page”** CTA instead of the sign-in form (no accounts involved, and no database-status
+line), and its points/how-it-works copy switches from “claim your address” to “download it and host it
+yourself”. Customers opening a published page while the backend is down get a **“Temporarily
+unavailable”** screen — an apology and a **Try again** button that re-checks the backend and loads the
+page when it is back — rather than a load error. The CTA opens `/app` with
 the same onboarding wizard, running locally: step 1 asks only for the name/business name and an optional
 note — no link/username is requested, because the file will be hosted at an address this site doesn't
 know — and the small host/username line is hidden in the offline preview and the downloaded file. The

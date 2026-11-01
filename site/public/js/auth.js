@@ -24,13 +24,6 @@
     );
   }
 
-  var OFFLINE_LINE = {
-    paused: "The database is paused right now. You can still build your page and download it.",
-    restricted: "The database is over its free-tier limit right now. You can still build and download your page.",
-    unreachable: "We can’t reach the database right now. You can still build your page and download it.",
-    "not-configured": "This site isn’t connected to a database yet. You can still build your page and download it."
-  };
-
   // The landing usually advertises the hosted service (your own address, a live
   // link). That isn’t true offline, so those bits are rewritten in place; the
   // markup, classes and the decorative slip stay untouched.
@@ -56,14 +49,14 @@
   }
 
   // No login, no sign-up: the same wizard at /app runs without an account and
-  // ends with a downloadable single HTML file.
-  function renderOffline(backend) {
+  // ends with a downloadable single HTML file. The status detail (paused,
+  // restricted, unreachable) is deliberately left out of the card.
+  function renderOffline() {
     notice.replaceChildren();
     offlineCopy();
     card.replaceChildren(
       h("h2", null, "Create your page"),
       h("p", { class: "sub" }, "Sign-in is offline right now, but you can still build your payment page and download it as one HTML file to host yourself."),
-      h("div", { class: "notice" }, icon("info"), h("span", null, OFFLINE_LINE[backend.reason] || "You can still build your page and download it.")),
       h("a", { class: "btn block", href: "/app" }, icon("next"), "Create my page")
     );
   }
@@ -188,7 +181,7 @@
       ? T.checkBackend()
       : Promise.resolve({ configured: !!T.configured, online: !!T.client(), reason: T.configured ? "online" : "not-configured", status: null });
     probe.then(function (backend) {
-      if (!backend.online) return renderOffline(backend);
+      if (!backend.online) return renderOffline();
       sb = T.client();
       if (!sb) {
         setupNotice();
@@ -199,7 +192,7 @@
       });
       render();
     }, function () {
-      renderOffline({ reason: "unreachable" });
+      renderOffline();
     });
   }
 

@@ -2,11 +2,9 @@
  * Browser global entry point for plain `<script src>` usage.
  *
  * The IIFE build (`dist/deshiqr.global.js`) exposes one global, `DeshiQR`, with
- * the payload library, the QR encoder/renderers and the `<deshiqr-pay>` element.
- * Importing the element module registers the custom element (a guarded no-op
- * outside a browser). Bundlers should prefer the package entry `deshiqr` (no DOM
- * side effects) or the `deshiqr/element` subpath.
+ * exactly the two functions (and the error class) of the package:
+ *
+ *   DeshiQR.update(payload, edits, options?) -> string
+ *   DeshiQR.validate(payload, options?)      -> { ok, errors, warnings }
  */
-
 export * from "./index.ts";
-export * from "./element/index.ts";

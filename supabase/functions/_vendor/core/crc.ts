@@ -1,5 +1,5 @@
 // GENERATED FILE - do not edit.
-// Source: packages/deshiqr/src/{core,qr}
+// Source: packages/deshiqr/src/core
 // Regenerate with: node scripts/vendor-edge.mjs
 /**
  * CRC-16/CCITT-FALSE — the checksum used by EMVCo-style QR payloads, including

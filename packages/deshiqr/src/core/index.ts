@@ -1,70 +1,49 @@
 /**
- * deshiqr — parse, verify and build Bangla QR (NPSB / EMVCo) payment payloads.
- *
- * Zero dependencies, environment-agnostic (browser, Node, Deno, edge runtimes).
- * Decoding is verified against real bKash payloads today; the parser is
- * provider-agnostic, but support for other Bangla QR providers is not claimed
- * until their real payloads are in the test suite.
+ * Internal barrel for the payload core. The public API is re-exported from
+ * `src/index.ts`; the edge function imports this module through the vendored
+ * copy in `supabase/functions/_vendor/core`.
  */
-import { crc16 } from "./crc.ts";
+export { DeshiQrError } from "./errors.ts";
+export type { DeshiQrCode, DeshiQrIssue } from "./errors.ts";
 
-export { DeshiQrError, type DeshiQrCode } from "./errors.ts";
+export { update, RISKY_EDIT_MESSAGE } from "./edit.ts";
+export type { EditValue, PayloadEdits, UpdateOptions } from "./edit.ts";
+
+export { validate, filterWarnings } from "./validate.ts";
+export type { ValidateOptions, ValidationReport } from "./validate.ts";
+
 export { crc16 } from "./crc.ts";
 export {
-  TAGS,
   MAX_FIELD_LENGTH,
-  type Field,
-  parse,
   encodeField,
   encodeFields,
   findField,
   findValue,
-  parseSubfields,
   insertFieldSorted,
+  isTag,
+  normalize,
+  parse,
+  parseSubfields,
 } from "./tlv.ts";
+export type { Field } from "./tlv.ts";
+
 export {
+  ALIASES,
+  AMOUNT_FIELD_RE,
+  CHECKSUM_TAG,
+  FIELD_SPECS,
+  IDENTITY_PATHS,
+  KNOWN_CURRENCIES,
+  VERIFIED_INSTITUTION_AIDS,
+  KNOWN_MCCS,
   MAX_AMOUNT,
-  amountToField,
-  parseAmountField,
-  formatTaka,
-  maskAccount,
-  type FormatTakaOptions,
-} from "./amount.ts";
-export {
-  decode,
-  decodeSafe,
-  institutionOf,
-  KNOWN_INSTITUTIONS,
-  type DecodedQr,
-  type MerchantDetails,
-} from "./decode.ts";
-export {
-  build,
-  withAmount,
-  toStatic,
-  seal,
-  referenceFrom,
-  assertReference,
-  type AmountOptions,
-  type BuildOptions,
-} from "./build.ts";
-export { newReference, DEFAULT_REFERENCE_LENGTH, type ReferenceOptions } from "./reference.ts";
-export {
-  validate,
-  isBanglaQr,
-  type ValidationReport,
-  type DeshiQrIssue,
-} from "./validate.ts";
-
-/** Package version. Kept in sync with package.json by the release script. */
-export const VERSION = "0.1.0";
-
-/** True for any payload whose checksum validates. */
-export function verifyChecksum(payload: string): boolean {
-  const text = typeof payload === "string" ? payload.trim() : "";
-  if (text.length < 8) return false;
-  const checksum = text.slice(-4);
-  if (!/^[0-9A-Fa-f]{4}$/.test(checksum)) return false;
-  return crc16(text.slice(0, -4)) === checksum.toUpperCase();
-}
-
+  MAX_PAYLOAD_LENGTH,
+  PARSED_TEMPLATE_TAGS,
+  RECOMMENDED_TAGS,
+  TAG_PATH_RE,
+  TEMPLATE_TAGS,
+  fieldWarnings,
+  isParsedTemplateTag,
+  isTemplateTag,
+} from "./fields.ts";
+export type { FieldSpec } from "./fields.ts";

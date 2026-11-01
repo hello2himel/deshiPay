@@ -2,7 +2,7 @@ name: Publish browser bundle (CDN)
 
 # Hosts the plain-<script> build on GitHub Pages:
 #   https://<owner>.github.io/deshiQR/deshiqr.global.js
-# The bundle exposes window.DeshiQR (payload + QR) and registers <deshiqr-pay>.
+# The bundle exposes window.DeshiQR with `update(payload, edits)` and `validate(payload)`.
 #
 # Why this exists: raw.githubusercontent.com serves text/plain with X-Content-Type-Options:
 # nosniff, so browsers refuse to execute it from <script src>. GitHub Pages serves the same
@@ -60,7 +60,7 @@ jobs:
           printf '%s\n' \
             'deshiQR browser bundle' \
             '' \
-            'deshiqr.global.js   window.DeshiQR   (payload + QR; registers <deshiqr-pay>)' \
+            'deshiqr.global.js   window.DeshiQR   (update + validate)' \
             '' \
             'npm: https://www.npmjs.com/package/deshiqr' \
             'Docs: https://github.com/hello2himel/deshiQR' \

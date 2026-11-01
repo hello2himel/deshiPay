@@ -30,7 +30,7 @@ jobs:
         run: |
           pnpm typecheck
           pnpm test
-          pnpm check:qr-api
+          pnpm check:api
           node scripts/check-globals.mjs
 
       - name: Build

@@ -1,7 +1,7 @@
 {
   "name": "deshiqr",
   "version": "0.1.0",
-  "description": "Bangla QR toolkit: parse, verify and build NPSB/EMVCo payment payloads, encode QR Codes, and embed a <deshiqr-pay> panel. Zero dependencies.",
+  "description": "Edit and validate Bangladesh Bangla QR (NPSB / EMVCo) payloads: update(payload, edits) and validate(payload). Zero dependencies.",
   "keywords": [
     "bangla-qr",
     "bkash",
@@ -9,19 +9,15 @@
     "emv",
     "emvco",
     "qr",
-    "qrcode",
     "payments",
     "bangladesh",
-    "web-component",
-    "custom-element"
+    "payload",
+    "validator"
   ],
   "license": "MIT",
   "author": "Himel Das <hello2himel@proton.me>",
   "type": "module",
-  "sideEffects": [
-    "./dist/element.js",
-    "./dist/deshiqr.global.js"
-  ],
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,12 +28,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./element": {
-      "types": "./dist/element.d.ts",
-      "import": "./dist/element.js"
-    },
-    "./package.json": "./package.json"
+    }
   },
   "files": [
     "dist",
@@ -46,13 +37,11 @@
   ],
   "scripts": {
     "build": "tsup",
-    "test": "node --test test/core/*.test.ts test/qr/*.test.ts test/element/*.test.ts",
+    "test": "node --test test/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "jsqr": "^1.4.0",
-    "qrcode": "^1.5.4",
     "tsup": "^9.0.0",
     "typescript": "^5.9.3"
   },

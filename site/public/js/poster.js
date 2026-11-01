@@ -1,45 +1,48 @@
 /*
- * Printable "Pay here" poster, A4 / A5 portrait.
+ * Printable DeshiPay poster, A4 / A5 portrait.
  *
- * The QR is the owner's amount-free Bangla QR (page.qr_payload): the same
- * static payload customers scan on the payment page, never a DeshiPay URL.
- * Output is a self-contained SVG in millimetres (inline QR, system-font stack,
- * no external assets) that prints at 100% or opens in a vector app.
+ * The QR is the owner's static Bangla QR (or an amount-bearing version for a
+ * Payment request). It is never a link to the DeshiPay page. Output is a
+ * self-contained SVG in millimetres, with local/system fonts and embedded
+ * Play-store app icons from poster-logos.js.
  *
- * Layout follows the print spec: white paper to trim, safe margins, 117 mm QR
- * on A4 / 78 mm on A5, a 9 mm / 7 mm white quiet zone, pure black QR, ink text,
- * green only for accents. No filters, patterns, foreignObject or images.
+ * Design: payee name is the hero, "Pay here." is a small supporting line,
+ * QR is ~55-60% of the width, three-step hint, one row each of MFS and bank
+ * apps, and a quiet footer. No external assets, no filters or foreignObject.
  */
 (function () {
   "use strict";
   var NS = "http://www.w3.org/2000/svg", XLINK = "http://www.w3.org/1999/xlink";
-  var DISPLAY = 'Bricolage Grotesque, Hind Siliguri, Noto Sans Bengali, Nirmala UI, Arial, Helvetica, sans-serif';
-  var BODY = 'Figtree, Hind Siliguri, Noto Sans Bengali, Nirmala UI, Segoe UI, Arial, Helvetica, sans-serif';
-  var INK = "#181D2B", MUTED = "#5F6573", GREEN = "#056B4E", MINT = "#E6F0ED", PAPER = "#FFFFFF", LINE = "#B9D6CD";
+  var DISPLAY = 'Bricolage Grotesque, Hind Siliguri, Noto Sans Bengali, Nirmala UI, Arial, sans-serif';
+  var BODY = 'Figtree, Hind Siliguri, Noto Sans Bengali, Nirmala UI, Segoe UI, Arial, sans-serif';
+  var INK = "#181D2B", HERO = "#0F172A", MUTED = "#4A5260", LINE = "#D8E6E0", GREEN = "#0B6B4F", MINT = "#E6F0ED", PAPER = "#FFFFFF";
   var MARK = "M42.89 35.39A12 12 0 0 0 22.4 43.87L22.4 67.6A10 10 0 0 0 32.4 77.6L56.13 77.6A12 12 0 0 0 64.61 57.11Z";
 
-  /* All values in millimetres / point sizes converted with pt*0.352778. */
   var FORMATS = {
-    a4: { w: 210, h: 297, m: 18, cx: 105,
-      markX: 18, markY: 16, markSize: 8, wordX: 28.6, wordY: 22.2, wordPt: 15, wordLS: -0.1,
-      microX: 192, microY: 22.7, microPt: 7, cornerTop: 46, cornerBottom: 24, footMark: 7,
-      ruleY: 31, tickW: 13,
-      titleY: 60, titlePt: 76, titleLS: -0.55,
-      payToY: 71, payToPt: 7.5, merchantY: 91, merchantPt: 24,
-      qr: { x: 46.5, y: 107.5, size: 117, plateX: 36, plateY: 97, plateW: 138, plateR: 6, cardX: 37.5, cardY: 98.5, cardW: 135, cardR: 4.5 },
-      inY: 241, inPt: 15,
-      logo1Y: 249, logo1H: 12, logo2Y: 264, logo2H: 10,
-      legalY: 280, legalPt: 7.5 },
-    a5: { w: 148, h: 210, m: 13, cx: 74,
-      markX: 13, markY: 10.5, markSize: 5.8, wordX: 20.7, wordY: 14.9, wordPt: 11, wordLS: -0.07,
-      microX: 135, microY: 16.2, microPt: 6.8, cornerTop: 38, cornerBottom: 18, footMark: 5.5,
-      ruleY: 22, tickW: 10,
-      titleY: 40.5, titlePt: 46, titleLS: -0.34,
-      payToY: 49.5, payToPt: 7, merchantY: 65, merchantPt: 16,
-      qr: { x: 35, y: 79.5, size: 78, plateX: 26.5, plateY: 71, plateW: 95, plateR: 4.5, cardX: 28, cardY: 72.5, cardW: 92, cardR: 3 },
-      inY: 170, inPt: 12.5,
-      logo1Y: 174, logo1H: 8, logo2Y: 185, logo2H: 7,
-      legalY: 199, legalPt: 7 }
+    a4: {
+      w: 210, h: 297, m: 16, cx: 105,
+      deco: { cx: 189, cy: 17, r: 39 },
+      markX: 16, markY: 16, markSize: 9, wordX: 28.6, wordY: 22.8, wordPt: 16,
+      headlineY: 46, headlinePt: 34, headlineLS: -0.5,
+      payToY: 54, payToPt: 10, payToLS: 1.15,
+      nameY: 76, namePt: 48, nameMinPt: 28, nameTwoLinePt: 36,
+      qr: { plateX: 40, plateY: 84, plateW: 130, plateR: 7, cardX: 42.5, cardY: 86.5, cardW: 125, cardR: 4.5, x: 45, y: 89, size: 120 },
+      stepsY: 225, stepsPt: 10,
+      logos: { top: 238, tile: 12, gapX: 3.5, rowGap: 3 },
+      footer: { lineY: 271, markX: 16, markY: 274, markSize: 6, textX: 25, textY: 280, textPt: 7.5 }
+    },
+    a5: {
+      w: 148, h: 210, m: 10, cx: 74,
+      deco: { cx: 134, cy: 10, r: 31 },
+      markX: 10, markY: 10, markSize: 6.5, wordX: 19.2, wordY: 16.0, wordPt: 12,
+      headlineY: 31, headlinePt: 24, headlineLS: -0.35,
+      payToY: 38.5, payToPt: 8, payToLS: 0.9,
+      nameY: 57, namePt: 32, nameMinPt: 19, nameTwoLinePt: 24,
+      qr: { plateX: 29, plateY: 64, plateW: 90, plateR: 5, cardX: 31, cardY: 66.5, cardW: 86, cardR: 3.2, x: 33.5, y: 69, size: 82 },
+      stepsY: 159, stepsPt: 8,
+      logos: { top: 168, tile: 9, gapX: 3, rowGap: 2.4 },
+      footer: { lineY: 192, markX: 10, markY: 194.5, markSize: 5, textX: 17, textY: 200, textPt: 6.5 }
+    }
   };
 
   var measure = document.createElement("canvas").getContext("2d");
@@ -52,7 +55,7 @@
     return n;
   }
   function widthOf(text, size, weight, family) {
-    measure.font = (weight || 400) + " " + (size * PX) + "px " + (family || DISPLAY);
+    measure.font = (weight || 400) + " " + (size * PX) + "px " + family;
     return measure.measureText(text).width / PX;
   }
   function splitLong(word, maxW, size, weight, family) {
@@ -81,51 +84,54 @@
     if (line) lines.push(line);
     return lines;
   }
-  function fit(text, maxW, base, min, weight, maxLines, family) {
-    var size = base;
-    while (size > min) {
+  function fit(text, maxW, baseSize, minSize, weight, maxLines, family) {
+    var size = baseSize;
+    while (size > minSize) {
       var lines = wrap(text, maxW, size, weight, family);
       if (lines.length <= maxLines) return { size: size, lines: lines };
-      size = Math.max(min, size - 0.25);
+      size = Math.max(minSize, size - 0.25);
     }
-    var out = wrap(text, maxW, min, weight, family);
+    var out = wrap(text, maxW, minSize, weight, family);
     if (out.length > maxLines) {
       out = out.slice(0, maxLines);
       out[maxLines - 1] = out[maxLines - 1].replace(/[.,;:!?]?$/, "…");
     }
-    return { size: min, lines: out };
+    return { size: minSize, lines: out };
   }
-  function centeredLines(cx, lastBaseline, lines, size, lineRatio, attrs) {
-    var t = el("text", Object.assign({ x: cx, "text-anchor": "middle", "xml:space": "preserve" }, attrs));
+  function centeredText(cx, lastBaseline, lines, size, lineRatio, attrs, tspans) {
+    var t = el("text", Object.assign({ x: cx, y: lastBaseline, "text-anchor": "middle", "xml:space": "preserve" }, attrs));
     var lh = size * lineRatio;
     lines.forEach(function (line, i) {
       t.appendChild(el("tspan", { x: cx, y: lastBaseline - (lines.length - 1 - i) * lh }, line));
     });
+    if (tspans) tspans.forEach(function (s) { t.appendChild(s); });
     return t;
   }
-  function mark(x, y, size) {
+  function mark(x, y, size, fill) {
     var g = el("g", { transform: "translate(" + x + " " + y + ") scale(" + (size / 100) + ")" });
-    g.appendChild(el("rect", { width: 100, height: 100, rx: 32.4, fill: GREEN }));
+    g.appendChild(el("rect", { width: 100, height: 100, rx: 32.4, fill: fill || GREEN }));
     g.appendChild(el("path", { d: MARK, fill: PAPER }));
     return g;
   }
 
-  function logoImage(svg, item, cx, top, size) {
+  /* ---------- app logos (Play icons + Bangla QR mark) ---------- */
+  function logoImage(svg, item, x, top, size) {
     var g = el("g", { "data-logo": item.name, "aria-label": item.name });
-    var img = el("image", { x: cx - size / 2, y: top, width: size, height: size, preserveAspectRatio: "xMidYMid meet" });
+    if (item.name === "MTB Neo") g.appendChild(el("rect", { x: x, y: top, width: size, height: size, rx: size * 0.29, fill: "#F3F4F2" }));
+    var img = el("image", { x: x, y: top, width: size, height: size, preserveAspectRatio: "xMidYMid meet" });
     img.setAttribute("href", item.src);
     img.setAttributeNS(XLINK, "xlink:href", item.src);
     g.appendChild(img);
     svg.appendChild(g);
   }
-  function logoBanglaQr(svg, item, cx, top, size) {
+  function logoBanglaQr(svg, item, x, top, size) {
     var doc = new DOMParser().parseFromString(item.svg, "image/svg+xml");
     var src = doc.documentElement;
     var vb = (src.getAttribute("viewBox") || "0 0 1 1").split(/\s+/).map(Number);
     var ratio = vb[2] && vb[3] ? vb[2] / vb[3] : 1;
     var h = size, w = h * ratio;
     var g = el("g", { "data-logo": item.name, "aria-label": item.name });
-    var nested = el("svg", { x: cx - w / 2, y: top, width: w, height: h, viewBox: vb.join(" "), preserveAspectRatio: "xMidYMid meet" });
+    var nested = el("svg", { x: x + (size - w) / 2, y: top, width: w, height: h, viewBox: vb.join(" "), preserveAspectRatio: "xMidYMid meet" });
     Array.prototype.forEach.call(src.childNodes, function (n) { nested.appendChild(document.importNode(n, true)); });
     g.appendChild(nested);
     svg.appendChild(g);
@@ -133,17 +139,19 @@
   function appLogos(svg, f) {
     var L = window.DeshiPosterLogos;
     if (!L) return;
-    var rowW = f.w - f.m * 2;
-    function row(items, top, size, firstIsQr) {
-      var slot = rowW / items.length;
+    var row1 = L.mfs.concat([L.banglaqr]);
+    var row2 = L.banks;
+    var width = row1.length * f.logos.tile + (row1.length - 1) * f.logos.gapX;
+    var x0 = (f.w - width) / 2;
+    function row(items, top) {
       items.forEach(function (item, i) {
-        var cx = f.m + slot * (i + 0.5);
-        if (firstIsQr && item === L.banglaqr) logoBanglaQr(svg, item, cx, top, size);
-        else logoImage(svg, item, cx, top, size);
+        var x = x0 + i * (f.logos.tile + f.logos.gapX);
+        if (item === L.banglaqr) logoBanglaQr(svg, item, x, top, f.logos.tile);
+        else logoImage(svg, item, x, top, f.logos.tile);
       });
     }
-    row(L.mfs.concat([L.banglaqr]), f.logo1Y, f.logo1H, true);
-    row(L.banks, f.logo2Y, f.logo2H, false);
+    row(row1, f.logos.top);
+    row(row2, f.logos.top + f.logos.tile + f.logos.rowGap);
   }
 
   function build(page, format) {
@@ -153,41 +161,33 @@
       version: "1.1", role: "img", "aria-label": "Printable DeshiPay poster: pay " + (page.title || "this business") });
     svg.appendChild(el("title", null, "Pay " + (page.title || "here") + " · DeshiPay poster"));
     svg.appendChild(el("rect", { x: 0, y: 0, width: f.w, height: f.h, fill: PAPER }));
-
-    // mint corner arcs from the first visual study; kept away from the QR quiet zone
-    var rt = f.cornerTop, rb = f.cornerBottom;
-    svg.appendChild(el("path", { d: "M" + (f.w - rt) + " 0 A" + rt + " " + rt + " 0 0 1 " + f.w + " " + rt + " L" + f.w + " 0 Z", fill: MINT }));
-    svg.appendChild(el("path", { d: "M0 " + (f.h - rb) + " A" + rb + " " + rb + " 0 0 1 " + rb + " " + f.h + " L0 " + f.h + " Z", fill: MINT }));
+    svg.appendChild(el("circle", { cx: f.deco.cx, cy: f.deco.cy, r: f.deco.r, fill: MINT }));
 
     // header
     svg.appendChild(mark(f.markX, f.markY, f.markSize));
     svg.appendChild(el("text", { x: f.wordX, y: f.wordY, "font-family": DISPLAY, "font-weight": 800, "font-size": mm(f.wordPt),
-      "letter-spacing": f.wordLS, fill: INK }, "DeshiPay"));
-    svg.appendChild(el("text", { x: f.microX, y: f.microY, "text-anchor": "end", "font-family": BODY, "font-weight": 800,
-      "font-size": mm(f.microPt), "letter-spacing": 0.7, fill: GREEN }, "SCAN TO PAY"));
+      "letter-spacing": -0.03, fill: INK }, "DeshiPay"));
 
-    // hairline + green register tick
-    svg.appendChild(el("rect", { x: f.m, y: f.ruleY - 0.15, width: f.w - f.m * 2, height: 0.3, fill: LINE }));
-    svg.appendChild(el("rect", { x: f.m, y: f.ruleY - 0.3, width: f.tickW, height: 0.6, fill: GREEN }));
-
-    // "Pay here." headline; an amount-specific poster shows the amount here.
+    // supporting headline; amount-specific posters put the amount here
     var headText = page.amountLabel ? "Pay " + page.amountLabel : "Pay here";
-    var headFit = fit(headText, f.w - f.m * 2, mm(f.titlePt), mm(f.titlePt) * 0.55, 800, 1, DISPLAY);
-    var head = el("text", { x: f.cx, y: f.titleY, "text-anchor": "middle", "font-family": DISPLAY, "font-weight": 800,
-      "font-size": headFit.size, "letter-spacing": f.titleLS, fill: INK }, headFit.lines[0] || headText);
-    var dot = el("tspan", { fill: GREEN }, ".");
-    head.appendChild(dot);
+    var headFit = fit(headText, f.w - f.m * 2, mm(f.headlinePt), mm(f.headlinePt) * 0.55, 800, 1, DISPLAY);
+    var head = el("text", { x: f.cx, y: f.headlineY, "text-anchor": "middle", "font-family": DISPLAY, "font-weight": 800,
+      "font-size": headFit.size, "letter-spacing": f.headlineLS, fill: INK }, headFit.lines[0] || headText);
+    head.appendChild(el("tspan", { fill: GREEN }, "."));
     svg.appendChild(head);
 
-    // PAY TO + merchant (1-2 measured lines, last baseline fixed, label lifts for 2 lines)
-    var merchant = fit(page.title || "Your business", f.w - f.m * 2, mm(f.merchantPt), mm(f.merchantPt) * 0.8, 700, 2, DISPLAY);
-    var labelY = f.payToY - (merchant.lines.length > 1 ? 2.5 : 0);
-    svg.appendChild(el("text", { x: f.cx, y: labelY, "text-anchor": "middle", "font-family": BODY, "font-weight": 700,
-      "font-size": mm(f.payToPt), "letter-spacing": 0.35, fill: MUTED }, "PAY TO"));
-    svg.appendChild(centeredLines(f.cx, f.merchantY, merchant.lines, merchant.size, 1.12,
-      { "font-family": DISPLAY, "font-weight": 700, "font-size": merchant.size, "letter-spacing": -0.07, fill: INK }));
+    // PAY TO + payee name (the hero)
+    svg.appendChild(el("text", { x: f.cx, y: f.payToY, "text-anchor": "middle", "font-family": BODY, "font-weight": 700,
+      "font-size": mm(f.payToPt), "letter-spacing": f.payToLS, fill: MUTED }, "PAY TO"));
+    var maxNameW = f.w - f.m * 2;
+    var name = fit(page.title || "Your business", maxNameW, mm(f.namePt), mm(f.nameMinPt), 800, 2, DISPLAY);
+    if (name.lines.length > 1 && name.size > mm(f.nameTwoLinePt)) {
+      name = fit(page.title || "Your business", maxNameW, mm(f.nameTwoLinePt), mm(f.nameMinPt), 800, 2, DISPLAY);
+    }
+    svg.appendChild(centeredText(f.cx, f.nameY, name.lines, name.size, 1.08,
+      { "font-family": DISPLAY, "font-weight": 800, "font-size": name.size, "letter-spacing": -0.01, fill: HERO }));
 
-    // QR plate: mint ring, white quiet-zone plate, merchant's static QR
+    // QR plate: minimal padding, pure white card, merchant QR
     var q = f.qr;
     svg.appendChild(el("rect", { x: q.plateX, y: q.plateY, width: q.plateW, height: q.plateW, rx: q.plateR, fill: MINT }));
     svg.appendChild(el("rect", { x: q.cardX, y: q.cardY, width: q.cardW, height: q.cardW, rx: q.cardR, fill: PAPER }));
@@ -196,25 +196,26 @@
     qr.setAttribute("width", q.size); qr.setAttribute("height", q.size);
     svg.appendChild(qr);
 
-    // single instruction line: static QR wants an amount typed in the app;
-    // an amount-specific QR already carries the amount.
-    var instruction = "Scan with bKash, Nagad, Rocket or any bank app.";
-    svg.appendChild(el("text", { x: f.cx, y: f.inY, "text-anchor": "middle", "font-family": BODY, "font-weight": 600,
-      "font-size": mm(f.inPt), fill: INK }, instruction));
+    // three-step hint row
+    var steps = el("text", { x: f.cx, y: f.stepsY, "text-anchor": "middle", "font-family": BODY, "font-weight": 500,
+      "font-size": mm(f.stepsPt), fill: MUTED });
+    [["Open your app", false], [" → ", true], ["Tap Scan QR", false], [" → ", true], ["Confirm name", false]].forEach(function (s) {
+      steps.appendChild(el("tspan", s[1] ? { fill: GREEN, "font-weight": 800 } : null, s[0]));
+    });
+    svg.appendChild(steps);
 
-    // supported apps: Play Store icons for the four MFS + top-five bank apps,
-    // plus the Bangla QR standard mark
     appLogos(svg, f);
 
-    svg.appendChild(el("text", { x: f.cx, y: f.legalY, "text-anchor": "middle", "font-family": BODY, "font-weight": 400,
-      "font-size": mm(f.legalPt), fill: MUTED }, "DeshiPay is not a payment processor. You pay in your own banking app."));
-    svg.appendChild(mark(f.m - 4, f.h - f.m - f.footMark, f.footMark));
+    // footer: hairline, mark and legal copy aligned together
+    var ft = f.footer;
+    svg.appendChild(el("rect", { x: f.m, y: ft.lineY, width: f.w - f.m * 2, height: 0.3, fill: LINE }));
+    svg.appendChild(mark(ft.markX, ft.markY, ft.markSize));
+    svg.appendChild(el("text", { x: ft.textX, y: ft.textY, "font-family": BODY, "font-weight": 400,
+      "font-size": mm(ft.textPt), fill: MUTED }, "DeshiPay is not a payment processor. You pay in your own banking app."));
     return svg;
   }
 
-  function serialize(svg) {
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(svg);
-  }
+  function serialize(svg) { return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(svg); }
   function slug(page) {
     return String((page && (page.username || page.title)) || "page").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "page";
   }

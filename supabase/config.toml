@@ -26,10 +26,32 @@ enable_anonymous_sign_ins = false
 
 [auth.email]
 enable_signup = true
-# Turn confirmations on once custom SMTP is configured; until then sign-up goes
-# straight to the dashboard instead of depending on the rate-limited built-in mailer.
-enable_confirmations = false
+# Email + password sign-up is verified with a 6-digit code from the custom
+# template below; password resets use a code too.
+enable_confirmations = true
 double_confirm_changes = true
+otp_length = 6
+otp_expiry = 600
+
+[auth.email.template.confirmation]
+subject = "Your DeshiPay confirmation code"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your DeshiPay password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your DeshiPay sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new DeshiPay email"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.invite]
+subject = "You’re invited to DeshiPay"
+content_path = "./supabase/templates/invite.html"
 
 # ---------------------------------------------------------------------------
 # Production project (wbnkjhlaitoetaztukiy). These keys override the defaults
@@ -52,5 +74,27 @@ enable_anonymous_sign_ins = false
 
 [remotes.production.auth.email]
 enable_signup = true
-enable_confirmations = false
+enable_confirmations = true
 double_confirm_changes = true
+otp_length = 6
+otp_expiry = 600
+
+[remotes.production.auth.email.template.confirmation]
+subject = "Your DeshiPay confirmation code"
+content_path = "./supabase/templates/confirmation.html"
+
+[remotes.production.auth.email.template.recovery]
+subject = "Reset your DeshiPay password"
+content_path = "./supabase/templates/recovery.html"
+
+[remotes.production.auth.email.template.magic_link]
+subject = "Your DeshiPay sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[remotes.production.auth.email.template.email_change]
+subject = "Confirm your new DeshiPay email"
+content_path = "./supabase/templates/email_change.html"
+
+[remotes.production.auth.email.template.invite]
+subject = "You’re invited to DeshiPay"
+content_path = "./supabase/templates/invite.html"

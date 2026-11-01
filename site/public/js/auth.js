@@ -56,7 +56,9 @@
   }
   mountDemo();
 
-  var mode = new URLSearchParams(location.search).get("mode") === "forgot" ? "forgot" : "unified";
+  var mode = "email"; // "email" (send a code) or "otp" (enter the code)
+  var lastEmail = "";
+  var pendingEmail = "";
   var busy = false;
 
   /* ----- online vs offline ----- */
@@ -89,6 +91,7 @@
 
   function friendly(err) {
     var m = (err && (err.message || err.msg) || "").toLowerCase(), c = err && err.code;
+    if (m.indexOf("token") >= 0 || m.indexOf("otp") >= 0) return "That code didn’t work. Check it, or send a new code.";
     if (m.indexOf("invalid login") >= 0) return "That email and password don’t match.";
     if (m.indexOf("not confirmed") >= 0) return "Please confirm your email first. Check your inbox for the link.";
     if (m.indexOf("already registered") >= 0) return "An account with this email already exists. Try signing in.";
@@ -99,113 +102,263 @@
   }
 
   function render() {
-    var email = h("input", { class: "input", id: "email", type: "email", inputmode: "email", autocomplete: "email", autocapitalize: "none", autocorrect: "off", spellcheck: "false", placeholder: "you@example.com", required: true });
-    var pw = null, eye = null;
+    busy = false;
+    if (mode === "signup-otp") return renderSignupOtp();
+    if (mode === "forgot-email") return renderForgotEmail();
+    if (mode === "forgot-otp") return renderForgotOtp();
+    if (mode === "forgot-newpw") return renderForgotNewPw();
+    return renderEmailPassword();
+  }
+
+  function busyButton(btn, label, b) {
+    busy = b;
+    btn.disabled = b;
+    T.fill(btn, b ? h("span", { class: "spin" }) : null, b ? "Please wait" : label);
+  }
+
+  function sayInto(msg) {
+    return function (text, kind) {
+      msg.textContent = text || "";
+      msg.className = "form-msg" + (kind ? " " + kind : "");
+    };
+  }
+
+  function noLoginOption() {
+    return h("div", { class: "no-login" },
+      h("span", null, "Don’t want to create an account?"),
+      h("a", { class: "btn dashed block", href: "/app?local=1" }, "Create a page without login")
+    );
+  }
+
+  function linkButton(text, onClick) {
+    return h("button", { class: "linkbtn", type: "button", onClick: onClick }, text);
+  }
+
+  function disabledIfNoSb() {
+    var btn = card.querySelector('button[type="submit"]');
+    if (btn && !sb) btn.disabled = true;
+  }
+
+  function emailField(value) {
+    return h("input", { class: "input", id: "email", type: "email", inputmode: "email", autocomplete: "email", autocapitalize: "none", autocorrect: "off", spellcheck: "false", placeholder: "you@example.com", value: value || lastEmail, required: true });
+  }
+
+  function pwField(id, label, autocomplete) {
+    var pw = h("input", { class: "input", id: id, type: "password", autocomplete: autocomplete, placeholder: "At least 8 characters", minlength: "8", required: true });
+    var eye = h("button", { class: "eye", type: "button", "aria-label": "Show password", onClick: function () {
+      var show = pw.type === "password";
+      pw.type = show ? "text" : "password";
+      eye.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      eye.replaceChildren(icon(show ? "eyeoff" : "eye"));
+    } }, icon("eye"));
+    return { field: h("div", { class: "field" }, h("label", { for: id }, label), h("div", { class: "pw" }, pw, eye)), input: pw };
+  }
+
+  function otpField() {
+    return h("input", { class: "input otp-input", id: "otp", type: "text", inputmode: "numeric", autocomplete: "one-time-code", placeholder: "123456", maxlength: "6", required: true });
+  }
+
+  function renderEmailPassword() {
+    var email = emailField();
+    var pw = pwField("pw", "Password", "current-password");
     var msg = h("div", { class: "form-msg", role: "status", "aria-live": "polite" });
-
-    var fields = [h("div", { class: "field" }, h("label", { for: "email" }, "Email"), email)];
-
-    if (mode !== "forgot") {
-      pw = h("input", { class: "input", id: "pw", type: "password", autocomplete: "current-password", placeholder: "Your password (8+ characters)", minlength: "8", required: true });
-      eye = h("button", { class: "eye", type: "button", "aria-label": "Show password", onClick: function () {
-        var show = pw.type === "password";
-        pw.type = show ? "text" : "password";
-        eye.setAttribute("aria-label", show ? "Hide password" : "Show password");
-        eye.replaceChildren(icon(show ? "eyeoff" : "eye"));
-      } }, icon("eye"));
-      fields.push(h("div", { class: "field" }, h("label", { for: "pw" }, "Password"), h("div", { class: "pw" }, pw, eye)));
-    }
-
-    var label = { unified: "Continue", forgot: "Send reset link" }[mode];
+    var say = sayInto(msg);
+    var label = "Continue";
     var submit = h("button", { class: "btn block", type: "submit" }, label);
 
-    function setBusy(b) {
-      busy = b;
-      submit.disabled = b;
-      T.fill(submit, b ? h("span", { class: "spin" }) : null, b ? "Please wait" : label);
-    }
-    function say(text, kind) { msg.textContent = text || ""; msg.className = "form-msg" + (kind ? " " + kind : ""); }
+    var form = h("form", { novalidate: true, onSubmit: async function (e) {
+      e.preventDefault();
+      if (busy || !sb) return;
+      var em = email.value.trim();
+      var pass = pw.input.value;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { say("Enter a valid email address.", "bad"); email.focus(); return; }
+      if (pass.length < 8) { say("Use at least 8 characters for your password.", "bad"); pw.input.focus(); return; }
+      lastEmail = em;
+      say("");
+      busyButton(submit, label, true);
+      try {
+        // Existing account first. New email falls through to sign-up.
+        var s = await sb.auth.signInWithPassword({ email: em, password: pass });
+        if (!s.error) return location.assign("/app");
+        var m = (s.error.message || "").toLowerCase();
+        var invalid = /invalid login credentials|invalid credentials/.test(m) || s.error.code === "invalid_credentials";
+        if (!invalid) throw s.error;
+
+        var r = await sb.auth.signUp({ email: em, password: pass, options: { emailRedirectTo: location.origin + "/app" } });
+        if (r.error) throw r.error;
+        if (r.data.session) return location.assign("/app"); // confirmations are off
+        var exists = r.data.user && r.data.user.identities && r.data.user.identities.length === 0;
+        if (exists) {
+          say("That email and password don’t match. This email already has an account; reset your password if you’ve forgotten it.", "bad");
+          return busyButton(submit, label, false);
+        }
+        pendingEmail = em;
+        mode = "signup-otp";
+        render();
+      } catch (err) {
+        var emsg = (err && (err.message || "")).toLowerCase();
+        if (/already registered|already been registered|user already/.test(emsg)) {
+          say("That email and password don’t match. This email already has an account; reset your password if you’ve forgotten it.", "bad");
+          return busyButton(submit, label, false);
+        }
+        say(friendly(err), "bad");
+        busyButton(submit, label, false);
+      }
+    } }, emailFieldToField(email), pw.field, submit, msg);
+
+    T.fill(card,
+      h("div", null, h("h2", null, "Create your page"), h("p", { class: "sub" }, "Sign in, or create an account with your email and password. It takes about a minute.")),
+      form,
+      h("div", { class: "auth-links" }, linkButton("Forgot password?", function () { mode = "forgot-email"; render(); })),
+      noLoginOption());
+    if (!sb) submit.disabled = true;
+  }
+
+  function emailFieldToField(input) {
+    return h("div", { class: "field" }, h("label", { for: "email" }, "Email"), input);
+  }
+
+  function renderSignupOtp() {
+    var otp = otpField();
+    var msg = h("div", { class: "form-msg", role: "status", "aria-live": "polite" });
+    var say = sayInto(msg);
+    var label = "Confirm email";
+    var submit = h("button", { class: "btn block", type: "submit" }, label);
+
+    var form = h("form", { novalidate: true, onSubmit: async function (e) {
+      e.preventDefault();
+      if (busy || !sb) return;
+      var code = otp.value.replace(/\D/g, "");
+      if (code.length !== 6) { say("Enter the 6-digit code from the email.", "bad"); otp.focus(); return; }
+      say("");
+      busyButton(submit, label, true);
+      try {
+        var r = await sb.auth.verifyOtp({ email: pendingEmail, token: code, type: "signup" });
+        if (r.error) throw r.error;
+        location.assign("/app");
+      } catch (err) {
+        say(friendly(err), "bad");
+        busyButton(submit, label, false);
+        otp.focus();
+      }
+    } }, h("div", { class: "field" }, h("label", { for: "otp" }, "6-digit code"), otp), submit, msg);
+
+    var resend = h("button", { class: "linkbtn", type: "button", onClick: async function () {
+      if (busy || !sb) return;
+      say("");
+      resend.disabled = true;
+      try {
+        var r = await sb.auth.resend({ type: "signup", email: pendingEmail, options: { emailRedirectTo: location.origin + "/app" } });
+        if (r.error) throw r.error;
+        say("A new code is on its way.", "ok");
+      } catch (err) { say(friendly(err), "bad"); }
+      finally { resend.disabled = false; }
+    } }, "Send a new code");
+
+    T.fill(card,
+      h("div", null, h("h2", null, "Check your email"), h("p", { class: "sub" }, "We sent a 6-digit code to " + pendingEmail + ". Enter it to confirm your account and sign in.")),
+      form,
+      h("div", { class: "auth-links" }, resend, linkButton("Use a different email", function () { mode = "email"; render(); })));
+    if (!sb) submit.disabled = true;
+  }
+
+  function renderForgotEmail() {
+    var email = emailField();
+    var msg = h("div", { class: "form-msg", role: "status", "aria-live": "polite" });
+    var say = sayInto(msg);
+    var label = "Send reset code";
+    var submit = h("button", { class: "btn block", type: "submit" }, label);
 
     var form = h("form", { novalidate: true, onSubmit: async function (e) {
       e.preventDefault();
       if (busy || !sb) return;
       var em = email.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { say("Enter a valid email address.", "bad"); email.focus(); return; }
-      if (mode === "forgot") {
-        say("");
-        setBusy(true);
-        try {
-          var f = await sb.auth.resetPasswordForEmail(em, { redirectTo: location.origin + "/app" });
-          if (f.error) throw f.error;
-          return sent(em, "reset");
-        } catch (err) { say(friendly(err), "bad"); setBusy(false); }
-        return;
-      }
-      if (pw.value.length < 8) { say("Use at least 8 characters for your password.", "bad"); pw.focus(); return; }
+      lastEmail = em;
       say("");
-      setBusy(true);
+      busyButton(submit, label, true);
       try {
-        // One form for both: try the existing account first, then create one.
-        var s = await sb.auth.signInWithPassword({ email: em, password: pw.value });
-        if (!s.error) return location.assign("/app");
-        var m = (s.error.message || "").toLowerCase();
-        var invalid = /invalid login credentials|invalid credentials/.test(m) || s.error.code === "invalid_credentials";
-        if (!invalid) throw s.error;
-        var r = await sb.auth.signUp({ email: em, password: pw.value, options: { emailRedirectTo: location.origin + "/app" } });
+        var r = await sb.auth.resetPasswordForEmail(em, { redirectTo: location.origin + "/app" });
         if (r.error) throw r.error;
-        if (r.data.session) return location.assign("/app");
-        var exists = r.data.user && r.data.user.identities && r.data.user.identities.length === 0;
-        if (exists) {
-          say("That email and password don’t match. This email already has an account; reset your password if you’ve forgotten it.", "bad");
-          setBusy(false);
-          return;
-        }
-        return sent(em, "confirm");
-      } catch (err) {
-        var emsg = (err && (err.message || "")).toLowerCase();
-        if (/already registered|already been registered|user already/.test(emsg)) {
-          say("That email and password don’t match. This email already has an account; reset your password if you’ve forgotten it.", "bad");
-          setBusy(false);
-          return;
-        }
-        say(friendly(err), "bad");
-        setBusy(false);
-      }
-    } }, fields, submit, msg);
+        pendingEmail = em;
+        mode = "forgot-otp";
+        render();
+      } catch (err) { say(friendly(err), "bad"); busyButton(submit, label, false); }
+    } }, h("div", { class: "field" }, h("label", { for: "email" }, "Email"), email), submit, msg);
 
-    var head = {
-      unified: ["Create your page", "Sign in, or create an account with your email and password. It takes about a minute."],
-      forgot: ["Reset your password", "We’ll email you a link to choose a new one."]
-    }[mode];
-
-    var switcher = h("div", { class: "auth-links" },
-      mode === "unified" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "forgot"; render(); } }, "Forgot password?") : null,
-      mode === "forgot" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "unified"; render(); } }, "Back") : null
-    );
-
-    var google = T.cfg.googleAuth && sb && mode !== "forgot" ? [
-      h("div", { class: "or" }, "or"),
-      h("button", { class: "btn sec block", type: "button", onClick: function () {
-        sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + "/app" } });
-      } }, "Continue with Google")
-    ] : null;
-
-    var noLogin = h("div", { class: "no-login" },
-      h("span", null, "Don’t want to create an account?"),
-      h("a", { class: "btn dashed block", href: "/app?local=1" }, "Create a page without login")
-    );
-
-    T.fill(card, h("div", null, h("h2", null, head[0]), h("p", { class: "sub" }, head[1])), form, google, switcher, noLogin);
+    T.fill(card,
+      h("div", null, h("h2", null, "Reset your password"), h("p", { class: "sub" }, "Enter your email and we’ll send you a 6-digit code.")),
+      form,
+      h("div", { class: "auth-links" }, linkButton("Back", function () { mode = "email"; render(); })));
     if (!sb) submit.disabled = true;
   }
 
-  function sent(email, kind) {
-    card.replaceChildren(h("div", { class: "mailed" },
-      h("div", { class: "ic-big" }, icon("check")),
-      h("h2", null, "Check your inbox"),
-      h("p", { class: "sub" }, (kind === "reset" ? "We sent a password reset link to " : "We sent a confirmation link to ") + email + ". Open it on this device to continue."),
-      h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "unified"; render(); } }, "Use a different email")
-    ));
+  function renderForgotOtp() {
+    var otp = otpField();
+    var msg = h("div", { class: "form-msg", role: "status", "aria-live": "polite" });
+    var say = sayInto(msg);
+    var label = "Continue";
+    var submit = h("button", { class: "btn block", type: "submit" }, label);
+
+    var form = h("form", { novalidate: true, onSubmit: async function (e) {
+      e.preventDefault();
+      if (busy || !sb) return;
+      var code = otp.value.replace(/\D/g, "");
+      if (code.length !== 6) { say("Enter the 6-digit code from the email.", "bad"); otp.focus(); return; }
+      say("");
+      busyButton(submit, label, true);
+      try {
+        var r = await sb.auth.verifyOtp({ email: pendingEmail, token: code, type: "recovery" });
+        if (r.error) throw r.error;
+        mode = "forgot-newpw";
+        render();
+      } catch (err) { say(friendly(err), "bad"); busyButton(submit, label, false); otp.focus(); }
+    } }, h("div", { class: "field" }, h("label", { for: "otp" }, "6-digit code"), otp), submit, msg);
+
+    var resend = h("button", { class: "linkbtn", type: "button", onClick: async function () {
+      if (busy || !sb) return;
+      say("");
+      resend.disabled = true;
+      try {
+        var r = await sb.auth.resetPasswordForEmail(pendingEmail, { redirectTo: location.origin + "/app" });
+        if (r.error) throw r.error;
+        say("A new code is on its way.", "ok");
+      } catch (err) { say(friendly(err), "bad"); }
+      finally { resend.disabled = false; }
+    } }, "Send a new code");
+
+    T.fill(card,
+      h("div", null, h("h2", null, "Check your email"), h("p", { class: "sub" }, "We sent a 6-digit code to " + pendingEmail + ". Enter it to continue.")),
+      form,
+      h("div", { class: "auth-links" }, resend, linkButton("Back", function () { mode = "email"; render(); })));
+    if (!sb) submit.disabled = true;
+  }
+
+  function renderForgotNewPw() {
+    var pw = pwField("pw", "New password", "new-password");
+    var msg = h("div", { class: "form-msg", role: "status", "aria-live": "polite" });
+    var say = sayInto(msg);
+    var label = "Save password";
+    var submit = h("button", { class: "btn block", type: "submit" }, label);
+
+    var form = h("form", { novalidate: true, onSubmit: async function (e) {
+      e.preventDefault();
+      if (busy || !sb) return;
+      if (pw.input.value.length < 8) { say("Use at least 8 characters for your password.", "bad"); pw.input.focus(); return; }
+      say("");
+      busyButton(submit, label, true);
+      try {
+        var r = await sb.auth.updateUser({ password: pw.input.value });
+        if (r.error) throw r.error;
+        location.assign("/app");
+      } catch (err) { say(friendly(err), "bad"); busyButton(submit, label, false); pw.input.focus(); }
+    } }, pw.field, submit, msg);
+
+    T.fill(card,
+      h("div", null, h("h2", null, "Choose a new password"), h("p", { class: "sub" }, "You’re verified. Set a new password for your account.")),
+      form,
+      h("div", { class: "auth-links" }, linkButton("Back to sign in", function () { mode = "email"; render(); })));
+    if (!sb) submit.disabled = true;
   }
 
   function boot() {

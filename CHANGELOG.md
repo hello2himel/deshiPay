@@ -13,6 +13,20 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Email + password sign-up verified by an emailed 6-digit code.** The unified `/login` form keeps
+  email + password (existing accounts sign in), but a new account is created as unconfirmed and the
+  card switches to a code screen; `verifyOtp(type: "signup")` confirms it and signs in. "Forgot
+  password?" now sends a recovery **code**, verifies it, then shows a "choose a new password" step
+  (`updateUser`) before signing in. Resend/change-email actions are included, with friendly expired
+  or wrong-code messages.
+- **Branded Supabase email templates.** `supabase/templates/` has confirmation, recovery, magic link,
+  email change, invite and reauthentication emails in the site's design (green `#056B4E`, rounded white
+  card, code box, "not a payment processor" footer). `config.toml` enables confirmations, sets
+  `otp_length = 6` / `otp_expiry = 600`, and wires the subjects/content paths for local and production;
+  `docs/website.md` explains applying them to the hosted project.
+
+### Added
+
 - **Create a page without login.** The login/signup card now has a persistent "No account needed? Create
   a page without login" link. It opens `/app?local=1`, which forces the same account-free wizard the
   paused-backend offline mode uses (name → QR → wallet/bank → look → Download, no username, no Supabase

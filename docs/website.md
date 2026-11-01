@@ -101,7 +101,7 @@ the repo-root `netlify.toml`; do not override the build command or publish direc
    - **Site URL:** `https://deshipay.netlify.app`
    - **Redirect URLs:** `https://deshipay.netlify.app/app` and `http://localhost:8888/app`
 
-   These are used by confirmation and password-reset emails.
+   These are used by the confirmation and password-reset emails (both send a 6-digit code).
 5. **Deploy.** Push to `main` (or *Deploys → Trigger deploy*). The build writes
    `site/public/js/config.js` from the environment variables and publishes `site/public`. Smoke-test
    `/`, `/app`, `/<username>` and `/favicon.ico` against the live URL.
@@ -142,7 +142,7 @@ Besides the schema, the project's auth configuration is versioned in
 | JWT expiry | 3600 s (1 hour) |
 | Sign-ups | enabled (email provider) |
 | Anonymous sign-ins | disabled |
-| Email confirmations | **off** for now (sign-up lands straight in the dashboard; turn on after custom SMTP is configured) |
+| Email confirmations | **on** (sign-up and password reset verify with a 6-digit code from the branded templates) |
 | Email change confirmation | confirm on both old and new address |
 | Local defaults | `site_url = http://localhost:8888` for `supabase start` |
 
@@ -162,11 +162,33 @@ must be authorized by the project owner):
 3. Netlify: `SUPABASE_URL` + `SUPABASE_ANON_KEY` (public anon/publishable key only) and
    `SECRETS_SCAN_OMIT_KEYS=SUPABASE_URL,SUPABASE_ANON_KEY`; deploy.
 
+### Auth flow and email templates
+
+Authentication is **email + password**, with one-time email codes for verification:
+
+1. The `/login` form takes email and password. Existing accounts sign in; a new email gets an account
+   and a 6-digit confirmation code.
+2. The same card switches to a code screen (`verifyOtp` type `signup`). Confirm to finish and sign in.
+3. **Forgot password?** sends a recovery code; verifying it shows a "choose a new password" screen
+   (`updateUser`), then signs in.
+
+The OTP policy and template wiring live in [`supabase/config.toml`](../supabase/config.toml)
+(`enable_confirmations = true`, `otp_length = 6`, `otp_expiry = 600`). Branded HTML templates are in
+[`supabase/templates/`](../supabase/templates): confirmation, recovery, magic link, email change,
+invite and reauthentication. Subject lines are set next to each template in `config.toml`.
+
+- **Local (`supabase start`)** picks the templates up from `config.toml` directly.
+- **Hosted project:** the GitHub integration applies migrations; auth email templates and the
+  confirmation setting are safest applied from **Authentication → Emails** in the dashboard (paste the
+  file contents and set the subjects) or with `supabase config push`/the CLI. The built-in sender is
+  rate limited; configure custom SMTP before relying on it for real traffic.
+- Templates use `{{ .Token }}` for the 6-digit code and `{{ .ConfirmationURL }}` for the link fallback.
+  The reauthentication template is included for the dashboard even though it is not in `config.toml`.
+
 **Nothing else needs configuring:** the app uses no Storage buckets, Realtime channels, Edge Functions,
 Database Webhooks or cron jobs. Postgres, RLS and the public RPC functions come from
-`supabase/migrations/`. Email delivery uses Supabase's built-in sender (rate limited) until you add
-SMTP. Google sign-in is optional and needs an OAuth client + `GOOGLE_AUTH=true`; never put the
-`service_role` key in the site, Netlify, or the repo.
+`supabase/migrations/`. Google sign-in is optional and needs an OAuth client + `GOOGLE_AUTH=true`;
+never put the `service_role` key in the site, Netlify, or the repo.
 
 Verify after the first integration run: `select * from supabase_migrations.schema_migrations;` should
 list `20261101120000`. Free-tier projects pause when idle, the site already handles that with the

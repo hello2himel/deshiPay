@@ -20,11 +20,33 @@
       signUp: async function (a) {
         var d = load();
         if (d.users.some(function (u) { return u.email === a.email; })) return { data: { user: { identities: [] }, session: null }, error: null };
-        var u = { id: "u" + (d.users.length + 1), email: a.email, password: a.password };
-        d.users.push(u);
-        d.session = { user: { id: u.id, email: u.email } };
+        d.pending = { type: "signup", email: a.email, token: "123456", password: a.password };
         save(d);
-        return { data: { user: d.session.user, session: d.session }, error: null };
+        return { data: { user: { identities: [{ id: "pending" }] }, session: null }, error: null };
+      },
+      resend: async function (a) {
+        var d = load();
+        d.pending = { type: a.type || "signup", email: a.email, token: "123456" };
+        save(d);
+        return { data: {}, error: null };
+      },
+      verifyOtp: async function (a) {
+        var d = load();
+        var p = d.pending;
+        if (!p || p.email !== a.email || p.token !== String(a.token) || p.type !== a.type) {
+          return { data: {}, error: { message: "Token has expired or is invalid" } };
+        }
+        var u = d.users.filter(function (x) { return x.email === a.email; })[0];
+        if (!u) {
+          u = { id: "u" + (d.users.length + 1), email: a.email, password: p.password || "correct-horse-1" };
+          d.users.push(u);
+        } else if (p.type === "recovery" && p.password) {
+          u.password = p.password;
+        }
+        d.session = { user: { id: u.id, email: u.email } };
+        delete d.pending;
+        save(d);
+        return { data: { session: d.session }, error: null };
       },
       signInWithPassword: async function (a) {
         var d = load();
@@ -35,8 +57,20 @@
         return { data: { session: d.session }, error: null };
       },
       signOut: async function () { var d = load(); d.session = null; save(d); listeners.forEach(function (cb) { cb("SIGNED_OUT"); }); return { error: null }; },
-      resetPasswordForEmail: async function () { return { data: {}, error: null }; },
-      updateUser: async function () { return { data: {}, error: null }; },
+      resetPasswordForEmail: async function (email) {
+        var d = load();
+        d.pending = { type: "recovery", email: email, token: "123456" };
+        save(d);
+        return { data: {}, error: null };
+      },
+      updateUser: async function (a) {
+        var d = load();
+        if (!d.session) return { data: {}, error: { message: "not signed in" } };
+        var u = d.users.filter(function (x) { return x.email === d.session.user.email; })[0];
+        if (u && a.password) u.password = a.password;
+        save(d);
+        return { data: {}, error: null };
+      },
       signInWithOAuth: async function () { return { data: {}, error: null }; }
     };
 

@@ -56,6 +56,7 @@
 .auth form { display: grid; gap: 12px; }
 /* no reserved line when the form has no message -> less dead space in the card */
 .auth .form-msg:empty { display: none; }
+.otp-input { font: 800 26px/1 var(--disp); letter-spacing: 0.35em; text-align: center; height: 64px; padding-left: 0.35em; }
 .pw { position: relative; }
 .pw .input { padding-right: 52px; }
 .pw .eye { position: absolute; right: 4px; top: 4px; width: 44px; height: 44px; border: 0; background: none; border-radius: 12px; color: var(--muted); display: grid; place-items: center; }

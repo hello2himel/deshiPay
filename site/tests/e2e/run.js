@@ -356,6 +356,11 @@ async function scenarioOnline(browser) {
     await page.type("#email", "owner@example.com");
     await page.type("#pw", "correct-horse-1");
     await page.click("form button[type=submit]");
+    await page.waitForSelector("#otp", { timeout: 8000 });
+    ok(true, "signup asks for the emailed 6-digit code");
+    const signupCode = await page.evaluate(() => JSON.parse(localStorage.getItem("mock.supa")).pending.token);
+    await page.type("#otp", signupCode);
+    await page.click("form button[type=submit]");
     await page.waitForFunction(() => location.pathname === "/app", { timeout: 8000 });
     await page.waitForSelector("#f-title");
     ok(true, "signed up and landed on /app");
@@ -592,6 +597,22 @@ async function scenarioOnline(browser) {
     await page.click("form button[type=submit]");
     await page.waitForFunction(() => document.querySelector(".form-msg.bad"), { timeout: 4000 });
     ok((await page.$eval(".form-msg.bad", (e) => e.textContent)).includes("don’t match"), "wrong password shows a friendly message");
+
+    console.log("Forgot password: OTP then new password");
+    await page.click(".auth-links button");
+    await page.waitForSelector("#email");
+    await page.evaluate(() => { document.querySelector("#email").value = ""; });
+    await page.type("#email", "owner@example.com");
+    await page.click("form button[type=submit]");
+    await page.waitForSelector("#otp", { timeout: 8000 });
+    const resetCode = await page.evaluate(() => JSON.parse(localStorage.getItem("mock.supa")).pending.token);
+    await page.type("#otp", resetCode);
+    await page.click("form button[type=submit]");
+    await page.waitForSelector("#pw", { timeout: 8000 });
+    await page.type("#pw", "new-correct-horse");
+    await page.click("form button[type=submit]");
+    await page.waitForFunction(() => location.pathname === "/app", { timeout: 8000 });
+    ok(true, "reset code verifies and the new password signs in");
   } catch (e) {
     console.error("  FAIL exception: " + e.message);
     fails++;

@@ -9,6 +9,7 @@ Payment pages for **Bangla QR**. Each user signs up, drops one Bangla QR (bKash,
 - **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshiqr.netlify.app>
 - **Auth + database** on **Supabase** (email/password, Postgres with Row Level Security)
 - **Payload editing in the browser** comes from the repo's `deshiqr` engine (`packages/deshiqr`): the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
+- **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
 - The page **only shows payment details**. There is no payment confirmation or money handling of any kind.
 
 ```
@@ -22,12 +23,14 @@ site/
     js/payload.js     thin site adapter over the vendored deshiqr engine (payload editing)
     js/reader.js      reads a QR out of a screenshot, in the browser
     js/payview.js     renders the customer page (also the live preview)
-    js/dashboard.js   onboarding + editor
+    js/export.js      builds the standalone single-file HTML export (see Offline mode)
+    js/dashboard.js   onboarding + editor (online, and local mode when the backend is down)
     vendor/           qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT),
                       deshiqr.global.js (MIT, built from packages/deshiqr)
   supabase/schema.sql tables, security rules, public functions
   scripts/            build-config.js, gen-themes.js, dev-server.js, refresh-engine.js
-  tests/              qr.test.js (engine), e2e/ (UI smoke test, optional)
+  tests/              qr.test.js (engine adapter), export.test.js (standalone export),
+                      e2e/ (browser smoke test, optional)
 ```
 
 The Netlify config is at the **repo root** (`netlify.toml`), with `base = "site"` and `publish = "public"`.
@@ -125,6 +128,53 @@ After publishing, the same sections become tabs, plus **Share** (link, link with
 
 `/username?amount=1500` locks the amount.
 
+If the database is paused or unreachable, people can still build a page without an account and download
+it as one HTML file — see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download).
+
+---
+
+## Offline mode (paused Supabase and the standalone download)
+
+Supabase's free tier pauses idle projects, and a paused project answers requests with **HTTP 540**. The
+site is built to keep working for the person making a page even then (and whenever the database cannot
+be reached at all).
+
+**On every page load** the site checks the backend once (`public/js/common.js` → `Deshi.checkBackend()`,
+cached per page):
+
+1. No `SUPABASE_URL` / `SUPABASE_ANON_KEY` configured → offline, no network request.
+2. Otherwise `GET <project>/auth/v1/health` (4 s timeout). If that request fails at the network/CORS
+   level, it retries `GET <project>/rest/v1/` with the anon key (4 s timeout).
+3. `540` → **paused**, `402` → **restricted**, any other HTTP answer → **online** (a project that is up
+   but not set up yet still counts as online), both probes unreachable → **offline**.
+
+When it is **online**, everything works exactly as before (sign in, publish, share). The Share tab also
+has **Download your page as HTML** so a published page can always be saved as a file.
+
+When it is **offline**:
+
+- The landing page shows a **“Create your page”** card instead of sign-in. There is no login or sign-up,
+  and the landing copy no longer promises a hosted address (“Take it with you”, “Download it”).
+- **Create my page** opens `/app` with the **same four-step wizard**, without an account: name and
+  title, Bangla QR upload/paste, wallets/banks, colour and quick amounts. Step 1 asks only for the
+  name/business name and an optional note — **no link/username is asked at all** (there is no hosted
+  address to claim); the file name is derived from the name you enter. The host/username line at the
+  top of the page is hidden in the offline preview and in the downloaded file.
+- The wizard gets a fifth step, **Download**. The page is saved as `deshiqr-<name>.html` (the name you entered, slugified) — one
+  self-contained HTML file (~140 KB) with the customer page, all styles, the QR engine and the page data
+  inside it. Only the web fonts are loaded from the internet; everything else works offline and from
+  `file://`.
+- The draft is kept in `localStorage` under `deshiqr.local.v1`, so a reload does not lose the work.
+
+**Hosting the file.** It is a plain static file: drag it onto Netlify Drop, put it in a GitHub Pages
+repository, or upload it anywhere you already host files. `/page.html?amount=500` locks the amount, just
+like `/<username>?amount=500`. Old copies are frozen — edit in the wizard and download a fresh file.
+
+**How the download works.** The browser fetches this site's own CSS/JS (the vendored `deshiqr` engine,
+`payload.js`, PayView, the styles) at generation time and inlines them, so the deployed site must be up
+to make a file; the file itself then needs nothing but a static host. The small “Made with DeshiQR”
+footer links back to the site's origin at generation time.
+
 ---
 
 ## How the QR works (and the checksum)
@@ -176,10 +226,12 @@ A few intentional differences from the site's original in-page engine come from 
 ## Tests
 
 ```bash
-cd site && npm test                                  # QR engine: checksum, amount insertion, references, Bangla names, rejects
-npm i --no-save puppeteer-core                       # optional
-CHROME=/path/to/chrome node site/tests/e2e/run.js    # drives the real pages against a mocked Supabase and
-                                                     # scans the QR it draws to verify the final payload
+cd site && npm test                                  # engine adapter (checksum, amount, references, Bangla names)
+                                                     # + standalone export (inlining, escaping, file contents)
+npm i --no-save puppeteer-core                       # optional browser test (install outside the repo)
+NODE_PATH=/path/to/node_modules CHROME=/path/to/chrome \
+  node site/tests/e2e/run.js                         # online journey + offline CTA/wizard/download, scans the
+                                                     # QR it draws, and opens the downloaded standalone file
 ```
 
 The engine's own tests live with the package: `pnpm --filter deshiqr test` from the repo root.
@@ -191,6 +243,8 @@ The engine's own tests live with the package: `pnpm --filter deshiqr test` from 
 - *Confirmation email link goes to the wrong place*: fix **Site URL** and **Redirect URLs** in Supabase.
 - *`/username` shows a 404 from Netlify*: the rewrite rules in the repo-root `netlify.toml` weren't picked up. Check the file is at the repo root, that `base` is `site`, and that the **publish** directory is `public`.
 - *"That link was just taken"* when saving: another user got the name first; pick another.
+- *Landing shows "Create your page" although Supabase is configured*: the health probe could not get an answer — the project may be paused (HTTP 540) or restricted (402), the URL/anon key may be wrong, or the host is outside the CSP `connect-src` in the repo-root `netlify.toml`. That is the intended fallback; fix the project/config to get sign-in back.
+- *The Download step fails*: generating the file fetches this site's own CSS/JS, so the site must be reachable; reload and retry. The downloaded file itself then works without the site.
 - *Vendor engine is stale after a lib change*: run `cd site && npm run refresh-engine`, then commit the vendor files (`node scripts/refresh-engine.js --check` fails while they differ).
 
 ## Licences

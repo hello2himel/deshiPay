@@ -38,6 +38,11 @@ functions with no I/O: no server, no database, no UI, no payload reading. The *w
 built on top of it: UI, accounts, storage and the customer page. The page only shows payment details;
 there is no payment confirmation or money handling.
 
+The website also works **without its database**: if Supabase is paused (free tier) or unreachable, the
+landing page offers a no-login "Create my page" flow and the finished page can be downloaded as one
+self-contained HTML file to host anywhere. The same download is available from the Share tab when
+Supabase is online. See [docs/website.md](./docs/website.md#offline-mode-and-the-standalone-export).
+
 ### Deploying the website
 
 Netlify reads the repo-root [`netlify.toml`](./netlify.toml): `base = "site"`, `publish = "public"`,

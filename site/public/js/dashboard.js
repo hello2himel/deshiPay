@@ -2,6 +2,8 @@
  * Owner dashboard (/app).
  *   - First visit: a 4-step onboarding (link, Bangla QR, other ways to pay, look).
  *   - After publishing: the same sections as tabs, plus Share, with a save bar.
+ * When the Supabase backend is paused/unreachable the same wizard runs without
+ * an account ("local mode"): a 5th Download step saves the page as one HTML file.
  * Everything the owner edits is mirrored live in the preview using PayView.
  */
 (function () {
@@ -17,10 +19,13 @@
     { id: "pay", tab: "Wallet & bank", icon: "wallet", title: "Other ways to pay", lead: "Optional. Add a wallet number or bank account for customers who’d rather copy the details." },
     { id: "look", tab: "Look", icon: "palette", title: "Make it yours", lead: "Pick a colour and the quick amounts your customers will see." }
   ];
+  var DOWNLOAD = { id: "download", tab: "Download", icon: "download", title: "Take your page with you", lead: "Download your payment page as one HTML file. Host it anywhere — Netlify Drop, GitHub Pages, or your own server. No account needed." };
   var SHARE = { id: "share", tab: "Share", icon: "share" };
   var TAG_NAMES = { "00": "Format", "01": "Static (11) or dynamic (12)", "52": "Category", "53": "Currency (050 = BDT)", "54": "Amount", "58": "Country", "59": "Merchant name", "60": "City", "62": "Additional data", "63": "Checksum (recalculated)" };
 
+  var LOCAL_DRAFT_KEY = "deshiqr.local.v1";
   var sb, user;
+  var localMode = false; // backend paused/unreachable: no sb, no user
   var S = blank();
   var isNew = true, step = 0, tabId = "link";
   var savedSnap = "", originalUsername = "", justPublished = false, busy = false;
@@ -81,7 +86,7 @@
     return r;
   }
   function dirty() { return !isNew && JSON.stringify(toRow()) !== savedSnap; }
-  function draftKey() { return "deshiqr.draft.v1:" + user.id; }
+  function draftKey() { return localMode ? LOCAL_DRAFT_KEY : "deshiqr.draft.v1:" + user.id; }
   function saveDraft() {
     if (!isNew) return;
     try { localStorage.setItem(draftKey(), JSON.stringify(S)); } catch (e) { /* private mode */ }
@@ -92,9 +97,11 @@
   function validate() {
     var i;
     if (!S.title.trim()) return { step: "link", msg: "Add your name or business name.", focus: "f-title" };
-    var ue = T.usernameError(S.username);
-    if (ue) return { step: "link", msg: ue + ".", focus: "f-user" };
-    if (U.state === "taken" && U.for === S.username) return { step: "link", msg: "That link is already taken. Try another.", focus: "f-user" };
+    if (!localMode) {
+      var ue = T.usernameError(S.username);
+      if (ue) return { step: "link", msg: ue + ".", focus: "f-user" };
+      if (U.state === "taken" && U.for === S.username) return { step: "link", msg: "That link is already taken. Try another.", focus: "f-user" };
+    }
     for (i = 0; i < S.wallets.length; i++) {
       var w = S.wallets[i];
       if (w.number.trim() && !T.PHONE_RE.test(T.normalizePhone(w.number))) return { step: "pay", msg: "Check the wallet number. It should be 11 digits, like 01XXXXXXXXX.", focus: "w-" + w.id + "-n" };
@@ -137,6 +144,7 @@
   }
   async function runCheck(u) {
     var r;
+    if (localMode || !sb) return U.state; // nothing to check against without a backend
     try { r = await sb.rpc("username_available", { p_username: u }); } catch (e) { r = { error: e }; }
     if (S.username !== u) return U.state;
     U = r.error ? { state: "error", for: u, msg: "Couldn’t check right now. We’ll check again when you save." } : r.data ? { state: "ok", for: u } : { state: "taken", for: u };
@@ -149,6 +157,7 @@
     if (!u) { U = { state: "idle", for: "" }; return paintUser(); }
     var err = T.usernameError(u);
     if (err) { U = { state: "bad", for: u, msg: err }; return paintUser(); }
+    if (localMode) { U = { state: "idle", for: "" }; return paintUser(); } // no username/link in local mode
     if (u === originalUsername) { U = { state: "ok", for: u, msg: "This is your current link" }; return paintUser(); }
     U = { state: "checking", for: u };
     paintUser();
@@ -169,14 +178,14 @@
     root.replaceChildren(
       h("div", { class: "studio" },
         h("main", { class: "studio-main" }, h("div", { id: "nav" }), h("div", { id: "panel" })),
-        h("aside", { class: "preview-col", "aria-label": "Live preview" },
+        h("aside", { class: "preview-col", "aria-label": localMode ? "Preview" : "Live preview" },
           h("div", { class: "frame" },
-            h("div", { class: "frame-bar" }, h("span", { class: "live" }), "Live preview"),
+            h("div", { class: "frame-bar" }, h("span", { class: "live" }), localMode ? "Preview" : "Live preview"),
             h("div", { class: "frame-body", id: "previewBody" })))
       ),
       h("div", { class: "actionbar", id: "bar" })
     );
-    pv = window.PayView.mount($("previewBody"), previewRow(), { preview: true });
+    pv = window.PayView.mount($("previewBody"), previewRow(), localMode ? { preview: true, hideHandle: true } : { preview: true });
     paintNav();
     paintPanel();
     paintBar();
@@ -184,6 +193,10 @@
   }
 
   function paintTop() {
+    if (localMode) {
+      topActions.replaceChildren(h("span", { class: "user-chip local" }, "Offline mode"));
+      return;
+    }
     var kids = [];
     if (!isNew && originalUsername) kids.push(h("a", { class: "btn sec sm", href: "/" + originalUsername, target: "_blank", rel: "noopener" }, icon("external"), "View page"));
     kids.push(h("span", { class: "user-chip" }, user.email || ""));
@@ -213,10 +226,14 @@
     var kids, show = true;
     if (isNew) {
       var last = step === STEPS.length - 1;
-      var label = last ? "Publish page" : current() === "qr" && !S.qr ? "Skip for now" : "Continue";
+      var saving = localMode && current() === "download";
+      var label = saving ? "Download page" : last ? "Publish page" : current() === "qr" && !S.qr ? "Skip for now" : "Continue";
       kids = [
         step > 0 ? h("button", { class: "btn sec", type: "button", onClick: back }, icon("back"), "Back") : null,
-        h("button", { class: "btn grow", id: "primary", type: "button", disabled: busy, onClick: next }, busy ? h("span", { class: "spin" }) : null, busy ? "Publishing" : label, busy ? null : icon(last ? "check" : "next"))
+        h("button", { class: "btn grow", id: "primary", type: "button", disabled: busy, onClick: saving ? downloadNow : next },
+          busy ? h("span", { class: "spin" }) : null,
+          busy ? (saving ? "Preparing…" : "Publishing") : label,
+          busy ? null : icon(saving ? "download" : last ? "check" : "next"))
       ];
     } else if (dirty()) {
       kids = [
@@ -244,10 +261,14 @@
     else if (id === "qr") node = qrPanel();
     else if (id === "pay") node = payPanel();
     else if (id === "look") node = lookPanel();
+    else if (id === "download") node = downloadPanel();
     else node = sharePanel();
     p.replaceChildren(node);
     barMsg("");
-    if (id === "link") onUsername();
+    if (id === "link") {
+      if (localMode) U = { state: "idle", for: "" };
+      else onUsername();
+    }
   }
 
   function head(id) {
@@ -291,23 +312,29 @@
 
   function linkPanel() {
     var title = h("input", { class: "input", id: "f-title", type: "text", maxlength: "60", autocomplete: "organization", placeholder: "e.g. Rahim Traders", value: S.title });
-    var user = h("input", { class: "input", id: "f-user", type: "text", maxlength: "30", autocomplete: "off", autocapitalize: "none", autocorrect: "off", spellcheck: "false", placeholder: "rahim-traders", value: S.username });
+    // Local mode has no account and nobody to claim a username against, so the
+    // whole "Your link" field group is left out; the page address is derived
+    // from the title when the file is made.
+    var user = localMode ? null : h("input", { class: "input", id: "f-user", type: "text", maxlength: "30", autocomplete: "off", autocapitalize: "none", autocorrect: "off", spellcheck: "false", placeholder: "rahim-traders", value: S.username });
     var message = h("input", { class: "input", id: "f-msg", type: "text", maxlength: "160", placeholder: "e.g. Orders ship after payment", value: S.message });
 
     title.addEventListener("input", function () {
       S.title = title.value;
-      if (!S.usernameTouched) { S.username = T.slugify(S.title); user.value = S.username; onUsername(); }
+      if (localMode) S.username = T.slugify(S.title) || "page";
+      else if (!S.usernameTouched) { S.username = T.slugify(S.title); user.value = S.username; onUsername(); }
       changed();
     });
-    user.addEventListener("input", function () {
-      var v = user.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-      if (v !== user.value) user.value = v;
-      S.username = v; S.usernameTouched = true;
-      onUsername(); changed();
-    });
+    if (user) {
+      user.addEventListener("input", function () {
+        var v = user.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+        if (v !== user.value) user.value = v;
+        S.username = v; S.usernameTouched = true;
+        onUsername(); changed();
+      });
+    }
     message.addEventListener("input", function () { S.message = message.value; changed(); });
 
-    var linkField = h("div", { class: "field" },
+    var linkField = localMode ? null : h("div", { class: "field" },
       h("label", { for: "f-user" }, "Your link"),
       h("div", { class: "affix", id: "userAffix" }, h("span", null, location.host + "/"), user),
       h("div", { class: "status", id: "userStatus", "aria-live": "polite" }),
@@ -535,6 +562,50 @@
       ));
   }
 
+  /* ----- download (local mode only) ----- */
+
+  function downloadFilename() {
+    return "deshiqr-" + (T.slugify(S.title) || "page") + ".html";
+  }
+
+  function downloadPanel() {
+    var tips = [
+      [icon("download"), "One file.", " Your page, styles, QR engine and payment details are all inside it."],
+      [icon("wallet"), "Same page your customers see.", " Every method, colour and quick amount you added is included."],
+      [icon("shield"), "Works on its own.", " Customers can enter an amount, use quick amounts and save the QR image."]
+    ];
+    var hosts = [
+      [icon("store"), "Netlify Drop:", " drag the file onto app.netlify.com/drop."],
+      [icon("share"), "GitHub Pages:", " add it to a repository and turn Pages on."],
+      [icon("external"), "Any server:", " upload it wherever you already host files."]
+    ];
+    function tipList(items) {
+      return h("ul", { class: "points" }, items.map(function (t) {
+        return h("li", null, h("span", { class: "ic-tile" }, t[0]), h("span", null, h("b", null, t[1]), t[2]));
+      }));
+    }
+    return h("div", { class: "panel" },
+      h("div", { class: "panel-head" }, h("h1", null, DOWNLOAD.title), h("p", null, DOWNLOAD.lead)),
+      h("div", { class: "stack" },
+        h("div", { class: "card" },
+          h("div", { class: "stack" },
+            h("div", { class: "field" },
+              h("span", { class: "label" }, "File name"),
+              h("div", { class: "urlbox" }, h("span", null, downloadFilename()))),
+            h("button", { class: "btn block", id: "dlBtn", type: "button", onClick: downloadNow }, icon("download"), "Download page (.html)"),
+            h("p", { class: "hint" }, "Save it somewhere safe. You can come back and download a fresh copy after any edit."),
+            h("div", { class: "form-msg", id: "dlHint", role: "status", "aria-live": "polite" })
+          )),
+        h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "What you get")),
+        tipList(tips),
+        h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("store")), h("h2", null, "How to host it")),
+        tipList(hosts),
+        h("div", { class: "notice" }, icon("info"), h("span", null, "Only the web fonts load from the internet. Everything else is inside the file, so it works from any static host — or straight from a folder on your computer."))
+      ));
+  }
+
   /* ----- share ----- */
 
   function sharePanel() {
@@ -569,6 +640,10 @@
           h("p", { class: "section-sub", style: "margin:0" }, "This opens your page. It isn’t a payment QR."),
           h("button", { class: "btn sec", type: "button", onClick: function () { T.qrPng(url, 1000).then(function (b) { return T.saveImage(b, "page-" + originalUsername + ".png"); }); } }, icon("download"), "Save image")),
         h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Download your page as HTML")),
+        h("p", { class: "section-sub" }, "One file with your page, styles and QR engine inside. Host it anywhere. Changes you make here won’t reach the file, so download a fresh copy after editing."),
+        h("button", { class: "btn sec", type: "button", onClick: downloadShare }, icon("download"), "Download page (.html)"),
+        h("div", { class: "divider" }),
         h("label", { class: "switch" }, h("span", null, h("b", null, "Page is live"), h("span", { class: "d" }, "Turn off to hide it. The link shows “doesn’t exist” until you turn it back on.")), toggle, h("span", { class: "track" })),
         h("div", { class: "danger-zone" },
           h("b", null, "Delete my page"),
@@ -591,8 +666,56 @@
   var savedRowJson = "";
   function toast_(m, o) { T.toast(m, o || {}); }
 
+  /* ----- download (local mode wizard + online Share tab) ----- */
+
+  function paintDownloadBusy(b) {
+    var btn = $("dlBtn");
+    if (!btn) return;
+    btn.disabled = b;
+    T.fill(btn, b ? h("span", { class: "spin" }) : icon("download"), b ? "Preparing…" : "Download page (.html)");
+  }
+
+  async function downloadNow() {
+    if (busy) return;
+    var v = validate();
+    if (v) return showProblem(v);
+    if (typeof T.downloadPage !== "function") {
+      barMsg("The download isn’t ready yet. Reload the page and try again.", true);
+      return;
+    }
+    busy = true;
+    paintBar();
+    paintDownloadBusy(true);
+    try {
+      var res = await T.downloadPage(toRow());
+      var hint = $("dlHint");
+      if (hint) {
+        hint.className = "form-msg ok";
+        hint.textContent = "Downloaded " + (res && res.filename ? res.filename : downloadFilename()) + ". You can download again any time.";
+      }
+    } catch (e) {
+      var m = (e && e.message) || "Couldn’t make the file. Try again.";
+      var bad = $("dlHint");
+      if (bad) { bad.className = "form-msg bad"; bad.textContent = m; }
+      barMsg(m, true);
+    } finally {
+      busy = false;
+      paintBar();
+      paintDownloadBusy(false);
+    }
+  }
+
+  // Online Share tab: a published page can always be saved as a standalone file.
+  function downloadShare() {
+    if (typeof T.downloadPage !== "function") return toast_("The download isn’t ready yet. Reload the page and try again.", { error: true, lift: dirty() });
+    T.downloadPage(toRow()).catch(function (e) {
+      toast_((e && e.message) || "Couldn’t make the file. Try again.", { error: true, lift: dirty() });
+    });
+  }
+
   async function save() {
     if (busy) return;
+    if (localMode) return; // local mode never writes to Supabase
     if (U.state === "checking") await runCheck(S.username);
     var v = validate();
     if (v) return showProblem(v);
@@ -689,7 +812,29 @@
   });
   window.addEventListener("beforeunload", function (e) { if (dirty()) { e.preventDefault(); e.returnValue = ""; } });
 
+  // Offline / paused backend: the same wizard, no account, a Download step at the end.
+  function startLocal() {
+    localMode = true;
+    STEPS.push(DOWNLOAD);
+    // No account and no hosted address: step 1 just asks for a name, and the
+    // address used inside the exported file comes from that name.
+    STEPS[0].tab = "Name";
+    STEPS[0].lead = "This is the name customers see on your page.";
+    try {
+      var d = JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || "null");
+      if (d && typeof d === "object") S = Object.assign(blank(), d);
+    } catch (e) { /* a bad draft is the same as no draft */ }
+    S.username = T.slugify(S.title) || "page";
+    renderAll();
+  }
+
+  async function backendOnline() {
+    if (typeof T.checkBackend === "function") return (await T.checkBackend()).online;
+    return !!T.client(); // fall back to the old behaviour if an older common.js is cached
+  }
+
   async function boot() {
+    if (!(await backendOnline())) return startLocal();
     sb = T.client();
     if (!sb) return setupMissing();
     sb.auth.onAuthStateChange(function (ev) {

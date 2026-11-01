@@ -2,8 +2,9 @@
 (function () {
   "use strict";
   var T = window.Deshi, h = T.h, icon = T.icon;
-  var sb = T.client();
+  var sb = null;
   var card = document.getElementById("auth");
+  var notice = document.getElementById("setupNotice");
 
   document.querySelectorAll("[data-host]").forEach(function (el) { el.textContent = location.host; });
   [["ic1", "scan"], ["ic2", "link"], ["ic3", "wallet"]].forEach(function (p) { document.getElementById(p[0]).appendChild(icon(p[1])); });
@@ -13,14 +14,64 @@
   var mode = new URLSearchParams(location.search).get("mode") === "signin" ? "signin" : "signup";
   var busy = false;
 
-  if (!sb) {
-    document.getElementById("setupNotice").replaceChildren(
+  /* ----- online vs offline ----- */
+
+  // Shown while the health probe is in flight, so the sign-in form never flashes.
+  function paintLoading() {
+    card.replaceChildren(
+      h("h2", null, "One moment"),
+      h("p", { class: "sub" }, h("span", { class: "spin", role: "status", "aria-label": "Checking whether sign-in is available" }), " Checking whether sign-in is available…")
+    );
+  }
+
+  var OFFLINE_LINE = {
+    paused: "The database is paused right now. You can still build your page and download it.",
+    restricted: "The database is over its free-tier limit right now. You can still build and download your page.",
+    unreachable: "We can’t reach the database right now. You can still build your page and download it.",
+    "not-configured": "This site isn’t connected to a database yet. You can still build your page and download it."
+  };
+
+  // The landing usually advertises the hosted service (your own address, a live
+  // link). That isn’t true offline, so those bits are rewritten in place; the
+  // markup, classes and the decorative slip stay untouched.
+  function offlineCopy() {
+    // Bullet 2 promised <this-site>/yourname — download and host it instead.
+    var icon2 = document.getElementById("ic2");
+    var bullet = icon2 && icon2.parentNode && icon2.parentNode.children[1];
+    if (bullet) bullet.replaceChildren(h("b", null, "Take it with you."), " Download one HTML file and host it at your own address.");
+
+    // "How it works": no link to pick and no page we host.
+    function setStep(li, title, text) {
+      var wrap = li && li.children[0];
+      if (!wrap || wrap.children.length < 2) return;
+      wrap.children[0].textContent = title;
+      wrap.children[1].textContent = text;
+    }
+    var steps = document.querySelectorAll(".how ol li");
+    setStep(steps[1], "Make it yours", "Pick a name and the colour that feels like you.");
+    setStep(steps[2], "Download it", "One self-contained HTML file you can host anywhere.");
+
+    // The demo slip shows "host/rahim"; don’t imply this site will host the page.
+    document.querySelectorAll("[data-host]").forEach(function (el) { el.textContent = "your-site.com"; });
+  }
+
+  // No login, no sign-up: the same wizard at /app runs without an account and
+  // ends with a downloadable single HTML file.
+  function renderOffline(backend) {
+    notice.replaceChildren();
+    offlineCopy();
+    card.replaceChildren(
+      h("h2", null, "Create your page"),
+      h("p", { class: "sub" }, "Sign-in is offline right now, but you can still build your payment page and download it as one HTML file to host yourself."),
+      h("div", { class: "notice" }, icon("info"), h("span", null, OFFLINE_LINE[backend.reason] || "You can still build your page and download it.")),
+      h("a", { class: "btn block", href: "/app" }, icon("next"), "Create my page")
+    );
+  }
+
+  function setupNotice() {
+    notice.replaceChildren(
       h("div", { class: "notice bad" }, icon("alert"), h("span", null, "Supabase isn’t connected yet. Add your project URL and anon key to public/js/config.js, or set the SUPABASE_URL and SUPABASE_ANON_KEY environment variables. The README has the 5-minute setup."))
     );
-  } else {
-    sb.auth.getSession().then(function (r) {
-      if (r.data && r.data.session) location.replace("/app");
-    });
   }
 
   function friendly(err) {
@@ -131,5 +182,26 @@
     ));
   }
 
-  render();
+  function boot() {
+    paintLoading();
+    var probe = typeof T.checkBackend === "function"
+      ? T.checkBackend()
+      : Promise.resolve({ configured: !!T.configured, online: !!T.client(), reason: T.configured ? "online" : "not-configured", status: null });
+    probe.then(function (backend) {
+      if (!backend.online) return renderOffline(backend);
+      sb = T.client();
+      if (!sb) {
+        setupNotice();
+        return render();
+      }
+      sb.auth.getSession().then(function (r) {
+        if (r.data && r.data.session) location.replace("/app");
+      });
+      render();
+    }, function () {
+      renderOffline({ reason: "unreachable" });
+    });
+  }
+
+  boot();
 })();

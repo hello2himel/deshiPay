@@ -24,6 +24,76 @@
     return _client;
   }
 
+  /* ---------------- backend health ----------------
+   * Free-tier Supabase projects pause when they are idle and then answer with
+   * HTTP 540; 402 means the project is restricted. The site checks this once per
+   * page load so the landing and the dashboard can pick online vs local mode.
+   * Any HTTP answer at all means the project is reachable, so a configured site
+   * that is still being set up (no tables yet) counts as online.
+   */
+
+  var _backend = null;
+
+  // Resolves { network, status } and never rejects. A timeout or a CORS failure
+  // is { network: true }.
+  function probeFetch(url, headers, ms) {
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = 0;
+    var timeout = new Promise(function (resolve) {
+      timer = setTimeout(function () {
+        if (ctrl) { try { ctrl.abort(); } catch (e) { /* already aborted */ } }
+        resolve({ network: true, status: null });
+      }, ms);
+    });
+    var opts = { method: "GET", cache: "no-store", credentials: "omit" };
+    if (headers) opts.headers = headers;
+    if (ctrl) opts.signal = ctrl.signal;
+    var request;
+    try {
+      request = fetch(url, opts).then(
+        function (res) { return { network: false, status: res.status }; },
+        function () { return { network: true, status: null }; }
+      );
+    } catch (e) {
+      request = Promise.resolve({ network: true, status: null });
+    }
+    return Promise.race([request, timeout]).then(function (r) {
+      clearTimeout(timer);
+      return r;
+    });
+  }
+
+  function backendResult(r) {
+    if (!r || r.network) return null;
+    if (r.status === 540) return { configured: true, online: false, reason: "paused", status: 540 };
+    if (r.status === 402) return { configured: true, online: false, reason: "restricted", status: 402 };
+    return { configured: true, online: true, reason: "online", status: r.status };
+  }
+
+  // Promise<{ configured, online, reason, status }>, cached for this page load.
+  function checkBackend() {
+    if (_backend) return _backend;
+    if (!configured) {
+      _backend = Promise.resolve({ configured: false, online: false, reason: "not-configured", status: null });
+      return _backend;
+    }
+    var base = String(cfg.supabaseUrl).replace(/\/+$/, "");
+    // Primary: the public auth health endpoint as a simple request, so there is
+    // no CORS preflight. Some proxies/hosts fail this even when the project is
+    // fine, so a network-level failure falls back to the API the site already
+    // uses cross-origin (PostgREST supports CORS from browsers).
+    _backend = probeFetch(base + "/auth/v1/health", null, 4000).then(backendResult).then(function (r) {
+      if (r) return r;
+      return probeFetch(base + "/rest/v1/", {
+        apikey: cfg.supabaseAnonKey,
+        Authorization: "Bearer " + cfg.supabaseAnonKey
+      }, 4000).then(backendResult).then(function (r2) {
+        return r2 || { configured: true, online: false, reason: "unreachable", status: null };
+      });
+    });
+    return _backend;
+  }
+
   /* ---------------- DOM ---------------- */
 
   var PROPS = { value: 1, checked: 1, selected: 1, disabled: 1, hidden: 1, readOnly: 1, textContent: 1 };
@@ -270,7 +340,7 @@
   }
 
   window.Deshi = {
-    cfg: cfg, configured: configured, client: client, RESERVED: RESERVED,
+    cfg: cfg, configured: configured, client: client, checkBackend: checkBackend, RESERVED: RESERVED,
     h: h, fill: fill, icon: icon, toast: toast, copyText: copyText,
     taka: taka, bnToEn: bnToEn, monogram: monogram, slugify: slugify, usernameError: usernameError,
     normalizePhone: normalizePhone, PHONE_RE: PHONE_RE, showPhone: showPhone, debounce: debounce, pageUrl: pageUrl,

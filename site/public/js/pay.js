@@ -4,9 +4,6 @@
   var T = window.Deshi, h = T.h, icon = T.icon;
   var root = document.getElementById("root");
 
-  var seg = decodeURIComponent((location.pathname.split("/").filter(Boolean)[0] || "")).toLowerCase();
-  var sb = T.client();
-
   function state(title, text, actions) {
     root.replaceChildren(h("div", { class: "pv-state" },
       h("a", { class: "brand", href: "/" }, h("i"), "DeshiQR"),
@@ -29,6 +26,26 @@
     var n = parseFloat(window.DeshiQR.sanitizeAmount(raw));
     return n > 0 && n <= window.DeshiQR.MAX_AMOUNT ? n : 0;
   }
+
+  // A standalone export (see export.js) embeds its page data and has no
+  // Supabase/config.js at all: render it straight away, then stop.
+  if (window.DESHIQR_PAGE) {
+    var embedded = window.DESHIQR_PAGE;
+    document.documentElement.setAttribute("data-theme", embedded.theme || "rose");
+    document.title = "Pay " + embedded.title;
+    var embeddedBg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+    var embeddedMeta = document.querySelector('meta[name="theme-color"]');
+    if (embeddedMeta && embeddedBg) embeddedMeta.setAttribute("content", embeddedBg);
+    window.PayView.mount(root, embedded, {
+      fixedAmount: fixedAmount(),
+      footerHref: window.DESHIQR_FOOTER_HREF || "/",
+      hideHandle: true
+    });
+    return;
+  }
+
+  var seg = decodeURIComponent((location.pathname.split("/").filter(Boolean)[0] || "")).toLowerCase();
+  var sb = T.client();
 
   async function load() {
     if (!seg || seg === "pay.html") return location.replace("/");

@@ -1,15 +1,40 @@
 /*
- * UI smoke test. Drives the real pages in headless Chrome against a mocked Supabase,
- * walks the whole journey (sign up, onboarding, publish, customer page) and saves screenshots.
+ * UI smoke test. Drives the real pages in headless Chrome against a mocked
+ * Supabase and runs TWO scenarios:
  *
+ *   1. ONLINE  — the original journey: landing, sign up, onboarding, publish,
+ *                the Share tab (including the new HTML download), the customer
+ *                page, and scanning the QR it draws.
+ *   2. OFFLINE — a paused/unreachable backend: landing "Create my page" CTA,
+ *                the auth-free local wizard, the Download step, then the
+ *                downloaded standalone HTML opened from file:// (title, theme,
+ *                amount -> QR scanned, ?amount= lock, no network but the fonts).
+ *
+ * The Supabase client is mocked (tests/e2e/mock-supabase.js); config.js is
+ * stubbed. The online scenario answers the backend health probe with 200; the
+ * offline scenario aborts every request to the Supabase host, which is what the
+ * site sees when a free-tier project is paused or the network is down.
+ *
+ * Setup (once, outside the repo — do not add puppeteer-core to the repo):
+ *
+ *   mkdir -p /tmp/deshiqr-e2e && cd /tmp/deshiqr-e2e
  *   npm i --no-save puppeteer-core
- *   CHROME=/path/to/chrome node tests/e2e/run.js
  *
- * Screenshots land in tests/e2e/shots/ (git-ignored).
+ * Run from the repo root:
+ *
+ *   NODE_PATH=/tmp/deshiqr-e2e/node_modules \
+ *   CHROME=/home/himel/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome \
+ *   node site/tests/e2e/run.js
+ *
+ * (If you installed puppeteer-core in the repo with `npm i --no-save
+ * puppeteer-core`, omit NODE_PATH and just run `CHROME=... node
+ * site/tests/e2e/run.js`.)
+ *
+ * Screenshots and the captured standalone.html land in tests/e2e/shots/
+ * (git-ignored).
  */
 const fs = require("fs");
 const path = require("path");
-const http = require("http");
 const { spawn } = require("child_process");
 const puppeteer = require("puppeteer-core");
 const H = require("../helpers.js");
@@ -19,15 +44,24 @@ const SHOTS = path.join(__dirname, "shots");
 const PORT = 8899;
 const BASE = "http://localhost:" + PORT;
 const CHROME = process.env.CHROME || "/usr/bin/google-chrome";
+const MOCK_SUPABASE = fs.readFileSync(path.join(__dirname, "mock-supabase.js"), "utf8");
+const CONFIG_STUB =
+  'window.DESHIQR_CONFIG={supabaseUrl:"https://test.supabase.co",supabaseAnonKey:"test",googleAuth:false};';
 // same load order as the pages: vendored engine bundle, then the site adapter
 const Q = H.loadAdapter();
 fs.mkdirSync(SHOTS, { recursive: true });
 
 let fails = 0;
-const ok = (c, m) => { console.log((c ? "  ok   " : "  FAIL ") + m); if (!c) fails++; };
+let checks = 0;
+const ok = (c, m) => {
+  checks++;
+  console.log((c ? "  ok   " : "  FAIL ") + m);
+  if (!c) fails++;
+};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// synthetic merchant QR (no real account data); fixture-only TLV + CRC
+/* ---------------- synthetic merchant QR (no real account data) ---------------- */
+// fixture-only TLV + CRC
 const body0 = H.encodeTLV([
   ["00", "01"], ["01", "11"],
   ["26", H.encodeTLV([["00", "bd.org.bb.npsb"], ["01", "02"], ["02", "04"], ["03", "01700000000"]], "bytes")],
@@ -36,33 +70,140 @@ const body0 = H.encodeTLV([
 ], "bytes") + "6304";
 const PAYLOAD = body0 + H.crc16(body0);
 
-async function main() {
-  const server = spawn("node", [path.join(ROOT, "scripts/dev-server.js")], { env: Object.assign({}, process.env, { PORT }), stdio: "ignore" });
-  await sleep(600);
-  const browser = await puppeteer.launch({ executablePath: CHROME, headless: "new", args: ["--no-sandbox", "--disable-dev-shm-usage"] });
-  const errors = [];
-  try {
-    const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      const u = req.url();
-      if (u.includes("/vendor/supabase.js")) return req.respond({ status: 200, contentType: "text/javascript", body: fs.readFileSync(path.join(__dirname, "mock-supabase.js"), "utf8") });
-      if (u.endsWith("/js/config.js")) return req.respond({ status: 200, contentType: "text/javascript", body: 'window.DESHIQR_CONFIG={supabaseUrl:"https://test.supabase.co",supabaseAnonKey:"test",googleAuth:false};' });
-      if (u.includes("fonts.googleapis.com")) return req.respond({ status: 200, contentType: "text/css", body: "" });
-      if (u.includes("fonts.gstatic.com")) return req.abort();
-      req.continue();
-    });
-    page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
-    page.on("console", (m) => { if (m.type() === "error") errors.push("console: " + m.text()); });
+/* ---------------- shared page plumbing ---------------- */
 
+// One page per scenario, in its own (incognito) browser context so the two
+// scenarios never share localStorage (mock session, local draft, ...).
+async function newScenarioPage(browser, offline) {
+  const ctx = await browser.createBrowserContext();
+  const page = await ctx.newPage();
+  const state = { offline, supa: [], health: 0, errors: [] };
+  await page.setRequestInterception(true);
+  page.on("request", (req) => serve(req, state));
+  page.on("pageerror", (e) => state.errors.push("pageerror: " + e.message));
+  page.on("console", (m) => {
+    if (m.type() === "error") state.errors.push("console: " + m.text());
+  });
+  return { ctx, page, state };
+}
+
+function serve(req, state) {
+  const u = req.url();
+  if (u.startsWith("file:")) return req.continue();
+  if (u.includes("/vendor/supabase.js")) {
+    return req.respond({ status: 200, contentType: "text/javascript; charset=utf-8", body: MOCK_SUPABASE });
+  }
+  if (u.split("?")[0].endsWith("/js/config.js")) {
+    return req.respond({ status: 200, contentType: "text/javascript; charset=utf-8", body: CONFIG_STUB });
+  }
+  if (u.includes("fonts.googleapis.com")) {
+    return req.respond({ status: 200, contentType: "text/css; charset=utf-8", body: "" });
+  }
+  if (u.includes("fonts.gstatic.com")) return req.abort();
+  if (u.includes("supabase.co")) {
+    state.supa.push(u);
+    // Offline: abort the probe (and the fallback), like a paused project or a
+    // dead network. Online: answer the auth health endpoint as a simple,
+    // CORS-readable request (no custom headers, so no preflight).
+    if (state.offline) return req.abort();
+    const clean = u.split("?")[0];
+    if (clean.endsWith("/auth/v1/health") || /\/rest\/v1\/?$/.test(clean)) {
+      state.health++;
+      return req.respond({
+        status: 200,
+        contentType: "text/plain; charset=utf-8",
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "apikey, authorization, content-type"
+        },
+        body: "{}"
+      });
+    }
+    return req.abort();
+  }
+  req.continue();
+}
+
+const isProbe = (u) => /\/auth\/v1\/health$/.test(u.split("?")[0]) || /\/rest\/v1\/?$/.test(u.split("?")[0]);
+
+function noErrors(state, label) {
+  const real = state.errors.filter((e) => !/fonts\.gstatic|ERR_FAILED|net::/i.test(e));
+  ok(real.length === 0, label + ": no console or page errors" + (real.length ? "\n         " + real.join("\n         ") : ""));
+}
+
+// Capture the download without touching product code: remember every Blob
+// handed to URL.createObjectURL and swallow the synthetic anchor download.
+async function armCapture(page) {
+  await page.evaluate(() => {
+    window.__blobs = [];
+    window.__downloadName = "";
+    const makeObjectURL = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = function (blob) {
+      window.__blobs.push(blob);
+      return makeObjectURL(blob);
+    };
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.download) {
+        window.__downloadName = this.download;
+        return;
+      }
+      return click.call(this);
+    };
+    try {
+      Object.defineProperty(navigator, "canShare", { configurable: true, value: function () { return false; } });
+    } catch (e) { /* canShare is optional */ }
+  });
+}
+
+async function readCapture(page) {
+  await page.waitForFunction(() => window.__blobs && window.__blobs.length > 0, { timeout: 20000 });
+  return page.evaluate(async () => {
+    const blob = window.__blobs[window.__blobs.length - 1];
+    return { html: await blob.text(), size: blob.size, filename: window.__downloadName };
+  });
+}
+
+// The QR drawn by PayView is an SVG; rasterise it and scan it with jsQR.
+async function decodeOnScreenQr(page) {
+  await page.addScriptTag({ path: path.join(ROOT, "public", "vendor", "jsQR.js") });
+  return page.evaluate(async () => {
+    const svg = document.querySelector(".qrbox svg");
+    const xml = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    await new Promise((r) => { img.onload = r; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml); });
+    const c = document.createElement("canvas"); c.width = c.height = 800;
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, 800, 800); g.imageSmoothingEnabled = false; g.drawImage(img, 0, 0, 800, 800);
+    const d = g.getImageData(0, 0, 800, 800);
+    const r = jsQR(d.data, 800, 800);
+    return r ? r.data : null;
+  });
+}
+
+/* ================= online journey (the original smoke test) ================= */
+
+async function scenarioOnline(browser) {
+  console.log("\n=== Scenario 1: online (backend healthy) ===");
+  const { ctx, page, state } = await newScenarioPage(browser, false);
+  try {
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     const shot = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: false });
     const shotFull = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: true });
 
     console.log("Landing + sign up");
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    // The landing page only signs people in; the payload engine is loaded by the
-    // dashboard and customer pages, so check it once we are on /app below.
+    // The landing renders only after the backend health probe resolves.
+    await page.waitForSelector("#email", { timeout: 10000 });
+    ok(state.health > 0, "landing probes /auth/v1/health before showing sign-in");
+    const onlineLandingText = await page.evaluate(() => document.body.innerText);
+    ok(
+      onlineLandingText.includes("Get your own address") && onlineLandingText.includes("Pick your link") && onlineLandingText.includes("Share it"),
+      "online landing keeps the hosted-address copy"
+    );
+    const onlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
+    ok(onlineHosts.length > 0 && onlineHosts.every((t) => t === "localhost:8899"), "online landing shows this site’s host");
+    ok(!onlineLandingText.includes("Take it with you") && !onlineLandingText.includes("your-site.com"), "online landing has no offline-only copy");
     await shot("01-landing-mobile");
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {
@@ -81,9 +222,18 @@ async function main() {
     const wiring = await page.evaluate(() => ({
       adapter: typeof window.DeshiQR.inspect === "function" && typeof window.DeshiQR.build === "function",
       engine: typeof window.DeshiQR.update === "function" && typeof window.DeshiQR.validate === "function",
+      exporter: typeof window.Deshi.downloadPage === "function" && typeof window.Deshi.buildPageHtml === "function"
     }));
     ok(wiring.engine, "vendored deshiqr engine loaded (update/validate)");
     ok(wiring.adapter, "site payload adapter loaded over the engine (inspect/build)");
+    ok(wiring.exporter, "standalone exporter loaded (downloadPage/buildPageHtml)");
+    ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 1 of 4 · Link"), "online wizard keeps the Link step");
+    ok((await page.$("#f-user")) !== null, "online step 1 still has the username field");
+    ok(
+      (await page.$eval("#panel .panel-head p", (e) => e.textContent)).includes("address of your page"),
+      "online step 1 still explains the page address"
+    );
+    ok((await page.$$eval("#previewBody .pv-handle", (els) => els.length)) === 1, "online live preview shows the host/username handle");
     await shot("02-step1-link");
 
     console.log("Step 1: name and link");
@@ -134,31 +284,43 @@ async function main() {
     ok(true, "published, share tab with live banner");
     await shotFull("08-share");
 
+    console.log("Share tab: download the page as HTML");
+    ok(
+      (await page.evaluate(() => Array.from(document.querySelectorAll("#panel h2")).some((e) => e.textContent === "Download your page as HTML"))),
+      "Share tab offers “Download your page as HTML”"
+    );
+    await armCapture(page);
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll("#panel button")).find((b) => b.textContent.trim() === "Download page (.html)");
+      if (!btn) throw new Error("Share tab download button not found");
+      btn.click();
+    });
+    const onlineExport = await readCapture(page);
+    ok(onlineExport.filename === "deshiqr-rahim-traders.html", "share download filename is deshiqr-<username>.html");
+    ok(onlineExport.html.startsWith("<!doctype html>"), "share download is a complete HTML document");
+    ok(onlineExport.html.includes("window.DESHIQR_PAGE = {"), "share download embeds window.DESHIQR_PAGE");
+    ok(
+      onlineExport.html.includes('"title":"Rahim Traders"') && onlineExport.html.includes('"username":"rahim-traders"'),
+      "share download carries the published page data"
+    );
+    ok(onlineExport.size > 100000, "share download is one self-contained file (" + Math.round(onlineExport.size / 1024) + " KB)");
+    await shotFull("09-share-download");
+
     console.log("Customer page (mobile)");
     await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
     await page.waitForSelector(".pv h1");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
+    ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/rahim-traders", "online customer page still shows its host/username handle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "customer page uses the chosen theme");
-    await shot("09-pay-empty");
+    await shot("10-pay-empty");
     await page.type(".amt-input", "১২৫০");
     ok((await page.$eval(".amt-input", (e) => e.value)) === "1250", "Bangla digits typed in the amount are converted");
     await page.waitForSelector(".qrbox svg");
     await sleep(900);
-    await shotFull("10-pay-qr");
+    await shotFull("11-pay-qr");
 
     // decode the QR that is actually on screen and check the payload end to end
-    await page.addScriptTag({ path: path.join(ROOT, "public/vendor/jsQR.js") });
-    const decoded = await page.evaluate(async () => {
-      const svg = document.querySelector(".qrbox svg");
-      const xml = new XMLSerializer().serializeToString(svg);
-      const img = new Image();
-      await new Promise((r) => { img.onload = r; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml); });
-      const c = document.createElement("canvas"); c.width = c.height = 800;
-      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, 800, 800); g.imageSmoothingEnabled = false; g.drawImage(img, 0, 0, 800, 800);
-      const d = g.getImageData(0, 0, 800, 800);
-      const r = jsQR(d.data, 800, 800);
-      return r ? r.data : null;
-    });
+    const decoded = await decodeOnScreenQr(page);
     ok(!!decoded, "the QR on screen can be scanned");
     const rr = decoded ? Q.inspect(decoded) : { ok: false };
     ok(rr.ok && rr.srcAmount === 1250 && rr.name === "RAHIM TRADERS", "scanned payload: checksum valid, amount ৳1250, same merchant");
@@ -170,11 +332,11 @@ async function main() {
     await tabs[1].click();
     await page.waitForSelector(".copyrow");
     ok((await page.$eval(".copyrow .v", (e) => e.textContent)) === "01712 345678", "wallet number normalised from +880 format");
-    await shotFull("11-pay-wallet");
+    await shotFull("12-pay-wallet");
     const tabs2 = await page.$$(".pv-methods button");
     await tabs2[2].click();
     await page.waitForSelector(".item-foot");
-    await shotFull("12-pay-bank");
+    await shotFull("13-pay-bank");
 
     console.log("Fixed-amount link");
     await page.goto(BASE + "/rahim-traders?amount=500", { waitUntil: "networkidle0" });
@@ -189,18 +351,16 @@ async function main() {
     await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "dark" }]);
     await page.type(".amt-input", "500");
     await sleep(900);
-    await shotFull("13-pay-dark");
+    await shotFull("14-pay-dark");
     await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
     await page.setViewport({ width: 1280, height: 860, deviceScaleFactor: 1 });
     await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
     await page.type(".amt-input", "500");
     await sleep(900);
-    await shot("14-pay-desktop");
-    await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await shot("15-landing-desktop");
+    await shot("15-pay-desktop");
     await page.goto(BASE + "/app", { waitUntil: "networkidle0" });
     await page.waitForSelector(".tabs");
-    await shot("16-dashboard-desktop");
+    await shot("17-dashboard-desktop");
 
     console.log("Sign out and wrong password");
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -208,7 +368,13 @@ async function main() {
     await page.waitForSelector(".top-actions button");
     await page.click(".top-actions button");
     await page.waitForFunction(() => location.pathname === "/", { timeout: 5000 });
+    // signed out now, so this is a real landing page (a signed-in visitor is redirected to /app)
+    await page.setViewport({ width: 1280, height: 860, deviceScaleFactor: 1 });
+    await page.waitForSelector("#email", { timeout: 10000 });
+    await shot("16-landing-desktop");
+    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await page.goto(BASE + "/?mode=signin", { waitUntil: "networkidle0" });
+    await page.waitForSelector("#email", { timeout: 10000 });
     await page.type("#email", "owner@example.com");
     await page.type("#pw", "wrong-password");
     await page.click("form button[type=submit]");
@@ -217,12 +383,210 @@ async function main() {
   } catch (e) {
     console.error("  FAIL exception: " + e.message);
     fails++;
+  }
+  noErrors(state, "online journey");
+  await ctx.close();
+}
+
+/* ================= offline / paused backend + standalone download ================= */
+
+async function scenarioOffline(browser) {
+  console.log("\n=== Scenario 2: offline (backend paused/unreachable) ===");
+  const { ctx, page, state } = await newScenarioPage(browser, true);
+  try {
+    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    const shot = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: false });
+    const shotFull = (n) => page.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: true });
+
+    console.log("Landing: offline CTA, no login");
+    await page.goto(BASE + "/", { waitUntil: "networkidle0" });
+    await page.waitForFunction(() => !!document.querySelector('#auth a[href="/app"]'), { timeout: 10000 });
+    ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline landing shows no sign-in / sign-up form");
+    ok((await page.$eval('#auth a[href="/app"]', (e) => e.textContent)).includes("Create my page"), "offline landing offers the “Create my page” CTA");
+    ok((await page.$eval("#auth h2", (e) => e.textContent)) === "Create your page", "offline landing heading explains what to do");
+    ok((await page.$eval("#auth .notice", (e) => e.textContent)).includes("can’t reach the database"), "offline landing explains the database is unreachable");
+    ok(state.supa.length >= 2 && state.supa.every(isProbe), "the landing probed health + fallback and nothing else (" + state.supa.length + " requests)");
+    const offlineLandingText = await page.evaluate(() => document.body.innerText);
+    ok(
+      offlineLandingText.includes("Take it with you") && offlineLandingText.includes("host it at your own address"),
+      "offline landing points copy becomes “Take it with you”"
+    );
+    ok(!offlineLandingText.includes("Get your own address"), "offline landing drops the hosted-address promise");
+    const howItWorks = await page.$$eval(".how ol li", (els) => els.map((e) => e.innerText));
+    ok(
+      howItWorks[1].includes("Make it yours") && howItWorks[1].includes("Pick a name and the colour that feels like you."),
+      "offline how-it-works step 2 is “Make it yours”"
+    );
+    ok(
+      howItWorks[2].includes("Download it") && howItWorks[2].includes("One self-contained HTML file you can host anywhere."),
+      "offline how-it-works step 3 is “Download it”"
+    );
+    ok(!offlineLandingText.includes("Pick your link") && !offlineLandingText.includes("Share it"), "offline landing no longer promises picking a link or a live share");
+    const offlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
+    ok(offlineHosts.length > 0 && offlineHosts.every((t) => t === "your-site.com"), "offline landing points at your-site.com instead of this host");
+    ok((await page.$eval(".demo-url", (e) => e.textContent)).replace(/\s+/g, "") === "your-site.com/rahim", "offline demo slip shows your-site.com/rahim");
+    await shot("18-offline-landing");
+
+    // fixture QR image for the wizard (rendered by the app itself, from the landing page)
+    const b64 = await page.evaluate(async (p) => {
+      const blob = await Deshi.qrPng(p, 700);
+      return await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result.split(",")[1]); fr.readAsDataURL(blob); });
+    }, PAYLOAD);
+    const qrFile = path.join(SHOTS, "input-qr-offline.png");
+    fs.writeFileSync(qrFile, Buffer.from(b64, "base64"));
+
+    console.log("Local wizard: no account, same steps");
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click('#auth a[href="/app"]')]);
+    await page.waitForSelector("#f-title", { timeout: 10000 });
+    ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 1 of 5 · Name"), "local wizard has five steps and step 1 is “Name”");
+    ok((await page.$eval("#topActions .user-chip", (e) => e.textContent)).trim() === "Offline mode", "dashboard shows the “Offline mode” chip");
+    ok((await page.$("#topActions button")) === null, "no sign-out button without an account");
+    ok((await page.$("#f-user")) === null, "local mode has no username/link input");
+    ok((await page.$("#userAffix")) === null && (await page.$("#userStatus")) === null, "local mode has no link affix or availability status");
+    const localFields = await page.$$eval("#panel .field", (els) => els.map((e) => (e.querySelector("label") || {}).textContent || ""));
+    ok(
+      localFields.length === 2 && localFields[0].includes("Your name or business name") && localFields[1].includes("A note for customers"),
+      "local step 1 asks only for the name and an optional note"
+    );
+    ok(
+      (await page.$eval("#panel .panel-head p", (e) => e.textContent)) === "This is the name customers see on your page.",
+      "local step 1 lead makes no hosted-address promise"
+    );
+    ok(!/link|address/i.test(await page.$eval("#panel", (e) => e.innerText)), "local step 1 has no link/address copy");
+    ok((await page.$$eval("#previewBody .pv-handle", (els) => els.length)) === 0, "local live preview hides the host/username handle");
+    ok((await page.$eval(".frame-bar", (e) => e.textContent.trim())) === "Preview", "local preview frame says “Preview”, not “Live preview”");
+    await shot("19-offline-step1");
+
+    console.log("Step 1: name only");
+    await page.type("#f-title", "Offline Traders");
+    ok((await page.$eval("#previewBody .pv h1", (e) => e.textContent)) === "Offline Traders", "local preview picks up the name");
+    ok((await page.$$eval("#previewBody .pv-handle", (els) => els.length)) === 0, "local preview still has no handle after typing");
+    await page.click("#primary");
+
+    console.log("Step 2: drop the QR");
+    await page.waitForSelector(".drop");
+    const input = await page.$('input[type=file]:not([capture])');
+    await input.uploadFile(qrFile);
+    await page.waitForSelector(".qr-ok", { timeout: 15000 });
+    ok((await page.$eval(".qr-ok .who b", (e) => e.textContent)) === "RAHIM TRADERS", "QR decoded in local mode, merchant name shown");
+    await page.click("#primary");
+
+    console.log("Step 3 + 4: skip wallet, pick a theme");
+    await page.waitForSelector(".add");
+    await page.click("#primary");
+    await page.waitForSelector(".themes");
+    await page.click('.swatch[aria-label="Coffee"]');
+    ok((await page.$eval(".pv", (e) => e.getAttribute("data-theme"))) === "coffee", "preview uses the coffee theme");
+    await page.click("#primary");
+
+    console.log("Step 5: download the standalone page");
+    await page.waitForSelector("#dlBtn", { timeout: 8000 });
+    ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 5 of 5"), "the download is the fifth (new) step");
+    ok((await page.$eval("#primary", (e) => e.textContent)).includes("Download page"), "the primary action becomes “Download page”");
+    ok((await page.$eval("#panel .urlbox span", (e) => e.textContent)) === "deshiqr-offline-traders.html", "download panel shows the title-derived file name");
+    await shot("20-offline-download");
+
+    const draft = await page.evaluate(() => {
+      try { return JSON.parse(localStorage.getItem("deshiqr.local.v1") || "null"); } catch (e) { return null; }
+    });
+    ok(!!draft && draft.title === "Offline Traders" && draft.theme === "coffee" && !!draft.qr, "the wizard draft persists in localStorage deshiqr.local.v1");
+    ok(state.supa.every(isProbe), "the local wizard made no Supabase auth or RPC calls (only the aborted probe chain)");
+
+    await armCapture(page);
+    await page.click("#dlBtn");
+    await page.waitForFunction(() => {
+      const hint = document.getElementById("dlHint");
+      return !!hint && /^Downloaded deshiqr-offline-traders\.html/.test(hint.textContent);
+    }, { timeout: 20000 });
+    const exported = await readCapture(page);
+    ok(exported.filename === "deshiqr-offline-traders.html", "download filename is deshiqr-<username>.html");
+    ok(exported.html.startsWith("<!doctype html>"), "downloaded file is a complete HTML document");
+    ok(exported.html.includes("window.DESHIQR_PAGE = {"), "downloaded file embeds window.DESHIQR_PAGE");
+    ok(
+      exported.html.includes('"title":"Offline Traders"') &&
+        exported.html.includes('"username":"offline-traders"') &&
+        exported.html.includes('"theme":"coffee"'),
+      "downloaded file carries the wizard data (title, username, theme)"
+    );
+    ok(exported.html.includes('"qr_payload":"' + PAYLOAD + '"') && exported.html.includes('"qr_name":"RAHIM TRADERS"'), "downloaded file carries the uploaded QR payload");
+    ok(exported.html.includes('window.DESHIQR_FOOTER_HREF = "' + BASE + '/"'), "downloaded file points its footer at the generating site");
+    ok(/<style>/.test(exported.html) && !/<script[^>]+src=/.test(exported.html), "CSS and JS are inlined into the file");
+    const externals = (exported.html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || []).map((s) => s.split('"')[1]);
+    ok(externals.length > 0 && externals.every((u) => /fonts\.(googleapis|gstatic)\.com/.test(u)), "the only external references are Google Fonts");
+    ok(exported.size > 100000, "downloaded file is self-contained (" + Math.round(exported.size / 1024) + " KB)");
+    const standalonePath = path.join(SHOTS, "standalone.html");
+    fs.writeFileSync(standalonePath, exported.html);
+
+    console.log("Open the downloaded file from disk");
+    const sp = await ctx.newPage();
+    const sshot = (n) => sp.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: false });
+    const sshotFull = (n) => sp.screenshot({ path: path.join(SHOTS, n + ".png"), fullPage: true });
+    const sstate = { errors: [], net: [] };
+    await sp.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await sp.setRequestInterception(true);
+    sp.on("request", (req) => {
+      const u = req.url();
+      if (u.startsWith("file:")) return req.continue();
+      if (/^https?:/.test(u)) sstate.net.push(u);
+      if (u.includes("fonts.googleapis.com")) return req.respond({ status: 200, contentType: "text/css; charset=utf-8", body: "" });
+      if (u.includes("fonts.gstatic.com")) return req.abort();
+      return req.continue();
+    });
+    sp.on("pageerror", (e) => sstate.errors.push("pageerror: " + e.message));
+    sp.on("console", (m) => { if (m.type() === "error") sstate.errors.push("console: " + m.text()); });
+
+    const fileUrl = "file://" + standalonePath;
+    await sp.goto(fileUrl, { waitUntil: "networkidle0", timeout: 20000 });
+    await sp.waitForSelector(".pv h1", { timeout: 8000 });
+    ok((await sp.$eval(".pv h1", (e) => e.textContent)) === "Offline Traders", "standalone page renders the merchant title");
+    ok((await sp.title()) === "Pay Offline Traders", "standalone page title names the page");
+    ok((await sp.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "standalone page keeps the chosen theme");
+    ok((await sp.$(".pv-handle")) === null && (await sp.$$(".pv-handle")).length === 0, "standalone page hides the host/username handle");
+    ok((await sp.$(".pv-methods")) === null && (await sp.$(".amt-input")) !== null, "standalone page renders the single QR method directly");
+    ok((await sp.$eval(".pv-foot a", (e) => e.getAttribute("href"))) === BASE + "/", "standalone footer links back to the generating site");
+    await sshot("21-standalone-pay");
+
+    await sp.type(".amt-input", "1250");
+    await sp.waitForSelector(".qrbox svg");
+    await sleep(900);
+    await sshotFull("22-standalone-qr");
+    const decoded = await decodeOnScreenQr(sp);
+    ok(!!decoded, "the standalone page draws a scannable QR");
+    const rr = decoded ? Q.inspect(decoded) : { ok: false };
+    ok(rr.ok && rr.srcAmount === 1250 && rr.name === "RAHIM TRADERS", "standalone QR: checksum valid, amount ৳1250, same merchant");
+
+    await sp.goto(fileUrl + "?amount=1000", { waitUntil: "networkidle0", timeout: 20000 });
+    await sp.waitForSelector(".qrbox svg");
+    ok((await sp.$eval(".amt-input", (e) => e.readOnly)) === true, "?amount=1000 locks the amount on the standalone page");
+    ok((await sp.$eval(".amt-input", (e) => e.value)) === "1000", "the locked amount is 1000");
+    await sshot("23-standalone-fixed");
+
+    ok(sstate.net.length > 0 && sstate.net.every((u) => /fonts\.(googleapis|gstatic)\.com/.test(u)), "standalone page loads nothing but the web fonts");
+    ok(sstate.errors.length === 0, "standalone page has no console or page errors" + (sstate.errors.length ? "\n         " + sstate.errors.join("\n         ") : ""));
+  } catch (e) {
+    console.error("  FAIL exception: " + e.message);
+    fails++;
+  }
+  noErrors(state, "offline journey");
+  await ctx.close();
+}
+
+/* ---------------- main ---------------- */
+
+async function main() {
+  const server = spawn("node", [path.join(ROOT, "scripts/dev-server.js")], { env: Object.assign({}, process.env, { PORT }), stdio: "ignore" });
+  await sleep(600);
+  const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
+  try {
+    await scenarioOnline(browser);
+    await scenarioOffline(browser);
   } finally {
     await browser.close();
     server.kill();
   }
-  const real = errors.filter((e) => !/fonts\.gstatic|ERR_FAILED|net::/i.test(e));
-  ok(real.length === 0, "no console or page errors" + (real.length ? "\n         " + real.join("\n         ") : ""));
+  const shots = fs.readdirSync(SHOTS).filter((f) => /\.(png|html)$/.test(f)).sort();
+  console.log("\nScreenshots (" + shots.length + "): " + shots.join(", "));
+  console.log(checks + " checks, " + fails + " failed");
   console.log(fails ? "\n" + fails + " check(s) FAILED" : "\nAll UI checks passed");
   process.exit(fails ? 1 : 0);
 }

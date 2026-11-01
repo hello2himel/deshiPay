@@ -170,10 +170,11 @@
     svg.appendChild(el("rect", { x: f.m, y: f.ruleY - 0.15, width: f.w - f.m * 2, height: 0.3, fill: LINE }));
     svg.appendChild(el("rect", { x: f.m, y: f.ruleY - 0.3, width: f.tickW, height: 0.6, fill: GREEN }));
 
-    // "Pay here." headline
+    // "Pay here." headline; an amount-specific poster shows the amount here.
+    var headText = page.amountLabel ? "Pay " + page.amountLabel : "Pay here";
+    var headFit = fit(headText, f.w - f.m * 2, mm(f.titlePt), mm(f.titlePt) * 0.55, 800, 1, DISPLAY);
     var head = el("text", { x: f.cx, y: f.titleY, "text-anchor": "middle", "font-family": DISPLAY, "font-weight": 800,
-      "font-size": mm(f.titlePt), "letter-spacing": f.titleLS, fill: INK });
-    head.appendChild(el("tspan", null, "Pay here"));
+      "font-size": headFit.size, "letter-spacing": f.titleLS, fill: INK }, headFit.lines[0] || headText);
     var dot = el("tspan", { fill: GREEN }, ".");
     head.appendChild(dot);
     svg.appendChild(head);
@@ -197,9 +198,7 @@
 
     // single instruction line: static QR wants an amount typed in the app;
     // an amount-specific QR already carries the amount.
-    var instruction = page.amountLabel
-      ? "Pay " + page.amountLabel + " by scanning this QR."
-      : "Scan with bKash, Nagad, Rocket or any bank app.";
+    var instruction = "Scan with bKash, Nagad, Rocket or any bank app.";
     svg.appendChild(el("text", { x: f.cx, y: f.inY, "text-anchor": "middle", "font-family": BODY, "font-weight": 600,
       "font-size": mm(f.inPt), fill: INK }, instruction));
 

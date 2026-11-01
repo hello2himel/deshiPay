@@ -170,6 +170,16 @@ async function readCapture(page) {
   });
 }
 
+// Wait until the wizard action is actually enabled, then advance. Prevents
+// clicking while a previous step's async work still holds the bar disabled.
+async function clickPrimary(page) {
+  await page.waitForFunction(() => {
+    const b = document.querySelector("#primary");
+    return b && !b.disabled;
+  }, { timeout: 15000 });
+  await clickPrimary(page);
+}
+
 // The QR drawn by PayView is an SVG; rasterise it and scan it with jsQR.
 async function decodeOnScreenQr(page) {
   await page.addScriptTag({ path: path.join(ROOT, "public", "vendor", "jsQR.js") });
@@ -398,7 +408,7 @@ async function scenarioOnline(browser) {
     await page.waitForFunction(() => document.querySelector("#userStatus").classList.contains("ok"), { timeout: 4000 });
     ok(true, "username availability shows ✓");
     await shot("03-step1-filled");
-    await page.click("#primary");
+    await clickPrimary(page);
 
     console.log("Step 2: drop the QR");
     await page.waitForSelector(".drop");
@@ -409,7 +419,7 @@ async function scenarioOnline(browser) {
     ok((await page.$eval(".qr-ok .who b", (e) => e.textContent)) === "RAHIM TRADERS", "QR image decoded, merchant name shown");
     ok((await page.$eval(".qr-ok .pill", (e) => e.textContent)).includes("Checksum"), "checksum verified badge shown");
     await shot("05-step2-ok");
-    await page.click("#primary");
+    await clickPrimary(page);
 
     console.log("Step 3: wallet + bank");
     await page.waitForSelector(".add");
@@ -428,7 +438,7 @@ async function scenarioOnline(browser) {
     await page.type('[id^="b-"][id$="-branch"]', "Bogra");
     await page.type('[id^="b-"][id$="-routing"]', "123456789");
     await shotFull("06-step3-full");
-    await page.click("#primary");
+    await clickPrimary(page);
 
     console.log("Step 4: theme and publish");
     await page.waitForSelector(".pick-list .pick-row");
@@ -446,7 +456,7 @@ async function scenarioOnline(browser) {
     ok((await page.$eval('.pick-row[data-pick="colour"] .pick-value', (e) => e.textContent)) === "Coffee", "the colour row shows the selected theme");
     ok((await page.$eval(".pv", (e) => e.getAttribute("data-theme"))) === "coffee", "preview switched to the coffee theme");
     await shot("07-step4-look");
-    await page.click("#primary");
+    await clickPrimary(page);
     await page.waitForSelector(".live-banner", { timeout: 8000 });
     ok(true, "published, share tab with live banner");
     await shotFull("08-share");
@@ -471,6 +481,9 @@ async function scenarioOnline(browser) {
       (await page.evaluate(() => Array.from(document.querySelectorAll("#panel h2")).some((e) => e.textContent === "Download your page as HTML"))),
       "Share tab offers “Download your page as HTML”"
     );
+    const shareHeadings = await page.$$eval("#panel h2", (els) => els.map((e) => e.textContent));
+    ok(!shareHeadings.includes("Link with an amount"), "Share tab no longer duplicates the Payments amount link");
+    ok(!shareHeadings.includes("QR for your page"), "Share tab no longer duplicates the page QR");
     await armCapture(page);
     await page.evaluate(() => {
       const btn = Array.from(document.querySelectorAll("#panel button")).find((b) => b.textContent.trim() === "Download page (.html)");
@@ -849,7 +862,7 @@ async function scenarioOffline(browser) {
     await page.type("#f-title", "Offline Traders");
     ok((await page.$eval("#previewBody .pv h1", (e) => e.textContent)) === "Offline Traders", "local preview picks up the name");
     ok((await page.$$eval("#previewBody .pv-handle", (els) => els.length)) === 0, "local preview still has no handle after typing");
-    await page.click("#primary");
+    await clickPrimary(page);
 
     console.log("Step 2: drop the QR");
     await page.waitForSelector(".drop");
@@ -857,18 +870,18 @@ async function scenarioOffline(browser) {
     await input.uploadFile(qrFile);
     await page.waitForSelector(".qr-ok", { timeout: 15000 });
     ok((await page.$eval(".qr-ok .who b", (e) => e.textContent)) === "RAHIM TRADERS", "QR decoded in local mode, merchant name shown");
-    await page.click("#primary");
+    await clickPrimary(page);
 
     console.log("Step 3 + 4: skip wallet, pick a theme");
     await page.waitForSelector(".add");
-    await page.click("#primary");
+    await clickPrimary(page);
     await page.waitForSelector(".pick-list .pick-row");
     await page.click('.pick-row[data-pick="colour"]');
     await page.waitForSelector(".sheet .themes");
     await page.click('.sheet .swatch[aria-label="Coffee"]');
     await page.waitForSelector(".sheet", { hidden: true });
     ok((await page.$eval(".pv", (e) => e.getAttribute("data-theme"))) === "coffee", "preview uses the coffee theme");
-    await page.click("#primary");
+    await clickPrimary(page);
 
     console.log("Step 5: download the standalone page");
     await page.waitForSelector("#dlBtn", { timeout: 8000 });

@@ -812,41 +812,16 @@
 
   function sharePanel() {
     var url = T.pageUrl(originalUsername);
-    var amt = h("input", { class: "input", id: "f-linkamt", type: "text", inputmode: "decimal", autocomplete: "off", placeholder: "e.g. 1500" });
-    var qrBox = h("div", { class: "qrbox" });
-    qrBox.appendChild(T.qrSvg(url));
     var toggle = h("input", { type: "checkbox", role: "switch", checked: S.published, onChange: function (e) { S.published = e.target.checked; changed(); paintNav(); } });
 
-    var amountCap = TQ.MAX_INPUT_AMOUNT || TQ.MAX_AMOUNT;
-    amt.addEventListener("input", function () {
-      var s = TQ.sanitizeAmount(amt.value);
-      if (parseFloat(s) > amountCap) s = String(amountCap);
-      if (s !== amt.value) amt.value = s;
-    });
-
     return h("div", { class: "panel" },
-      h("div", { class: "panel-head" }, h("h1", null, "Share your page"), h("p", null, "Send the link, put the QR on your counter, or lock an amount for a specific invoice.")),
+      h("div", { class: "panel-head" }, h("h1", null, "Share your page"), h("p", null, "Send the link, download your page, or print a poster. Amounts and payment links live in Payments.")),
       justPublished ? h("div", { class: "live-banner" }, icon("check"), "Your page is live. Try opening it on your phone.") : null,
       h("div", { class: "stack" },
         h("div", { class: "urlbox" }, h("span", null, url.replace(/^https?:\/\//, "")), h("button", { class: "btn sm", type: "button", onClick: function () { T.copyText(url).then(function (ok) { T.toast(ok ? "Link copied" : "Couldn’t copy", { error: !ok, lift: dirty() }); }); } }, icon("copy"), "Copy")),
         h("div", { class: "row-actions" },
           h("a", { class: "btn sec", href: "/" + originalUsername, target: "_blank", rel: "noopener" }, icon("external"), "Open page"),
           navigator.share ? h("button", { class: "btn sec", type: "button", onClick: function () { navigator.share({ title: S.title, url: url }).catch(function () {}); } }, icon("share"), "Share…") : null),
-        h("div", { class: "divider" }),
-        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("link")), h("h2", null, "Link with an amount")),
-        h("p", { class: "section-sub" }, "The amount is locked on the page, so customers can’t change it."),
-        h("div", { class: "field" }, h("label", { for: "f-linkamt" }, "Amount in taka"), amt, h("p", { class: "hint" }, "Up to ৳50,000.")),
-        h("button", { class: "btn sec", type: "button", onClick: function () {
-          var n = parseFloat(amt.value);
-          if (!(n > 0)) { T.toast("Enter an amount first", { error: true, lift: dirty() }); return amt.focus(); }
-          if (n > amountCap) { T.toast("The maximum amount is ৳50,000", { error: true, lift: dirty() }); return amt.focus(); }
-          T.copyText(url + "?amount=" + n).then(function (ok) { T.toast(ok ? "Link with " + T.taka(n) + " copied" : "Couldn’t copy", { error: !ok, lift: dirty() }); });
-        } }, icon("copy"), "Copy link with amount"),
-        h("div", { class: "divider" }),
-        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("qr")), h("h2", null, "QR for your page")),
-        h("div", { class: "share-qr" }, qrBox,
-          h("p", { class: "section-sub", style: "margin:0" }, "This opens your page. It isn’t a payment QR."),
-          h("button", { class: "btn sec", type: "button", onClick: function () { T.qrPng(url, 1000).then(function (b) { return T.saveImage(b, "page-" + originalUsername + ".png"); }); } }, icon("download"), "Save image")),
         h("div", { class: "divider" }),
         h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Download your page as HTML")),
         h("p", { class: "section-sub" }, "One file with your page, styles and QR engine inside. Host it anywhere. Changes you make here won’t reach the file, so download a fresh copy after editing."),

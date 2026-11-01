@@ -191,7 +191,7 @@
     ] : null;
 
     var noLogin = h("div", { class: "no-login" },
-      h("span", null, "No account needed?"),
+      h("span", null, "Don’t want to create an account?"),
       h("a", { class: "btn dashed block", href: "/app?local=1" }, "Create a page without login")
     );
 

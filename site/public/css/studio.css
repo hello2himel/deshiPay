@@ -64,7 +64,7 @@
 .form-msg { min-height: 20px; font-size: 14px; font-weight: 600; color: var(--muted); }
 .form-msg.bad { color: var(--bad); }
 .form-msg.ok { color: var(--ok); }
-.auth-links { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.auth-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; text-align: center; }
 .mailed { display: grid; gap: 12px; justify-items: start; }
 .mailed .ic-big { width: 56px; height: 56px; border-radius: 18px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
 .mailed .ic-big .ic { width: 28px; height: 28px; }

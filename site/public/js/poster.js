@@ -114,29 +114,39 @@
     return g;
   }
 
-  /* ---------- app logos (Play icons + Bangla QR mark) ---------- */
-  function logoImage(svg, item, x, top, size) {
-    var g = el("g", { "data-logo": item.name, "aria-label": item.name });
-    if (item.name === "MTB Neo") g.appendChild(el("rect", { x: x, y: top, width: size, height: size, rx: size * 0.29, fill: "#F3F4F2" }));
+  /* ---------- app logos (rounded tiles, Play icons + Bangla QR mark) ---------- */
+  var logoSeq = 0;
+  function logoClip(defs, x, top, size) {
+    var id = "logo-clip-" + (++logoSeq);
+    var clip = el("clipPath", { id: id });
+    clip.appendChild(el("rect", { x: x, y: top, width: size, height: size, rx: size * 0.29 }));
+    defs.appendChild(clip);
+    return { id: id, tile: el("rect", { x: x, y: top, width: size, height: size, rx: size * 0.29, fill: "#E9EDEB" }) };
+  }
+  function logoImage(svg, defs, item, x, top, size) {
+    var c = logoClip(defs, x, top, size);
+    var g = el("g", { "data-logo": item.name, "aria-label": item.name, "clip-path": "url(#" + c.id + ")" });
+    g.appendChild(c.tile);
     var img = el("image", { x: x, y: top, width: size, height: size, preserveAspectRatio: "xMidYMid meet" });
     img.setAttribute("href", item.src);
     img.setAttributeNS(XLINK, "xlink:href", item.src);
     g.appendChild(img);
     svg.appendChild(g);
   }
-  function logoBanglaQr(svg, item, x, top, size) {
+  function logoBanglaQr(svg, defs, item, x, top, size) {
     var doc = new DOMParser().parseFromString(item.svg, "image/svg+xml");
     var src = doc.documentElement;
     var vb = (src.getAttribute("viewBox") || "0 0 1 1").split(/\s+/).map(Number);
     var ratio = vb[2] && vb[3] ? vb[2] / vb[3] : 1;
     var h = size, w = h * ratio;
+    // Bangla QR is the official standard mark, not an app tile: no rounded box.
     var g = el("g", { "data-logo": item.name, "aria-label": item.name });
     var nested = el("svg", { x: x + (size - w) / 2, y: top, width: w, height: h, viewBox: vb.join(" "), preserveAspectRatio: "xMidYMid meet" });
     Array.prototype.forEach.call(src.childNodes, function (n) { nested.appendChild(document.importNode(n, true)); });
     g.appendChild(nested);
     svg.appendChild(g);
   }
-  function appLogos(svg, f) {
+  function appLogos(svg, f, defs) {
     var L = window.DeshiPosterLogos;
     if (!L) return;
     var row1 = L.mfs.concat([L.banglaqr]);
@@ -146,8 +156,8 @@
     function row(items, top) {
       items.forEach(function (item, i) {
         var x = x0 + i * (f.logos.tile + f.logos.gapX);
-        if (item === L.banglaqr) logoBanglaQr(svg, item, x, top, f.logos.tile);
-        else logoImage(svg, item, x, top, f.logos.tile);
+        if (item === L.banglaqr) logoBanglaQr(svg, defs, item, x, top, f.logos.tile);
+        else logoImage(svg, defs, item, x, top, f.logos.tile);
       });
     }
     row(row1, f.logos.top);
@@ -162,6 +172,8 @@
     svg.appendChild(el("title", null, "Pay " + (page.title || "here") + " · DeshiPay poster"));
     svg.appendChild(el("rect", { x: 0, y: 0, width: f.w, height: f.h, fill: PAPER }));
     svg.appendChild(el("circle", { cx: f.deco.cx, cy: f.deco.cy, r: f.deco.r, fill: MINT }));
+    var defs = el("defs");
+    svg.appendChild(defs);
 
     // header
     svg.appendChild(mark(f.markX, f.markY, f.markSize));
@@ -204,7 +216,7 @@
     });
     svg.appendChild(steps);
 
-    appLogos(svg, f);
+    appLogos(svg, f, defs);
 
     // footer: hairline, mark and legal copy aligned together
     var ft = f.footer;

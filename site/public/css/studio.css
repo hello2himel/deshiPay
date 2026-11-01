@@ -269,7 +269,8 @@ body.sheet-open { overflow: hidden; }
 .swatch:active .dot { transform: scale(0.94); }
 
 .switch { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 56px; padding: 10px 16px; border: 1px solid var(--line); background: var(--panel); border-radius: 16px; cursor: pointer; }
-.switch b { display: block; font-size: 16px; }
+.switch b { display: flex; align-items: center; gap: 7px; font-size: 16px; }
+.switch b .ic { width: 18px; height: 18px; flex: none; }
 .switch span.d { display: block; color: var(--muted); font-size: 13px; }
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .switch .track { flex: none; width: 52px; height: 32px; border-radius: 99px; background: var(--line); position: relative; transition: background 0.15s; }

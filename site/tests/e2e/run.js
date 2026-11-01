@@ -563,17 +563,20 @@ async function scenarioOnline(browser) {
     ok((await page.$eval("#panel h1", (e) => e.textContent)) === "Request a payment", "the Payments tab opens the request flow");
     await page.type("#f-pay-amount", "750");
     await page.waitForFunction(() => {
-      const a = document.querySelector("#pay-locked-open");
+      const a = document.querySelector("#pay-open");
       return a && a.getAttribute("href").includes("?amount=750");
     }, { timeout: 4000 });
-    ok((await page.$eval("#pay-locked-open", (e) => e.getAttribute("href"))).includes("?amount=750"), "the locked page link carries the set amount");
+    ok((await page.$eval("#pay-open", (e) => e.getAttribute("href"))).includes("?amount=750"), "the locked payment link carries the amount");
+    ok((await page.$eval("#f-pay-lock", (e) => e.checked)) === true, "the payment amount is locked by default");
     ok(!!(await page.$(".poster-preview svg")), "the amount-specific poster preview renders");
-    await page.type("#f-pay-preferred", "300");
+    await page.evaluate(() => { document.querySelector("#f-pay-lock").click(); });
     await page.waitForFunction(() => {
-      const a = document.querySelector("#pay-preferred-open");
-      return a && a.getAttribute("href").includes("?preferred=300");
+      const a = document.querySelector("#pay-open");
+      return a && a.getAttribute("href").includes("?preferred=750");
     }, { timeout: 4000 });
-    ok((await page.$eval("#pay-preferred-open", (e) => e.getAttribute("href"))).includes("?preferred=300"), "the preferred page link carries the editable amount");
+    ok((await page.$eval("#pay-open", (e) => e.getAttribute("href"))).includes("?preferred=750"), "unlocking switches the link to a preferred amount");
+    ok((await page.$eval("#pay-open", (e) => e.textContent)).includes("Open preferred page"), "the action label follows the lock state");
+    await page.evaluate(() => { document.querySelector("#f-pay-lock").click(); });
     await armCapture(page);
     await page.evaluate(() => {
       const btn = Array.from(document.querySelectorAll("#panel button")).find((b) => b.textContent.includes("Download poster"));

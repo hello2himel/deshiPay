@@ -294,6 +294,11 @@ async function scenarioOnline(browser) {
       footLinks.includes("/terms") && footLinks.includes("/privacy") && footLinks.includes("/contact"),
       "the landing footer links to terms, privacy and contact"
     );
+    const abuseLinks = await page.$$eval(".site-foot a[href^='mailto:']", (els) => els.map((e) => e.getAttribute("href")));
+    ok(
+      abuseLinks.some((h) => h.includes("stargzr.science@gmail.com") && decodeURIComponent(h).toLowerCase().includes("report abuse")),
+      "the landing footer has a report-abuse email link"
+    );
     for (const [path, heading] of [
       ["/terms", "Terms of service"],
       ["/privacy", "Privacy policy"],
@@ -303,6 +308,7 @@ async function scenarioOnline(browser) {
       await page.waitForSelector(".legal h1", { timeout: 10000 });
       ok((await page.$eval(".legal h1", (e) => e.textContent)) === heading, path + " serves its own page");
       ok(!!(await page.$(".site-foot")), path + " has the site footer");
+      ok((await page.$eval(".legal", (e) => e.innerText)).includes("stargzr.science@gmail.com"), path + " uses the new contact email");
     }
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
     await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });

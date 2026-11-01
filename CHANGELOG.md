@@ -29,6 +29,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Contact email + report abuse.** The contact address is now
+  **stargzr.science@gmail.com** everywhere (terms, privacy, contact/FAQ, security policy). Every page's
+  footer has a **Report abuse** link in the Support column: a mailto with the subject pre-filled
+  ("Report abuse on DeshiPay"), so a visitor can report an impersonating or abusive page from any page.
+
+### Changed
+
 - **Rebrand to DeshiPay, with a wider story.** The site (titles, header, footer, legal pages, customer
   page, exported standalone files) is now branded **DeshiPay**, and the copy no longer frames the
   product as a QR tool: it is a complete way to receive **payments, donations and support** for shops,

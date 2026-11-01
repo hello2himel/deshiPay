@@ -13,6 +13,7 @@ complete way to get paid.
 
 - **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshipay.netlify.app>
 - **Auth + database** on **Supabase** (email/password, Postgres with Row Level Security)
+- **Light/dark toggle** in the nav: follows the OS by default, remembers an explicit light or dark choice per browser
 - **Payload editing in the browser** comes from the separate [deshiQR](https://github.com/hello2himel/deshiQR) engine: the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
 - **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
 - The page **only shows payment details** — no payment confirmation and no money handling of any kind. Customers pay from their own app, whether that is a QR scan or a wallet/bank transfer.

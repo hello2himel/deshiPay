@@ -124,6 +124,13 @@ THEMES.forEach((t, i) => {
 });
 css += "}\n";
 
+// Explicit light/dark choice from the nav toggle overrides the system preference.
+css += "\n/* data-mode on <html> wins over prefers-color-scheme (theme toggle) */\n";
+THEMES.forEach((t) => {
+  css += block('html[data-mode="light"][data-theme="' + t.id + '"]', lightVars(t), "");
+  css += block('html[data-mode="dark"][data-theme="' + t.id + '"]', darkVars(t), "");
+});
+
 fs.writeFileSync(path.join(__dirname, "..", "public", "css", "themes.css"), css);
 console.log("wrote public/css/themes.css (" + THEMES.length + " themes)");
 

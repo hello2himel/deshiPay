@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>deshiQR browser bundle</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --ink: #1b1030;
+        --paper: #ffffff;
+        --muted: #6b6478;
+        --accent: #e2136e;
+      }
+      body {
+        margin: 0;
+        padding: 2rem 1.25rem 4rem;
+        font:
+          16px/1.6 "Figtree",
+          system-ui,
+          sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      main {
+        max-width: 52rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin: 0 0 0.25rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin: 2.5rem 0 0.75rem;
+      }
+      p {
+        color: var(--muted);
+      }
+      code,
+      pre {
+        font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+        font-size: 0.85rem;
+      }
+      pre {
+        padding: 1rem;
+        border: 1px solid #d9d4e2;
+        border-radius: 12px;
+        overflow-x: auto;
+        background: #faf8fd;
+        color: var(--ink);
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+      #qr {
+        width: 260px;
+        min-height: 260px;
+      }
+      #qr svg {
+        width: 100%;
+        height: auto;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .note {
+        border-left: 3px solid var(--accent);
+        padding-left: 0.75rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="badge">synthetic demo only</p>
+      <h1>deshiQR browser bundle</h1>
+      <p>
+        One file, no bundler, no build step: <code>deshiqr.global.js</code> exposes
+        <code>window.DeshiQR</code> (payload + QR) and registers the <code>&lt;deshiqr-pay&gt;</code>
+        element. The same package on npm is also available as an ESM import.
+      </p>
+
+      <h2>Library</h2>
+      <pre><code>&lt;script src="deshiqr.global.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const payload = DeshiQR.withAmount(basePayload, 500);
+  document.querySelector("#qr").innerHTML =
+    DeshiQR.toSvg(DeshiQR.encode(payload), { margin: 4, scale: 8 });
+&lt;/script&gt;</code></pre>
+
+      <div class="row">
+        <div id="qr" aria-label="Demo QR"></div>
+        <div>
+          <p class="note">
+            This page derives a ৳500 payload from the synthetic <code>DEMO STORE</code> payload in
+            <code>docs/demo-payloads.md</code> and renders it with the bundled QR encoder. Do not scan it —
+            the account is fake.
+          </p>
+          <pre><code id="payload"></code></pre>
+        </div>
+      </div>
+
+      <h2>Web component</h2>
+      <p>The same file also gives you the amount-input panel; no separate script needed.</p>
+      <pre><code>&lt;deshiqr-pay payload="00020101021126…" title="Demo Store" presets="100,500,1000"&gt;&lt;/deshiqr-pay&gt;</code></pre>
+      <deshiqr-pay
+        id="pay"
+        payload="00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D"
+        title="DEMO STORE"
+        note="Synthetic demo — do not send money."
+        presets="100,500,1000"
+      ></deshiqr-pay>
+
+      <h2>Where this file comes from</h2>
+      <p>
+        It is built from this repo (<code>pnpm build</code>) and published to GitHub Pages on every
+        <code>v*</code> tag by <code>.github/workflows/cdn.yml</code>. The npm package <code>deshiqr</code> is
+        also served by jsDelivr and unpkg. <code>raw.githubusercontent.com</code> cannot be used in a
+        <code>&lt;script src&gt;</code> (it serves <code>text/plain</code> with <code>nosniff</code>), which
+        is why this page exists.
+      </p>
+    </main>
+
+    <script src="deshiqr.global.js"></script>
+    <script>
+      // Synthetic fixtures only — see docs/demo-payloads.md.
+      const basePayload =
+        "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D";
+
+      try {
+        const payload = DeshiQR.withAmount(basePayload, 500);
+        document.querySelector("#qr").innerHTML = DeshiQR.toSvg(DeshiQR.encode(payload), {
+          margin: 4,
+          scale: 8,
+        });
+        document.querySelector("#payload").textContent = payload;
+      } catch (error) {
+        document.querySelector("#qr").textContent = "Bundle failed to load: " + error.message;
+      }
+    </script>
+  </body>
+</html>

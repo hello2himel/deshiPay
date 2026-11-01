@@ -1,5 +1,5 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 /**
  * Static data and low-level helpers for the QR Code standard (ISO/IEC 18004).

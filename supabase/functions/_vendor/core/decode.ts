@@ -1,5 +1,5 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 import { crc16 } from "./crc.ts";
 import { DeshiQrError } from "./errors.ts";

@@ -9,7 +9,8 @@
  *   3. subscribe to the `deshiqr-ready` / `deshiqr-change` / `deshiqr-error` events.
  *
  * The component itself ships zero dependencies; this wrapper only depends on `react`.
- * Run `pnpm build:libs` and load `deshiqr-element` (or its global bundle) before rendering.
+ * Run `pnpm build:libs` and `import "deshiqr/element"` (or load the global bundle) before
+ * rendering.
  *
  * Demo payload below is synthetic — see docs/demo-payloads.md. Never commit a real payload.
  */

@@ -9,10 +9,10 @@ token is used anywhere in this repo. All fixtures use:
 - institution `bd.org.bb.npsb` (the NPSB Bangla QR account template)
 
 If you need a new fixture, generate it with the CRC-16/CCITT-FALSE helper in
-`packages/core/test/fixtures.ts`-style code and keep it fake.
+`packages/deshiqr/test/core/fixtures.ts`-style code and keep it fake.
 
-These values are used by tests in `packages/core`, `packages/qr`, `apps/web` demo mode,
-`supabase/seed.sql`, the examples, and the docs.
+These values are used by the test suites in `packages/deshiqr` and `python/`, the examples, and the
+docs.
 
 ## Static QR (no amount)
 
@@ -36,6 +36,22 @@ These values are used by tests in `packages/core`, `packages/qr`, `apps/web` dem
 
 ```
 00020101021126470014bd.org.bb.npsb010202020420020311010000000005204541153030505802BD5919DEMO SUPER SHOP LTD6010Chattogram630494E0
+```
+
+## Generic layout (not bKash — proves provider-agnostic derivation)
+
+A synthetic layout with a made-up institution AID, a different MCC, no NPSB token templates and no
+tag 62. Amount derivation edits only tag 01 and tag 54, so this must work exactly like a bKash
+payload; the tests pin it.
+
+```
+00020101021126410022example.org.generic-qr0311017000000005204541153030505802BD5912GENERIC SHOP6006Sylhet6304818D
+```
+
+Derived at 1250.50 BDT (the only differences are `01` `11`→`12` and the inserted `54`):
+
+```
+00020101021226410022example.org.generic-qr03110170000000052045411530305054071250.505802BD5912GENERIC SHOP6006Sylhet630480A2
 ```
 
 ## Invalid fixtures

@@ -1,5 +1,5 @@
 // GENERATED FILE - do not edit.
-// Source: packages/{core,qr}/src
+// Source: packages/deshiqr/src/{core,qr}
 // Regenerate with: node scripts/vendor-edge.mjs
 /** Error codes returned by deshiQR. Stable strings, safe to switch on. */
 export type DeshiQrCode =

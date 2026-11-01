@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>deshiQR checkout example</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --ink: #1b1030;
+        --paper: #fff;
+        --muted: #6b6478;
+        --accent: #e2136e;
+      }
+      body {
+        margin: 0;
+        padding: 2rem 1.25rem;
+        font:
+          16px/1.6 "Figtree",
+          system-ui,
+          sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      main {
+        max-width: 46rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin: 0 0 0.25rem;
+      }
+      p {
+        color: var(--muted);
+      }
+      code,
+      pre {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 0.82rem;
+      }
+      pre {
+        padding: 0.9rem;
+        border: 1px solid #d9d4e2;
+        border-radius: 12px;
+        background: #faf8fd;
+        color: var(--ink);
+        overflow-x: auto;
+      }
+      label {
+        display: block;
+        margin: 1.25rem 0 0.35rem;
+        font-weight: 600;
+      }
+      input {
+        width: 100%;
+        max-width: 16rem;
+        padding: 0.55rem 0.7rem;
+        font: inherit;
+        border: 1px solid #b9b2c6;
+        border-radius: 10px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: flex-start;
+        margin-top: 1.5rem;
+      }
+      #qr {
+        width: 240px;
+        height: 240px;
+      }
+      #qr[hidden] {
+        display: none;
+      }
+      .note {
+        font-size: 0.9rem;
+      }
+      .bad {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Checkout: cart amount → Bangla QR</h1>
+      <p>
+        Open this file after <code>pnpm build:libs</code>. It derives a dynamic payload for the amount you
+        type and renders the QR — entirely in the browser, no backend. The merchant payload below is the
+        synthetic <code>DEMO STORE</code> fixture (never scan it).
+      </p>
+
+      <label for="total">Cart total (BDT)</label>
+      <input id="total" type="number" min="0.01" step="0.01" value="500" />
+
+      <div class="row">
+        <img id="qr" alt="Payment QR code" hidden />
+        <div>
+          <p class="note" id="status">Deriving…</p>
+          <p class="note">
+            Scan with any app that accepts Bangla QR. deshiQR cannot confirm payment — the store must match it
+            against the provider statement.
+          </p>
+          <pre><code id="payload"></code></pre>
+        </div>
+      </div>
+
+      <h2>Server variant</h2>
+      <p class="note">
+        If you prefer an HTTP call instead of bundling the libraries, deploy the stateless
+        <code>qr</code> function and replace the derivation below with:
+      </p>
+      <pre><code>const res = await fetch("https://&lt;project-ref&gt;.supabase.co/functions/v1/qr", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ payload: MERCHANT_PAYLOAD, amount: total }),
+});
+const { payload, qr_svg } = await res.json();
+qrImage.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(qr_svg);</code></pre>
+    </main>
+
+    <!-- Build it with `pnpm build:libs`. -->
+    <script src="../packages/deshiqr/dist/deshiqr.global.js"></script>
+    <script>
+      // Synthetic demo payload from docs/demo-payloads.md — NOT a real merchant.
+      const MERCHANT_PAYLOAD =
+        "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D";
+
+      const totalInput = document.querySelector("#total");
+      const qrImage = document.querySelector("#qr");
+      const status = document.querySelector("#status");
+      const payloadBox = document.querySelector("#payload");
+
+      function render() {
+        const total = Number(totalInput.value);
+        try {
+          const payload = DeshiQR.withAmount(MERCHANT_PAYLOAD, total);
+          qrImage.src =
+            "data:image/svg+xml;charset=utf-8," +
+            encodeURIComponent(DeshiQR.toSvg(DeshiQR.encode(payload), { margin: 4, scale: 8 }));
+          qrImage.hidden = false;
+          payloadBox.textContent = payload;
+          status.className = "note";
+          status.textContent = "Payload for ৳" + total.toFixed(2);
+        } catch (error) {
+          qrImage.hidden = true;
+          payloadBox.textContent = "";
+          status.className = "note bad";
+          status.textContent = error.code + ": " + error.message;
+        }
+      }
+
+      totalInput.addEventListener("input", render);
+      render();
+    </script>
+  </body>
+</html>

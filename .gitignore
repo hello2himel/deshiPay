@@ -7,8 +7,14 @@ coverage/
 .env
 .env.*
 !.env.example
-apps/web/public/config.local.js
-.netlify/
-.turbo/
 .vscode/
 .idea/
+
+# Python (python/ package)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+.python-version

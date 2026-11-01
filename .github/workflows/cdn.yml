@@ -1,0 +1,82 @@
+name: Publish browser bundle (CDN)
+
+# Hosts the plain-<script> build on GitHub Pages:
+#   https://<owner>.github.io/deshiQR/deshiqr.global.js
+# The bundle exposes window.DeshiQR (payload + QR) and registers <deshiqr-pay>.
+#
+# Why this exists: raw.githubusercontent.com serves text/plain with X-Content-Type-Options:
+# nosniff, so browsers refuse to execute it from <script src>. GitHub Pages serves the same
+# file with the correct JavaScript content type. The primary CDN path is still npm via
+# jsDelivr/unpkg (published by release.yml); this workflow needs no package publish.
+#
+# Setup: repository Settings → Pages → Build and deployment → Source: GitHub Actions.
+# Run manually (workflow_dispatch) or push a v* tag.
+#
+# If you later deploy a website to Pages, copy this bundle into that site's build output
+# (or move this workflow's artifacts under a /cdn/ subdirectory) so the URL above keeps
+# working.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-cdn
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build and verify the bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the package
+        run: pnpm build
+
+      - name: Verify the browser bundle
+        run: node scripts/check-globals.mjs
+
+      - name: Assemble the CDN site
+        run: |
+          mkdir -p site
+          cp cdn/index.html site/index.html
+          cp packages/deshiqr/dist/deshiqr.global.js packages/deshiqr/dist/deshiqr.global.js.map site/
+          printf '%s\n' \
+            'deshiQR browser bundle' \
+            '' \
+            'deshiqr.global.js   window.DeshiQR   (payload + QR; registers <deshiqr-pay>)' \
+            '' \
+            'npm: https://www.npmjs.com/package/deshiqr' \
+            'Docs: https://github.com/hello2himel/deshiQR' \
+            > site/README.txt
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

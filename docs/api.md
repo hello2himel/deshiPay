@@ -1,7 +1,7 @@
 # `update` / `validate` API reference (v1)
 
 deshiQR loads a well-formed Bangla QR payload, applies edits, and returns the new payload with a
-re-sealed checksum. Two public functions per platform, one stateless HTTP endpoint:
+re-sealed checksum. Two public functions per platform, plus a static browser bundle for GitHub Pages:
 
 ```ts
 update(payload: string, edits?: PayloadEdits, options?: UpdateOptions): string
@@ -254,7 +254,7 @@ Warnings are informational; they never prevent an edit. All warning codes are su
 payloads you own. See [`../SECURITY.md`](../SECURITY.md).
 
 Example issue objects (codes are the machine-readable part; messages are identical in both languages
-and over HTTP):
+in the browser and in Python):
 
 ```json
 { "code": "RISKY_EDIT", "message": "Editing the account/name can mislead payers; only edit what you own.", "tag": "59" }
@@ -272,7 +272,7 @@ static `DeshiQrError.is(error)` type guard.
 | Code                | `update` | `validate` | When                                                                                           |
 | ------------------- | -------- | ---------- | ---------------------------------------------------------------------------------------------- |
 | `EMPTY_PAYLOAD`     | throws   | error      | Empty or non-string payload.                                                                   |
-| `UNSUPPORTED`       | throws   | error      | Payload is longer than 4096 characters (HTTP `413`).                                           |
+| `UNSUPPORTED`       | throws   | error      | Payload is longer than 4096 characters.                                                        |
 | `BAD_TLV`           | throws   | error      | Malformed TLV: bad tag/length, truncated value, invalid nested template.                       |
 | `MISSING_FIELD`     | throws   | error      | Payload does not end with tag `63`.                                                            |
 | `CHECKSUM_MISMATCH` | throws   | error      | Tag `63` does not match the CRC-16/CCITT-FALSE of the input.                                   |
@@ -284,75 +284,6 @@ static `DeshiQrError.is(error)` type guard.
 `BAD_AMOUNT`, `BAD_TAG` and `BAD_VALUE` are edit errors and are raised by `update` only; `validate`
 checks the payload itself and reports the rest. Only the first edit error is thrown (edits are applied
 in the deterministic order above).
-
-## HTTP endpoint
-
-The HTTP endpoint wraps `update`. It is stateless: no database, no secrets, no merchant records. The
-function lives in [`../supabase/functions/update`](../supabase/functions/update), and its
-request-independent logic is tested with `node --test` (`pnpm check:api`).
-
-### Request
-
-`POST /functions/v1/update`, `Content-Type: application/json`, body ≤ 16 KB:
-
-| Field      | Type                          | Required | Rules                                                                                          |
-| ---------- | ----------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `payload`  | string                        | yes      | Bangla QR payload, ≤ 4096 characters.                                                          |
-| `edits`    | object                        | no       | Same aliases/tag paths/values as the library. Omitted, `null` or `{}` = validate-only.         |
-| `warnings` | `true` \| `false` \| string[] | no       | Default `true`; same exact-match suppression as the library. Invalid values → `400 BAD_VALUE`. |
-
-```http
-POST /functions/v1/update
-Content-Type: application/json
-
-{
-  "payload": "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D",
-  "edits": { "amount": 500, "currency": "050", "62/01": "BILL123" },
-  "warnings": true
-}
-```
-
-### Success — `200 OK`
-
-```json
-{
-  "ok": true,
-  "payload": "00020101021226470014bd.org.bb.npsb010202020420020311010000000005204601653030505406500.005802BD5910DEMO STORE6005Dhaka62170107BILL1230602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304DB6A",
-  "warnings": []
-}
-```
-
-`warnings` is always an array of `{ code, message, tag? }` issues, filtered by the `warnings` request
-field. A request with `edits` omitted or `{}` returns the same `payload` plus its warnings (validate-only).
-
-### Errors
-
-`{ "ok": false, "error": { "code": "BAD_AMOUNT", "message": "…", "tag": "54" } }` — the `error` object
-is a `DeshiQrIssue`. Status codes:
-
-| Status | Meaning                                                                                                                                                                                                                                                              |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `400`  | Input error: `BAD_REQUEST` (body is not valid JSON or not a JSON object), invalid payload, invalid edits (`EMPTY_PAYLOAD`, `BAD_TLV`, `MISSING_FIELD`, `CHECKSUM_MISMATCH`, `DUPLICATE_TAG`, `BAD_AMOUNT`, `BAD_TAG`), or an invalid `warnings` value (`BAD_VALUE`). |
-| `404`  | Unknown path (`NOT_FOUND`, "Unknown route. POST /functions/v1/update.").                                                                                                                                                                                             |
-| `405`  | Non-POST method (`METHOD_NOT_ALLOWED`, "Use POST with a JSON body.").                                                                                                                                                                                                |
-| `413`  | Request body larger than 16 KB or payload longer than 4096 characters (`UNSUPPORTED`).                                                                                                                                                                               |
-| `500`  | Unexpected internal error (`INTERNAL`); details stay in the function logs.                                                                                                                                                                                           |
-
-Responses are `application/json; charset=utf-8` with `cache-control: no-store`. CORS is `*` by default;
-an `OPTIONS` preflight returns `204` with `access-control-allow-methods: POST, OPTIONS` and
-`access-control-allow-headers: content-type`. Set `DESHIQR_CORS_ORIGIN` to your site origin to tighten
-it (when the origin is not `*`, responses add `vary: origin`).
-
-### Deploy
-
-```bash
-supabase link --project-ref <project-ref>
-supabase functions deploy update --no-verify-jwt
-```
-
-The function imports the committed vendored core in `supabase/functions/_vendor/`; rebuild and
-regenerate it with `pnpm build && pnpm vendor:edge` after editing `packages/deshiqr/src`. No database,
-schema, seed or secret is required. Full walkthrough: [`self-hosting.md`](./self-hosting.md).
 
 ## Examples
 
@@ -397,17 +328,8 @@ report = validate(dynamic_payload)
 print(report.ok, report.errors, report.warnings)
 ```
 
-### `curl`
-
-```bash
-curl -sS -X POST "https://<project-ref>.supabase.co/functions/v1/update" \
-  -H 'content-type: application/json' \
-  -d '{"payload":"00020101021126…6304295D","edits":{"amount":500}}'
-```
-
 Runnable examples: [`../examples/node.mjs`](../examples/node.mjs),
-[`../examples/python.py`](../examples/python.py), [`../examples/http.sh`](../examples/http.sh),
-[`../examples/browser.html`](../examples/browser.html).
+[`../examples/python.py`](../examples/python.py), [`../examples/browser.html`](../examples/browser.html).
 
 ## Guarantees and limits
 
@@ -419,13 +341,13 @@ Runnable examples: [`../examples/node.mjs`](../examples/node.mjs),
 - **No merchant verification or payment confirmation.** Payloads are public data. Keep the base
   payload on your trusted side, verify where it came from, and compare the name the payer's app shows
   with the shop's name. A QR is an instruction to pay, not proof that money moved.
-- **Limits.** Payload ≤ 4096 characters; HTTP body ≤ 16 KB; any encoded value ≤ 99 characters; amount
-  `0.01`–`99,999,999.99` with at most 2 decimals.
+- **Limits.** Payload ≤ 4096 characters; any encoded value ≤ 99 characters; amount `0.01`–
+  `99,999,999.99` with at most 2 decimals.
 - **Provider formats can change.** Test a small amount in the provider app before shipping a pay page.
 
 ## Related
 
 - [`format.md`](./format.md) — the field table, checksum rule, and a worked edit.
 - [`demo-payloads.md`](./demo-payloads.md) — synthetic fixtures used above.
-- [`self-hosting.md`](./self-hosting.md) — deploying the `update` function yourself.
+- [`self-hosting.md`](./self-hosting.md) — publishing the static bundle on GitHub Pages.
 - [`../SECURITY.md`](../SECURITY.md) — what deshiQR does and does not protect.

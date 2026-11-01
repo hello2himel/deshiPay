@@ -169,7 +169,7 @@ by `validate`.
 - [`docs/format.md`](../docs/format.md) — the Bangla QR field table (tags,
   aliases, syntax, lengths, known values).
 - [`docs/api.md`](../docs/api.md) — `update`/`validate` reference and the
-  stateless HTTP endpoint.
+  static browser bundle on GitHub Pages.
 - [`docs/demo-payloads.md`](../docs/demo-payloads.md) — synthetic fixtures used
   by this test suite.
 

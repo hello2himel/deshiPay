@@ -31,16 +31,14 @@ pnpm build          # the single npm package (update + validate) and the browser
 pnpm test           # builds, then runs the TypeScript test suite
 pnpm typecheck
 pnpm check:globals  # verifies the <script src> bundle after a build
-pnpm check:api      # tests the stateless update HTTP function logic
-pnpm vendor:edge    # regenerates supabase/functions/_vendor after core changes
 
 cd python && python3 -m unittest discover -s tests -v   # Python port
 ```
 
 `pnpm format` runs Prettier (printWidth 110) over the repo.
 
-The repo ships two libraries and one HTTP endpoint; there is nothing else to run. To exercise the HTTP
-endpoint, deploy the `update` function as described in [`docs/self-hosting.md`](./docs/self-hosting.md).
+The repo ships two libraries and a static browser bundle; there is nothing else to run. The bundle is
+published to GitHub Pages — see [`docs/self-hosting.md`](./docs/self-hosting.md).
 
 ## Repository conventions
 
@@ -55,16 +53,15 @@ options?)` — and nothing else public. Do not add a second public package name 
 - `deshiqr` has **zero runtime dependencies** in both languages. Don't add one without discussing it
   in an issue first.
 - The library is pure: no DOM access, no network, no I/O, no state. It must run in Node, browsers,
-  Deno, workers and edge functions.
+  Deno, workers and edge runtimes.
 - `python/` is a zero-dependency port of the TypeScript core. Behaviour changes must land in both, with
   TypeScript as the source of truth; error and warning codes/messages stay identical.
 - TypeScript strict mode; relative imports use explicit `.ts` extensions. Node runs and tests TS
   directly, bundlers rewrite on publish.
 - Tests use `node:test` + `node:assert/strict` (Python: `unittest`). No test framework.
-- Edge functions live in `supabase/functions/<name>/`. Keep request-independent logic in a `*-core.ts`
-  module with no Deno globals, so it can be tested with `node --test` (the `update` function:
-  `update-core.ts` + `update-core.test.mts`, run by `pnpm check:api`). Vendored library copies come
-  from `pnpm vendor:edge`; regenerate and commit them whenever the core changes.
+- **No server-side code.** deshiQR is a static bundle plus packages; there is no server function,
+  database, API key or deploy step beyond GitHub Pages (`.github/workflows/pages.yml`). Keep it that
+  way. The browser bundle is verified by `scripts/check-globals.mjs`.
 - **The edit invariant is provider-agnostic by contract:** only the tags the caller edited, tag `01`
   (when the amount is edited) and the re-sealed checksum may change. Everything else is byte-identical.
   If a change would require provider-specific logic, it does not belong in editing; re-pin the
@@ -90,8 +87,6 @@ options?)` — and nothing else public. Do not add a second public package name 
 - [ ] `pnpm test` passes
 - [ ] `pnpm build` passes
 - [ ] `pnpm check:globals` passes if you touched `packages/deshiqr` (it runs after a build)
-- [ ] `pnpm check:api` passes if you touched `supabase/functions/update/` or the edit core
-- [ ] `pnpm vendor:edge` was re-run and committed if the vendored core changed
 - [ ] `cd python && python3 -m unittest discover -s tests -v` passes if you touched `python/`
 - [ ] No real payment data anywhere in the diff
 - [ ] If public behaviour changed, update `README.md`, `docs/`, the examples where relevant, and
@@ -106,14 +101,14 @@ Maintainers only. Update the version in `packages/deshiqr/package.json` and `pyt
 git tag v0.1.0 && git push origin v0.1.0
 ```
 
-The tag triggers three workflows:
+The tag triggers two release workflows, and Pages deploys separately from `main`:
 
 - `release.yml` — publishes the single npm package `deshiqr` with provenance (needs the `NPM_TOKEN`
   repository secret).
 - `release-python.yml` — builds and publishes the Python package to PyPI using trusted publishing
   (configure the PyPI project's trusted publisher for this repo, environment `pypi`).
-- `cdn.yml` — publishes `dist/deshiqr.global.js` to GitHub Pages so the `<script src>` URL resolves
-  (enable Pages with "GitHub Actions" as the source once).
+- `pages.yml` — publishes `dist/deshiqr.global.js` and the demo page to GitHub Pages on every push to
+  `main` (enable Pages with "GitHub Actions" as the source once).
 
 ## Code of conduct
 

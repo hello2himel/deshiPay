@@ -7,8 +7,8 @@ checksum (CRC-16/CCITT-FALSE), and returns the new payload. You render the QR yo
 like.
 
 deshiQR does not generate QR codes, read merchant semantics, or handle payments. It ships as
-zero-dependency libraries for JavaScript/TypeScript and Python, plus one stateless HTTP endpoint. It
-never holds funds, stores data, or confirms payments.
+zero-dependency libraries for JavaScript/TypeScript and Python, and as a browser bundle on GitHub
+Pages. There is no server and no database; it never holds funds, stores data, or confirms payments.
 
 [![CI](https://github.com/hello2himel/deshiQR/actions/workflows/ci.yml/badge.svg)](https://github.com/hello2himel/deshiQR/actions/workflows/ci.yml)
 [![npm: deshiqr](https://img.shields.io/npm/v/deshiqr?label=deshiqr)](https://www.npmjs.com/package/deshiqr)
@@ -28,8 +28,8 @@ const report = validate(updated);
 // { ok: true, errors: [], warnings: [] }
 ```
 
-The same two functions exist in Python (`pip install deshiqr`) and over HTTP (`POST
-/functions/v1/update`).
+The same two functions exist in Python (`pip install deshiqr`) and as a browser bundle
+(`window.DeshiQR`) served from GitHub Pages.
 
 `update(payload, edits, options?)`:
 
@@ -96,38 +96,24 @@ Warning codes include `MISSING_TAG`, `UNKNOWN_TAG`, `BAD_FIELD_VALUE`, `FIELD_TO
 > (merchant name) can mislead payers. `update` warns with `RISKY_EDIT`, but it does not stop you: only
 > edit payloads you own. Read [SECURITY.md](./SECURITY.md).
 
-## HTTP endpoint
+## The API on GitHub Pages (no server)
 
-One stateless function: `POST /functions/v1/update`. No database, no secrets, no merchant records.
+deshiQR has no server, no database and no HTTP endpoint. The same two functions ship as a static
+browser bundle, published to GitHub Pages by [`.github/workflows/pages.yml`](./.github/workflows/pages.yml):
 
-```http
-POST /functions/v1/update
-Content-Type: application/json
-
-{
-  "payload": "00020101021126…6304295D",
-  "edits": { "amount": 500, "currency": "050", "62/01": "BILL123" },
-  "warnings": true
-}
+```html
+<script src="https://hello2himel.github.io/deshiQR/deshiqr.global.js"></script>
+<script>
+  const updated = DeshiQR.update(payload, { amount: 500, currency: "050" });
+  const report = DeshiQR.validate(updated);
+</script>
 ```
 
-`200 OK`:
-
-```json
-{
-  "ok": true,
-  "payload": "00020101021226…6304DB6A",
-  "warnings": []
-}
-```
-
-Errors are `{ "ok": false, "error": { "code": "BAD_AMOUNT", "message": "…", "tag": "54" } }` with HTTP
-`400` for input errors, `413` for oversized bodies, and `500` for internal failures (unknown
-routes/methods return `404`/`405`). `edits` is optional — omitted, `null` or `{}` means validate-only:
-the same payload comes back with its warnings — and `warnings` accepts the same
-`true | false | ["59"]` filter as the libraries. CORS is `*` by default (`DESHIQR_CORS_ORIGIN`).
-Contract and deploy steps: [docs/api.md](./docs/api.md#http-endpoint) and
-[docs/self-hosting.md](./docs/self-hosting.md).
+The edit runs in the visitor's browser. GitHub Pages is static-only — it cannot run server-side code
+or accept POST requests — so the bundle is the whole "API". For server-side runtimes, use the npm
+package (`deshiqr`) in Node/Deno/Bun or the Python package (`pip install deshiqr`); both are the same
+implementation. An interactive demo of the bundle is published alongside it:
+`https://hello2himel.github.io/deshiQR/`.
 
 ## Install
 
@@ -139,7 +125,7 @@ Contract and deploy steps: [docs/api.md](./docs/api.md#http-endpoint) and
 | Deno / Bun                 | `import … from "npm:deshiqr"` | the npm package resolves                                  |
 
 Everything is zero-dependency and does no I/O. The library is synchronous and runs in browsers, Node,
-Deno, workers and edge functions.
+Deno, workers and edge runtimes.
 
 > These packages are released from this repo on a `v*` tag (see
 > [CONTRIBUTING.md](./CONTRIBUTING.md#releases)). If a version is not on the registry yet, build from
@@ -156,7 +142,7 @@ Deno, workers and edge functions.
 ```
 
 **GitHub-hosted URL (no npm publish needed).** The same bundle is published to GitHub Pages on every
-`v*` tag (or manually from the Actions tab), see [`.github/workflows/cdn.yml`](./.github/workflows/cdn.yml):
+`v*` tag (or manually from the Actions tab), see [`.github/workflows/pages.yml`](./.github/workflows/pages.yml):
 
 ```
 https://hello2himel.github.io/deshiQR/deshiqr.global.js
@@ -176,30 +162,26 @@ One runnable example per platform. All of them use the synthetic `DEMO STORE` fi
 | [`examples/browser.html`](./examples/browser.html) | browser, single bundle, no build step |
 | [`examples/node.mjs`](./examples/node.mjs)         | Node (ESM)                            |
 | [`examples/python.py`](./examples/python.py)       | Python 3.9+                           |
-| [`examples/http.sh`](./examples/http.sh)           | `curl` against the stateless endpoint |
 | [`cdn/index.html`](./cdn/index.html)               | the GitHub Pages bundle demo          |
 
 See [`examples/README.md`](./examples/README.md) for how to run each one.
 
 ## Repository layout
 
-| Path                                                         | What                                                                          |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| [`packages/deshiqr`](./packages/deshiqr)                     | npm `deshiqr` — `update` + `validate`, zero deps, ESM/CJS/types + IIFE bundle |
-| [`python`](./python)                                         | PyPI `deshiqr` — Python 3.9+ port of the same two functions                   |
-| [`supabase/functions/update`](./supabase/functions/update)   | the stateless HTTP endpoint (no database, no secrets)                         |
-| [`supabase/functions/_vendor`](./supabase/functions/_vendor) | generated copy of the payload core the edge function imports                  |
-| [`cdn`](./cdn)                                               | demo page for the GitHub Pages browser bundle                                 |
-| [`examples`](./examples)                                     | one example per platform                                                      |
-| [`docs`](./docs)                                             | format, API reference, self-hosting, demo payloads                            |
-| [`scripts`](./scripts)                                       | repo tooling: browser-bundle check and edge-function vendoring                |
+| Path                                     | What                                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------- |
+| [`packages/deshiqr`](./packages/deshiqr) | npm `deshiqr` — `update` + `validate`, zero deps, ESM/CJS/types + IIFE bundle |
+| [`python`](./python)                     | PyPI `deshiqr` — Python 3.9+ port of the same two functions                   |
+| [`cdn`](./cdn)                           | demo page for the GitHub Pages browser bundle                                 |
+| [`examples`](./examples)                 | one example per platform                                                      |
+| [`docs`](./docs)                         | format, API reference, self-hosting, demo payloads                            |
+| [`scripts`](./scripts)                   | repo tooling: browser-bundle check                                            |
 
 ## Documentation
 
 - [Payload format](./docs/format.md) — every field, the checksum rule, a worked edit.
-- [API reference](./docs/api.md) — `update`/`validate`, edit rules, warning and error codes, HTTP
-  contract.
-- [Self-hosting](./docs/self-hosting.md) — deploy the `update` function yourself.
+- [API reference](./docs/api.md) — `update`/`validate`, edit rules, warning and error codes.
+- [Hosting on GitHub Pages](./docs/self-hosting.md) — publish the browser bundle and demo yourself.
 - [Demo payloads](./docs/demo-payloads.md) — the synthetic fixtures used in tests and docs.
 - [Python package](./python/README.md) — `pip install deshiqr`, same two functions.
 - [Security policy](./SECURITY.md) — what deshiQR does and does not protect.

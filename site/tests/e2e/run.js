@@ -489,6 +489,58 @@ async function scenarioOnline(browser) {
     ok(onlineExport.size > 100000, "share download is one self-contained file (" + Math.round(onlineExport.size / 1024) + " KB)");
     await shotFull("09-share-download");
 
+    console.log("Share tab: printable poster");
+    ok(
+      (await page.evaluate(() => Array.from(document.querySelectorAll("#panel h2")).some((e) => e.textContent === "Printable poster"))),
+      "Share tab offers a printable poster"
+    );
+    ok(!!(await page.$(".poster-preview svg")), "the poster preview renders");
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll(".poster-formats button")).find((b) => b.textContent.includes("A5"));
+      btn.click();
+    });
+    ok((await page.$eval(".poster-preview svg", (e) => e.getAttribute("width"))) === "148mm", "A5 poster uses 148 mm width");
+    await armCapture(page);
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll("#panel button")).find((b) => b.textContent.includes("Download poster"));
+      btn.click();
+    });
+    const posterA5 = await readCapture(page);
+    ok(posterA5.filename === "deshipay-poster-a5-rahim-traders.svg", "poster download filename names the A5 page");
+    ok(posterA5.html.includes('width="148mm"') && posterA5.html.includes('height="210mm"'), "poster SVG is A5 portrait");
+    ok(posterA5.html.includes("Rahim Traders") && !posterA5.html.includes("localhost:8899"), "poster shows the merchant, not the DeshiPay URL");
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll(".poster-formats button")).find((b) => b.textContent.includes("A4"));
+      btn.click();
+    });
+    ok((await page.$eval(".poster-preview svg", (e) => e.getAttribute("width"))) === "210mm", "A4 poster uses 210 mm width");
+    await armCapture(page);
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll("#panel button")).find((b) => b.textContent.includes("Download poster"));
+      btn.click();
+    });
+    const posterA4 = await readCapture(page);
+    ok(posterA4.filename === "deshipay-poster-a4-rahim-traders.svg", "poster download filename names the A4 page");
+    const posterQr = await page.evaluate(async (svgText) => {
+      const blob = new Blob([svgText], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = url; });
+      const c = document.createElement("canvas"); c.width = 1200; c.height = Math.round(1200 * 297 / 210);
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      const d = g.getImageData(0, 0, c.width, c.height);
+      const r = jsQR(d.data, c.width, c.height);
+      URL.revokeObjectURL(url);
+      return r ? r.data : null;
+    }, posterA4.html);
+    ok(posterQr === PAYLOAD, "the poster QR is the merchant's static Bangla QR, not the page URL");
+    ["bKash", "Nagad", "Rocket", "upay", "Citytouch", "BRAC Bank Astha", "EBL Skybanking", "NexusPay", "MTB Neo", "Bangla QR"].forEach(function (brand) {
+      ok(posterA4.html.includes('data-logo="' + brand + '"'), "poster shows the " + brand + " app icon");
+    });
+    const posterInfo = posterQr ? Q.inspect(posterQr) : { ok: false };
+    ok(posterInfo.ok && posterInfo.srcAmount === 0 && !posterQr.includes("deshipay"), "poster QR is amount-free and points at the merchant account");
+    await shotFull("09b-share-poster");
+
     console.log("Customer page (mobile)");
     const healthBefore = state.health;
     await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
@@ -768,6 +820,7 @@ async function scenarioOffline(browser) {
     ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 5 of 5"), "the download is the fifth (new) step");
     ok((await page.$eval("#primary", (e) => e.textContent)).includes("Download page"), "the primary action becomes “Download page”");
     ok((await page.$eval("#panel .urlbox span", (e) => e.textContent)) === "deshiqr-offline-traders.html", "download panel shows the title-derived file name");
+    ok(!!(await page.$(".poster-preview svg")), "offline/no-account mode also offers the printable poster");
     await shot("20-offline-download");
 
     const draft = await page.evaluate(() => {

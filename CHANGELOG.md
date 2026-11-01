@@ -13,6 +13,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Printable A4/A5 poster.** The dashboard's Share tab and the no-account Download step now offer a
+  self-contained SVG poster in A4 or A5 portrait, with Download and Print / Save as PDF. It uses the
+  owner's static Bangla QR (not the page URL) and the site's branding/type, plus Google Play icons for
+  bKash, Nagad, Rocket, upay, Citytouch, BRAC Bank Astha, EBL Skybanking, NexusPay and MTB Neo, and the
+  Bangla QR mark; logos are embedded and attributed. e2e checks both formats, the preview, and decodes
+  the poster QR to prove it is the merchant's amount-free payload (223 checks).
+
+### Added
+
 - **Tab deep links for payment pages.** Like the amount lock, a customer page can open on a chosen
   method tab: `/<username>?method=wallet`, `?method=bank` or `?method=qr` (combine with
   `?amount=500&method=bank`). The same works for downloaded standalone pages. Switching tabs updates the

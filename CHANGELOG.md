@@ -42,6 +42,15 @@ All notable changes to this project are documented here. The format is based on
   back with the same unit, and all-ASCII payloads are byte-identical to before. Mirrored in the
   Python package. See [`docs/format.md`](./docs/format.md#encoding).
 
+### Changed
+
+- **Theme backgrounds now follow the theme accent.** The generated `themes.css` used to mix a shared
+  lavender-white base with only ~5% of the accent, so most themes (especially green, blue and graphite)
+  kept a pinkish-white page background. Every surface is now derived from the accent itself: rose →
+  pinkish white, emerald → minty white, teal → pale teal, ocean → bluish white, violet → lavender
+  white, amber → cream, olive → pale green, graphite → cool grey — with matching dark-mode backgrounds,
+  borders, secondary buttons and soft tints. Contrast checks still pass for every theme.
+
 ## [0.1.0] — 2026-11-01
 
 First public release. One job: **load a Bangla QR payload, edit any tag, and get the updated payload

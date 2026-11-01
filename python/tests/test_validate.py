@@ -1,4 +1,4 @@
-"""Non-throwing validation reports."""
+"""``validate`` — reports, checksum/structure errors and the report contract."""
 
 from __future__ import annotations
 
@@ -6,218 +6,191 @@ import unittest
 
 import _support  # noqa: F401
 
-from deshiqr import (
-    Field,
-    DeshiQrIssue,
-    ValidationReport,
-    encode_fields,
-    is_bangla_qr,
-    validate,
-)
+from deshiqr import DeshiQrIssue, ValidationReport, validate
 from fixtures import (
+    BAD_CHECKSUM_PAYLOAD,
+    BAD_LENGTH_TLV,
+    BAD_TAG_TLV,
     DYNAMIC_PAYLOAD,
+    GENERIC_PAYLOAD,
     LONG_NAME_PAYLOAD,
     MINIMAL_PAYLOAD,
+    OVERLONG_FIELD,
     STATIC_PAYLOAD,
-    rebuild,
-    remove_field,
-    set_field,
+    TRUNCATED_PAYLOAD,
+    duplicate_payload,
+    payload_with,
+    payload_without,
 )
-
-_OTHER_INSTITUTION = [
-    Field("00", "example.org.bank"),
-    Field("01", "02"),
-    Field("02", "2002"),
-    Field("03", "01000000000"),
-]
 
 
 def codes(issues):
     return [issue.code for issue in issues]
 
 
-class ValidPayloadTests(unittest.TestCase):
+class ReportContractTests(unittest.TestCase):
     def test_every_valid_fixture_validates_cleanly(self):
-        for payload in (STATIC_PAYLOAD, DYNAMIC_PAYLOAD, MINIMAL_PAYLOAD, LONG_NAME_PAYLOAD):
+        for payload in (
+            STATIC_PAYLOAD,
+            DYNAMIC_PAYLOAD,
+            MINIMAL_PAYLOAD,
+            LONG_NAME_PAYLOAD,
+        ):
             report = validate(payload)
+            self.assertIsInstance(report, ValidationReport)
             self.assertTrue(report.ok)
             self.assertEqual(report.errors, [])
-            self.assertIsNotNone(report.qr)
-        self.assertTrue(is_bangla_qr(STATIC_PAYLOAD))
+            self.assertEqual(report.warnings, [])
 
-    def test_report_is_a_validation_report_with_issue_dataclasses(self):
-        report = validate(STATIC_PAYLOAD)
-        self.assertIsInstance(report, ValidationReport)
-        self.assertEqual(report.errors, [])
-        self.assertEqual(report.warnings, [])
-
-    def test_warning_issues_are_dataclasses(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: set_field(fields, "53", "840")))
+    def test_generic_provider_fixture_is_valid_with_a_warning(self):
+        report = validate(GENERIC_PAYLOAD)
         self.assertTrue(report.ok)
-        self.assertIsInstance(report.warnings[0], DeshiQrIssue)
-        self.assertEqual(report.warnings[0].tag, "53")
+        self.assertEqual(codes(report.warnings), ["UNKNOWN_INSTITUTION"])
+        self.assertEqual(report.warnings[0].tag, "26/00")
 
+    def test_ok_is_errors_empty_not_warnings_empty(self):
+        report = validate(payload_with("53", "999"))
+        self.assertTrue(report.ok)
+        self.assertFalse(report.warnings == [])
+        self.assertFalse(
+            validate(BAD_CHECKSUM_PAYLOAD).ok,
+        )
 
-class ChecksumValidationTests(unittest.TestCase):
-    def test_corrupted_checksum_blocks_the_decode(self):
-        report = validate(STATIC_PAYLOAD[:-4] + "0000")
-        self.assertFalse(report.ok)
-        self.assertIsNone(report.qr)
+    def test_issues_are_deshi_qr_issue_values(self):
+        report = validate(BAD_CHECKSUM_PAYLOAD)
+        self.assertIsInstance(report.errors[0], DeshiQrIssue)
         self.assertEqual(report.errors[0].code, "CHECKSUM_MISMATCH")
-        self.assertFalse(is_bangla_qr(STATIC_PAYLOAD[:-4] + "0000"))
+        self.assertEqual(report.errors[0].tag, "63")
+        self.assertIsInstance(report.errors[0].message, str)
 
-    def test_payload_without_a_checksum_field_is_an_error(self):
-        report = validate(STATIC_PAYLOAD[:-8])
+    def test_report_lists_are_independent(self):
+        first = validate(STATIC_PAYLOAD)
+        second = validate(STATIC_PAYLOAD)
+        first.errors.append(DeshiQrIssue("BAD_TLV", "x"))
+        self.assertEqual(second.errors, [])
+
+
+class InputErrorTests(unittest.TestCase):
+    def test_empty_payload(self):
+        for value in ("", "   ", None, 123, [], {}):
+            with self.subTest(value=value):
+                report = validate(value)
+                self.assertFalse(report.ok)
+                self.assertEqual(codes(report.errors), ["EMPTY_PAYLOAD"])
+                self.assertEqual(report.errors[0].tag, None)
+
+    def test_unsupported_length(self):
+        report = validate("0" * 4097)
         self.assertFalse(report.ok)
-        self.assertIsNone(report.qr)
-        self.assertIn("MISSING_FIELD", codes(report.errors))
+        self.assertEqual(codes(report.errors), ["UNSUPPORTED"])
 
-    def test_truncated_and_empty_payloads_are_reported_not_thrown(self):
-        truncated = validate(STATIC_PAYLOAD[:-12])
-        self.assertFalse(truncated.ok)
-        self.assertIsNone(truncated.qr)
-        self.assertIn("BAD_TLV", codes(truncated.errors))
+    def test_exactly_4096_characters_is_not_unsupported(self):
+        report = validate("0" * 4096)
+        self.assertFalse(report.ok)
+        self.assertNotIn("UNSUPPORTED", codes(report.errors))
 
-        for input_ in ("", "   ", None):
-            with self.subTest(input_=input_):
-                empty = validate(input_)
-                self.assertFalse(empty.ok)
-                self.assertEqual(empty.errors[0].code, "EMPTY_PAYLOAD")
+    def test_malformed_tlv(self):
+        for payload in (
+            TRUNCATED_PAYLOAD,
+            OVERLONG_FIELD,
+            BAD_TAG_TLV,
+            BAD_LENGTH_TLV,
+            "00020101",
+        ):
+            with self.subTest(payload=payload):
+                report = validate(payload)
+                self.assertFalse(report.ok)
+                self.assertEqual(codes(report.errors), ["BAD_TLV"])
 
+    def test_payload_not_ending_with_tag_63(self):
+        for payload in (
+            STATIC_PAYLOAD[:-8],
+            STATIC_PAYLOAD + "0002AB",
+            "000201010211",
+        ):
+            with self.subTest(payload=payload):
+                report = validate(payload)
+                self.assertFalse(report.ok)
+                self.assertIn("MISSING_FIELD", codes(report.errors))
+                self.assertEqual(
+                    [issue.tag for issue in report.errors if issue.code == "MISSING_FIELD"],
+                    ["63"],
+                )
 
-class FieldValidationTests(unittest.TestCase):
-    def test_unrecognised_institution_is_a_warning(self):
-        payload = rebuild(
-            STATIC_PAYLOAD,
-            lambda fields: set_field(fields, "26", encode_fields(_OTHER_INSTITUTION)),
-        )
+    def test_checksum_not_four_hex_characters(self):
+        report = validate(STATIC_PAYLOAD[:-4] + "ZZZZ")
+        self.assertFalse(report.ok)
+        self.assertEqual(codes(report.errors), ["BAD_TLV"])
+        self.assertEqual(report.errors[0].tag, "63")
+
+    def test_checksum_mismatch(self):
+        report = validate(BAD_CHECKSUM_PAYLOAD)
+        self.assertFalse(report.ok)
+        self.assertEqual(codes(report.errors), ["CHECKSUM_MISMATCH"])
+        self.assertEqual(report.errors[0].tag, "63")
+
+    def test_lowercase_checksum_is_accepted(self):
+        report = validate(STATIC_PAYLOAD[:-4] + STATIC_PAYLOAD[-4:].lower())
+        self.assertTrue(report.ok)
+
+    def test_duplicate_top_level_tag(self):
+        report = validate(duplicate_payload())
+        self.assertFalse(report.ok)
+        self.assertEqual(codes(report.errors), ["DUPLICATE_TAG"])
+        self.assertEqual(report.errors[0].tag, "59")
+        self.assertEqual(report.errors[0].message, "Tag 59 appears more than once.")
+
+    def test_duplicate_nested_tag(self):
+        payload = payload_with("62", "0102AB0102CD")
         report = validate(payload)
-        self.assertTrue(report.ok)
-        self.assertIsNotNone(report.qr)
-        self.assertIn("UNSUPPORTED", codes(report.warnings))
-
-    def test_static_qr_carrying_an_amount_is_a_warning(self):
-        report = validate(rebuild(DYNAMIC_PAYLOAD, lambda fields: set_field(fields, "01", "11")))
-        self.assertTrue(report.ok)
-        self.assertIn("BAD_TLV", codes(report.warnings))
-
-    def test_dynamic_qr_without_an_amount_is_a_warning(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: set_field(fields, "01", "12")))
-        self.assertTrue(report.ok)
-        self.assertTrue(
-            any(issue.code == "BAD_TLV" and issue.tag == "54" for issue in report.warnings)
-        )
-
-    def test_non_printable_reference_is_an_error(self):
-        report = validate(
-            rebuild(
-                STATIC_PAYLOAD,
-                lambda fields: set_field(fields, "62", "0107bad\x01ref"),
-            )
-        )
         self.assertFalse(report.ok)
-        self.assertIn("BAD_REFERENCE", codes(report.errors))
+        self.assertIn("DUPLICATE_TAG", codes(report.errors))
+        duplicate = [issue for issue in report.errors if issue.code == "DUPLICATE_TAG"][0]
+        self.assertEqual(duplicate.tag, "62/01")
 
-    def test_non_bdt_currency_and_non_bd_country_are_warnings(self):
-        def mutate(fields):
-            set_field(fields, "53", "840")
-            set_field(fields, "58", "US")
+    def test_invalid_nested_template(self):
+        for tag in ("26", "62"):
+            with self.subTest(tag=tag):
+                report = validate(payload_with(tag, "abc"))
+                self.assertFalse(report.ok)
+                self.assertEqual(codes(report.errors), ["BAD_TLV"])
+                self.assertEqual(report.errors[0].tag, tag)
+                self.assertEqual(
+                    report.errors[0].message,
+                    "Malformed payload: tag {} is not a valid TLV template.".format(tag),
+                )
 
-        report = validate(rebuild(STATIC_PAYLOAD, mutate))
-        self.assertTrue(report.ok)
-        unsupported = [issue for issue in report.warnings if issue.code == "UNSUPPORTED"]
-        self.assertEqual(len(unsupported), 2)
+    def test_opaque_tokens_are_never_parsed(self):
+        for tag in ("80", "81"):
+            with self.subTest(tag=tag):
+                report = validate(payload_with(tag, "not tlv at all !!"))
+                self.assertTrue(report.ok)
+                self.assertEqual(report.errors, [])
 
-    def test_over_long_merchant_name_is_a_warning(self):
-        report = validate(
-            rebuild(
-                STATIC_PAYLOAD,
-                lambda fields: set_field(fields, "59", "DEMO STORE WITH A VERY LONG NAME"),
-            )
-        )
-        self.assertTrue(report.ok)
-        self.assertTrue(
-            any(issue.code == "BAD_TLV" and issue.tag == "59" for issue in report.warnings)
-        )
-
-    def test_missing_required_fields_are_errors(self):
-        no_account = validate(rebuild(STATIC_PAYLOAD, lambda fields: remove_field(fields, "26")))
-        self.assertFalse(no_account.ok)
-        self.assertIn("NOT_A_BANGLA_QR", codes(no_account.errors))
-
-        no_name = validate(rebuild(STATIC_PAYLOAD, lambda fields: remove_field(fields, "59")))
-        self.assertFalse(no_name.ok)
-        self.assertIn("NOT_A_BANGLA_QR", codes(no_name.errors))
-
-    def test_unknown_point_of_initiation_is_an_error(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: set_field(fields, "01", "99")))
+    def test_errors_do_not_hide_warnings(self):
+        payload = payload_without("00")
+        report = validate(payload[:-4] + "0000")
         self.assertFalse(report.ok)
-        self.assertIn("UNSUPPORTED", codes(report.errors))
+        self.assertIn("CHECKSUM_MISMATCH", codes(report.errors))
+        self.assertIn("MISSING_TAG", codes(report.warnings))
 
-    def test_empty_additional_data_template_is_a_warning(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: set_field(fields, "62", "")))
-        self.assertTrue(report.ok)
-        self.assertTrue(
-            any(issue.code == "BAD_TLV" and issue.tag == "62" for issue in report.warnings)
-        )
+    def test_validate_never_throws_on_junk(self):
+        for value in ("x", "00", "0000", "\u0000\u0001", "9999", "6304295D"):
+            report = validate(value)
+            self.assertIsInstance(report, ValidationReport)
+            self.assertIsInstance(report.ok, bool)
 
-    def test_duplicate_tags_are_a_warning(self):
-        def mutate(fields):
-            fields.insert(1, Field("59", "OTHER STORE"))
 
-        report = validate(rebuild(STATIC_PAYLOAD, mutate))
-        self.assertTrue(report.ok)
-        self.assertTrue(any("more than once" in issue.message for issue in report.warnings))
-
-    def test_absurdly_large_input_is_rejected_early(self):
-        report = validate("0" * 5000)
+class ValidateOptionsIntegrityTests(unittest.TestCase):
+    def test_errors_are_kept_when_warnings_are_off(self):
+        report = validate(BAD_CHECKSUM_PAYLOAD, {"warnings": False})
         self.assertFalse(report.ok)
-        self.assertEqual(report.errors[0].code, "UNSUPPORTED")
-
-    def test_missing_format_indicator_is_a_warning(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: remove_field(fields, "00")))
-        self.assertTrue(report.ok)
-        self.assertTrue(
-            any(issue.code == "MISSING_FIELD" and issue.tag == "00" for issue in report.warnings)
-        )
-
-    def test_missing_currency_and_country_are_warnings(self):
-        def mutate(fields):
-            remove_field(fields, "53")
-            remove_field(fields, "58")
-
-        report = validate(rebuild(STATIC_PAYLOAD, mutate))
-        self.assertTrue(report.ok)
-        missing = [issue for issue in report.warnings if issue.code == "MISSING_FIELD"]
-        self.assertEqual(len(missing), 2)
-
-    def test_missing_city_is_not_a_warning(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: remove_field(fields, "60")))
-        self.assertTrue(report.ok)
         self.assertEqual(report.warnings, [])
+        self.assertEqual(len(report.errors), 1)
 
-    def test_token_templates_that_are_not_tlv_warn_but_do_not_fail(self):
-        report = validate(rebuild(STATIC_PAYLOAD, lambda fields: set_field(fields, "80", "raw")))
-        self.assertTrue(report.ok)
-        self.assertTrue(
-            any(issue.code == "UNSUPPORTED" and issue.tag == "80" for issue in report.warnings)
-        )
-
-    def test_very_long_payload_warns(self):
-        def mutate(fields):
-            for tag in ("70", "71", "72", "73", "74", "75"):
-                set_field(fields, tag, "N" * 99)
-
-        report = validate(rebuild(STATIC_PAYLOAD, mutate))
-        self.assertTrue(report.ok)
-        self.assertIn("UNSUPPORTED", codes(report.warnings))
-
-    def test_bad_amount_is_an_error(self):
-        report = validate(
-            rebuild(DYNAMIC_PAYLOAD, lambda fields: set_field(fields, "54", "100000000.00"))
-        )
-        self.assertFalse(report.ok)
-        self.assertIn("BAD_AMOUNT", codes(report.errors))
+    def test_options_none_shows_all_warnings(self):
+        self.assertTrue(validate(GENERIC_PAYLOAD).warnings)
+        self.assertTrue(validate(GENERIC_PAYLOAD, None).warnings)
 
 
 if __name__ == "__main__":

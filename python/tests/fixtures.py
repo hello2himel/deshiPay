@@ -1,15 +1,17 @@
 """Synthetic fixtures only.
 
-No real merchant or payment data is used anywhere — see ``docs/demo-payloads.md``
-in the repository root. Fake account ``01000000000`` (unassignable operator
-prefix), ``DEMO STORE`` / ``Dhaka``, dummy NPSB tokens.
+No real merchant or payment data is used anywhere: the account is the
+unassignable prefix ``01000000000``, the merchant is ``DEMO STORE`` / ``Dhaka``
+and the NPSB tokens literally spell "deshiqr dummy token A/B not real".
+See ``docs/demo-payloads.md`` in the repository root.
 """
 
 from __future__ import annotations
 
 import _support  # noqa: F401  (side effect: adds src/ to sys.path)
 
-from deshiqr import Field, encode_fields, parse, seal
+from deshiqr.crc import crc16
+from deshiqr.tlv import Field, encode_fields, parse, parse_subfields
 
 STATIC_PAYLOAD = (
     "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D"
@@ -27,49 +29,133 @@ LONG_NAME_PAYLOAD = (
     "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204541153030505802BD5919DEMO SUPER SHOP LTD6010Chattogram630494E0"
 )
 
-#: Synthetic 25-character bill number — the length real bKash dynamic QRs use.
+#: Synthetic non-bKash layout (made-up institution AID, no tokens, no tag 62).
+GENERIC_PAYLOAD = (
+    "00020101021126410022example.org.generic-qr0311017000000005204541153030505802BD5912GENERIC SHOP6006Sylhet6304818D"
+)
+
+#: The generic fixture at 1250.50 BDT, exactly as published in docs/demo-payloads.md.
+PAYLOAD_DEMO_GENERIC_AMOUNT = (
+    "00020101021226410022example.org.generic-qr03110170000000052045411530305054071250.505802BD5912GENERIC SHOP6006Sylhet630480A2"
+)
+
+#: Synthetic 25-character bill number (the length real dynamic QRs use).
 DUMMY_REFERENCE = "DEMOQR0VZeK2MfbVRI6w36osd"
 
 DUMMY_TOKEN_A = "ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE="
 DUMMY_TOKEN_B = "ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE="
 
-#: Raw tag 80/81 field values (nested TLV: AID + token), preserved verbatim.
 TAG80_VALUE = "0014bd.org.bb.npsb0144" + DUMMY_TOKEN_A
 TAG81_VALUE = "0014bd.org.bb.npsb0144" + DUMMY_TOKEN_B
 
 #: Corrupted checksum: last four characters replaced.
 BAD_CHECKSUM_PAYLOAD = STATIC_PAYLOAD[:-4] + "0000"
 
-#: Truncated TLV: no checksum, incomplete last field.
+#: Truncated TLV: drop the checksum and part of the last field.
 TRUNCATED_PAYLOAD = STATIC_PAYLOAD[:-12]
 
-#: TLV that starts fine but declares more bytes than it has.
+#: TLV that declares more bytes than it has.
 OVERLONG_FIELD = "0005AB"
+
+#: Invalid TLV: non-numeric tag.
+BAD_TAG_TLV = "XX040000"
+
+#: TLV with a non-numeric length.
+BAD_LENGTH_TLV = "0004ZZ"
+
+
+def seal(fields):
+    """Encode fields and append a valid tag-63 checksum (drops any old tag 63)."""
+    body = encode_fields([field for field in fields if field.tag != "63"]) + "6304"
+    return body + crc16(body)
 
 
 def rebuild(payload, mutate=None):
-    """Rewrite a payload: mutate its fields, then re-seal with a valid checksum."""
+    """Parse a payload, apply ``mutate(fields)`` in place, then re-seal it."""
     fields = parse(payload)
-    mutated = mutate(fields) if mutate is not None else None
-    return seal(mutated if mutated is not None else fields)
+    if mutate is not None:
+        mutate(fields)
+    return seal(fields)
 
 
 def set_field(fields, tag, value):
-    """Replace one field value or append it when missing."""
-    for index, field in enumerate(fields):
+    """Replace the first field with ``tag`` or insert one sorted."""
+    for field in fields:
         if field.tag == tag:
-            fields[index] = Field(tag, value)
+            field.value = value
             return
     fields.append(Field(tag, value))
+    fields.sort(key=lambda item: int(item.tag))
 
 
 def remove_field(fields, tag):
-    """Remove every field with a tag."""
-    for index in range(len(fields) - 1, -1, -1):
-        if fields[index].tag == tag:
-            del fields[index]
+    """Remove every top-level field with ``tag``."""
+    fields[:] = [field for field in fields if field.tag != tag]
 
 
-def encode_subfields(fields):
-    """Encode a list of fields as a nested template value."""
-    return encode_fields(fields)
+def fields_of(payload):
+    """Parse a payload into its top-level fields."""
+    return parse(payload)
+
+
+def field_value(payload, tag):
+    """Value of the first top-level ``tag``, or ``None``."""
+    for field in parse(payload):
+        if field.tag == tag:
+            return field.value
+    return None
+
+
+def tags_of(payload):
+    """Top-level tags, in payload order."""
+    return [field.tag for field in parse(payload)]
+
+
+def payload_without(*tags):
+    """The static fixture with some top-level tags removed, re-sealed."""
+    return rebuild(
+        STATIC_PAYLOAD,
+        lambda fields: [remove_field(fields, tag) for tag in tags],
+    )
+
+
+def payload_with(tag, value):
+    """The static fixture with one top-level tag set, re-sealed."""
+    return rebuild(STATIC_PAYLOAD, lambda fields: set_field(fields, tag, value))
+
+
+def subfields_of(payload, tag):
+    """Parse a template field's value into fields."""
+    return parse_subfields(field_value(payload, tag) or "")
+
+
+def duplicate_payload(tag="59", value="DEMO STORE"):
+    """The static fixture with a duplicated (checksum-valid) tag."""
+    fields = parse(STATIC_PAYLOAD)
+    fields.append(Field(tag, value))
+    return seal(fields)
+
+
+def set_subfield(fields, parent_tag, sub_tag, value):
+    """Replace a sub-tag inside a template field (parent must already exist)."""
+    for field in fields:
+        if field.tag == parent_tag:
+            children = parse(field.value)
+            set_field(children, sub_tag, value)
+            field.value = encode_fields(children)
+            return
+    raise AssertionError("parent tag {} is missing".format(parent_tag))
+
+
+def payload_with_subfield(parent_tag, sub_tag, value, base=None):
+    """A sealed fixture with one template sub-tag replaced."""
+    source = base or STATIC_PAYLOAD
+    return rebuild(
+        source,
+        lambda fields: set_subfield(fields, parent_tag, sub_tag, value),
+    )
+
+
+def payload_with_many(mutate):
+    """The static fixture with an arbitrary mutation, re-sealed."""
+    return rebuild(STATIC_PAYLOAD, mutate)

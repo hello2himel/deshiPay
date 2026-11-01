@@ -1,18 +1,24 @@
 # deshiQR examples
 
-Integration examples for the one thing deshiQR does: **a merchant's Bangla QR payload + an amount →
-dynamic payload + QR**. All of them use the **same synthetic demo payload** from
-[`docs/demo-payloads.md`](../docs/demo-payloads.md) — fake account `01000000000`, merchant
-`DEMO STORE`, city `Dhaka`, dummy NPSB tokens. Never paste a real merchant payload into an example, a
-test fixture or a docs page.
+One runnable example per platform. All of them do the same thing: **load a Bangla QR payload, apply
+edits, print the updated payload and its warnings.** None of them render a QR code — the payload is
+just a string, so encode/render it however you like.
 
-| Example                                                                | What it shows                                                              | Needs                             |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------- |
-| [`checkout.html`](./checkout.html)                                     | The core use case: cart total → dynamic payload + QR, entirely client-side | `pnpm build`                      |
-| [`vanilla.html`](./vanilla.html)                                       | `<deshiqr-pay>` in plain HTML, no framework, no network                    | `pnpm build`                      |
-| [`react/App.tsx`](./react/App.tsx)                                     | Typed React wrapper for the custom element (ref + events)                  | React app + the `deshiqr` package |
-| [`node-express/server.mjs`](./node-express/server.mjs)                 | Small dependency-free Node server: derive payload + QR SVG on the server   | Node 22+, `pnpm build`            |
-| [`../python/examples/derive_svg.py`](../python/examples/derive_svg.py) | Python: decode → derive an amount → SVG with `segno`                       | Python 3.9+, `pip install segno`  |
+Every example uses the **same synthetic demo payload** from
+[`docs/demo-payloads.md`](../docs/demo-payloads.md): fake account `01000000000`, merchant `DEMO
+STORE`, city `Dhaka`, dummy NPSB tokens. Never paste a real merchant payload into an example, a test
+fixture or a docs page.
+
+| Example                                  | Platform                                   | Run it                                                   |
+| ---------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| [`browser.html`](./browser.html)         | browser, single bundle, no build step      | `pnpm build`, then open the file in a browser            |
+| [`node.mjs`](./node.mjs)                 | Node 22+ (ESM)                             | `pnpm build && node examples/node.mjs`                   |
+| [`python.py`](./python.py)               | Python 3.9+                                | `python3 examples/python.py` (or `pip install ./python`) |
+| [`http.sh`](./http.sh)                   | `curl` against the stateless HTTP endpoint | `./examples/http.sh <endpoint>`                          |
+| [`../cdn/index.html`](../cdn/index.html) | the GitHub Pages bundle demo               | published with the bundle by `.github/workflows/cdn.yml` |
+
+The public contract is in [`docs/api.md`](../docs/api.md); the field table and a worked edit are in
+[`docs/format.md`](../docs/format.md).
 
 ## Prerequisites
 
@@ -20,124 +26,88 @@ From the repo root:
 
 ```bash
 pnpm install
-pnpm build   # builds the single package: packages/deshiqr/dist/
+pnpm build   # builds packages/deshiqr/dist/ (the npm package + the browser bundle)
 ```
 
-That produces one npm package, `deshiqr`:
+That produces one npm package, `deshiqr`, with:
 
-- main entry `deshiqr` — payload library + QR encoder and SVG/terminal renderers;
-- subpath `deshiqr/element` — the `<deshiqr-pay>` web component;
-- `dist/deshiqr.global.js` — one IIFE bundle for plain `<script src>` pages (global `DeshiQR`, which
-  also registers `<deshiqr-pay>`).
+- the two functions `update(payload, edits, options?)` and `validate(payload, options?)`;
+- `dist/deshiqr.global.js` — one IIFE bundle for plain `<script src>` pages (global `DeshiQR`).
 
-The public API contracts are in [`docs/architecture.md`](../docs/architecture.md).
+The Python package lives in [`../python`](../python) (`pip install ./python`, or just run the example
+from the repo root).
 
-## 1. `checkout.html`
+## 1. `browser.html`
 
 Open the file directly in a browser after `pnpm build` (it loads
 `../packages/deshiqr/dist/deshiqr.global.js`), or serve the repo root with any static server. Enter a
-cart total and it derives the dynamic payload and renders the QR — no backend, no network:
+payload, an amount and (optionally) a currency, press **Update payload**, and it shows the updated
+payload string and any warnings. There is no QR on this page.
 
 ```html
 <script src="../packages/deshiqr/dist/deshiqr.global.js"></script>
 <script>
-  const payload = DeshiQR.withAmount(MERCHANT_PAYLOAD, cartTotal);
-  document.querySelector("#qr").innerHTML = DeshiQR.toSvg(DeshiQR.encode(payload), {
-    margin: 4,
-    scale: 8,
-  });
+  const updated = DeshiQR.update(payload, { amount: 500, currency: "050" });
+  document.querySelector("#output").textContent = updated;
 </script>
 ```
 
 In production, load the same file from jsDelivr/unpkg
-(`https://cdn.jsdelivr.net/npm/deshiqr@0.1.0/dist/deshiqr.global.js`) or self-host it. If you prefer the
-stateless HTTP path instead, see [`docs/amount-qr.md`](../docs/amount-qr.md).
+(`https://cdn.jsdelivr.net/npm/deshiqr@0.1.0/dist/deshiqr.global.js`) or self-host it. The bundle also
+exposes `DeshiQR.validate`.
 
-## 2. `vanilla.html`
-
-Open the file directly in a browser after `pnpm build` (it loads the same
-`../packages/deshiqr/dist/deshiqr.global.js`), or serve the repo root. It sets the demo payload, wires
-`deshiqr-ready` / `deshiqr-change` / `deshiqr-error`, and prints the derived payload + reference. Amount
-presets come from the `presets` attribute.
-
-```html
-<deshiqr-pay
-  payload="00020101021126…"
-  title="DEMO STORE"
-  presets="100,500,1000"
-  ref-prefix="DEMO"
-  ref-length="25"
-></deshiqr-pay>
-```
-
-In production, either self-host the built `deshiqr.global.js` or load it from a CDN (jsDelivr/unpkg —
-the package's `unpkg`/`jsdelivr` fields point at the IIFE bundle).
-
-## 3. `react/App.tsx`
-
-A single-file example that copies into a React app. It includes:
-
-- a `forwardRef` wrapper (`DeshiQrPay`) exposing `refresh()`, `setAmount()`, `getPayload()`, `getSvg()`,
-  `downloadPng()` and the underlying element;
-- JSX intrinsic declarations for the `<deshiqr-pay>` tag (React 19 `React.JSX` and the older global
-  `JSX` namespace);
-- explicit `addEventListener` wiring for the element's events (React does not map `on*` props to
-  custom-element events), with typed `CustomEvent` details;
-- a tiny demo app using the synthetic payload.
-
-The wrapper imports `react` only — the web component stays dependency-free. Make sure the element module
-is imported once somewhere in your app (`import "deshiqr/element"`) or the global bundle is loaded,
-otherwise the tag never upgrades.
-
-## 4. `node-express/server.mjs`
-
-A small, dependency-free server (Node's built-in `node:http`; no Express is installed in this repo, and
-the routes map 1:1 to Express — see the snippet below). It imports the single `deshiqr` package (with a
-fallback to `packages/deshiqr/dist/index.js` when the workspace package is not linked in
-`node_modules`).
+## 2. `node.mjs`
 
 ```bash
 pnpm build
-node examples/node-express/server.mjs
-# http://localhost:8787
+node examples/node.mjs
 ```
 
-Routes:
+It imports `deshiqr` when the package is installed and falls back to the repo build otherwise. It
+demonstrates:
 
-| Method | Path                | Purpose                                                   |
-| ------ | ------------------- | --------------------------------------------------------- |
-| `GET`  | `/`                 | tiny HTML page: enter amount → QR                         |
-| `POST` | `/order`            | `{ amount, note?, reference? }` → `{ ok, order, qr_svg }` |
-| `GET`  | `/order/:id`        | order status (`pending` / `paid`)                         |
-| `GET`  | `/order/:id/qr.svg` | QR image (`image/svg+xml`)                                |
-| `POST` | `/order/:id/paid`   | manual "mark paid" stub                                   |
+- `update(payload, { amount: 500, reference: "BILL123" })` — amount formatted to `500.00`, tag `01`
+  set to `12`, `62/01` inserted, checksum re-sealed;
+- `validate(updated)` — `{ ok, errors, warnings }`, never throws;
+- `onWarning` — warnings never block an edit;
+- `{ amount: null }` — removal, and `update(payload, {})` — validate-only (byte-identical result).
 
-What it demonstrates:
+In a real project: `npm install deshiqr` and `import { update, validate } from "deshiqr";`.
 
-- `build(basePayload, { amount, reference })` derives a dynamic Bangla QR payload while keeping
-  account/name/tokens verbatim;
-- `encode(payload)` + `toSvg(matrix)` produce a self-contained SVG (no external references);
-- 25-character bill numbers by default (the shape real bKash dynamic QRs use today);
-- **the confirmation gap**: `POST /order/:id/paid` just flips a flag. deshiQR never holds or moves funds
-  and cannot verify a bKash/Nagad/Rocket payment; confirmation is manual (or, in future, provider APIs).
+## 3. `python.py`
 
-Express port (same handlers, `app.post(...)` etc.):
+```bash
+# from the repo root, no install needed:
+python3 examples/python.py
 
-```js
-import express from "express";
-const app = express();
-app.use(express.json());
-app.post("/order", (req, res) => res.status(201).json({ ok: true, order: createOrder(req.body) }));
-app.get("/order/:id", (req, res) => res.json({ ok: true, order: orders.get(req.params.id) }));
-app.get("/order/:id/qr.svg", (req, res) => res.type("image/svg+xml").send(orders.get(req.params.id).svg));
-app.listen(8787);
+# or install the package:
+pip install ./python
+python3 examples/python.py
 ```
 
-## Production notes
+It uses `from deshiqr import update, validate` with the same semantics, the same edit keys
+(`customerLabel` stays camelCase) and the same error/warning codes. Warnings go to
+`warnings.warn(…, DeshiQrWarning)` by default, or to `UpdateOptions(on_warning=…)`.
 
-- The **server** is the trust boundary: derive and validate payloads there, and don't forward a payload
-  string supplied by a visitor to a customer.
-- The amount is not proof of payment. Match payments against your provider statement manually until you
-  have an official confirmation channel.
-- Keep the base payload in a place visitors cannot edit. A static payload is public _once printed_, but
-  your pay page still has to render the merchant's own payload, not one a visitor swapped in.
+## 4. `http.sh`
+
+```bash
+# local: `supabase functions serve update` in another terminal
+./examples/http.sh
+
+# deployed function:
+./examples/http.sh "https://<project-ref>.supabase.co/functions/v1/update"
+```
+
+It POSTs `{ "payload": "…", "edits": { "amount": 500, "reference": "BILL123" }, "warnings": true }`
+and prints the JSON response: `{ ok, payload, warnings }` on success, or
+`{ ok: false, error: { code, message, tag } }` on failure. Deploy steps:
+[`docs/self-hosting.md`](../docs/self-hosting.md).
+
+## Notes
+
+- The payloads here are public data in the real world, but a swapped payload is a scam. Keep your base
+  payload on your trusted side and compare the name the payer's app shows with the shop's name.
+- Editing identity fields (`26/00`, `26/03`, `59`) raises a `RISKY_EDIT` warning because it can mislead
+  payers. Only edit payloads you own — see [`../SECURITY.md`](../SECURITY.md).
+- A QR is an instruction to pay, not proof that money moved. deshiQR does not confirm payments.

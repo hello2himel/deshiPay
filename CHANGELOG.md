@@ -6,57 +6,66 @@ All notable changes to this project are documented here. The format is based on
 
 ## [0.1.0] — 2026-11-01
 
-First public release. One job: a merchant's Bangla QR payload + an amount → the dynamic payload and
-the QR. Early, usable, honest.
+First public release. One job: **load a Bangla QR payload, edit any tag, and get the updated payload
+back.** Early and deliberately small: no QR generation, no payload reading, no UI, no database.
 
 ### Added
 
-- `deshiqr` — one dependency-free npm package at `packages/deshiqr` covering the whole JavaScript
-  surface:
-  - **Payload library** (main entry): strict TLV parse, CRC-16/CCITT-FALSE verify, `decode` /
-    `decodeSafe`, `validate` with errors + warnings, `toStatic`, `withAmount`, `build`, reference
-    generation, amount formatting and account masking.
-  - **QR encoder + renderers** (main entry): QR Code encoder (ISO/IEC 18004, versions 1–40, EC levels
-    L/M/Q/H, automatic version and mask selection) with self-contained SVG, SVG path and terminal
-    renderers. Cross-checked against an independent encoder and decoded back with jsQR.
-  - **`<deshiqr-pay>` web component** at the `deshiqr/element` subpath: amount presets, references,
-    theming, events, PNG download, and no network requirement when given a payload. The main entry
-    stays pure — importing `deshiqr` has no DOM side effects.
-  - Verified against real bKash payload shapes (25-character bill number in tag 62/01, NPSB account
-    template, opaque tags 80/81 preserved verbatim), including corruption, oversized, malformed and
-    unknown-provider cases.
+- `deshiqr` — one dependency-free npm package at `packages/deshiqr` with exactly two public
+  functions:
+  - `update(payload, edits, options?) -> string` — applies aliases (`amount`, `currency`, `country`,
+    `mcc`, `name`, `city`, `reference`, `customerLabel`, `account`, `institution`) or tag paths
+    (`"54"`, `"62/01"`, `"26/03"`, …), removes tags with `null`, inserts new tags in ascending order,
+    keeps tag `01` consistent with the amount, rejects edits to the checksum, and always re-seals
+    `63` with CRC-16/CCITT-FALSE. Duplicate tags are rejected. `update(payload)` / `update(payload,
+{})` is validate-only and returns the payload byte-identically.
+  - `validate(payload, options?) -> { ok, errors, warnings }` — never throws; collects every error
+    and warning.
+  - Warning handling: `warnings: true | false | ["59", "62/01"]` (exact tag/path suppression) and
+    `onWarning`; warning codes `MISSING_TAG`, `UNKNOWN_TAG`, `BAD_FIELD_VALUE`, `FIELD_TOO_LONG`,
+    `UNKNOWN_CURRENCY`, `NON_BD_COUNTRY`, `UNKNOWN_INSTITUTION`, `UNKNOWN_MCC`, `STATIC_WITH_AMOUNT`,
+    `DYNAMIC_WITHOUT_AMOUNT`, `RISKY_EDIT`. Error codes `EMPTY_PAYLOAD`, `UNSUPPORTED`, `BAD_TLV`,
+    `MISSING_FIELD`, `CHECKSUM_MISMATCH`, `DUPLICATE_TAG`, `BAD_AMOUNT`, `BAD_TAG`, `BAD_VALUE`.
 - One browser bundle for plain `<script src>` pages, no bundler required:
-  `dist/deshiqr.global.js` → `window.DeshiQR`, exposing the payload library, the QR encoder/renderers
-  and a working `<deshiqr-pay>` (registered automatically). Served by jsDelivr/unpkg through npm and
-  mirrored on GitHub Pages by `.github/workflows/cdn.yml` for use without npm.
+  `dist/deshiqr.global.js` → `window.DeshiQR` with `update` and `validate`. Served by jsDelivr/unpkg
+  through npm and mirrored on GitHub Pages by `.github/workflows/cdn.yml`;
   `scripts/check-globals.mjs` pins its behaviour in a browser-only sandbox.
-- `python/` — zero-dependency Python 3.9+ port of the payload library (`pip install deshiqr`):
-  `decode`, `with_amount`, `build`, `to_static`, `new_reference`, `validate`, the same error codes and
-  derivation rules, with a stdlib `unittest` suite and PyPI trusted-publishing workflow. The Python
-  package is payload-only: render the QR with `segno`/`qrcode` or the HTTP API.
-- `qr` edge function — **the amount→QR API**: `POST` a merchant's Bangla QR payload + an amount and get
-  the dynamic payload and QR SVG back. Stateless (no database, no secrets, no merchant lookup), generic
-  TLV + CRC validation only, so it works with any provider. The provider-agnostic guarantee (only tag
-  `01`, `54`, the checksum and an optional `62/01` reference change; everything else is byte-identical)
-  is pinned by tests on a synthetic non-bKash layout in the library, the edge function and the Python
-  port; `pnpm check:qr-api` runs them in CI.
-- Documentation for the single purpose: `README.md`, `docs/amount-qr.md` (contract, checkout and
-  donation snippets, error codes, deploy), `docs/embedding.md` (library, web component, HTTP API),
-  `docs/format.md`, `docs/architecture.md`, `docs/self-hosting.md` (deploy the `qr` function only),
-  `docs/demo-payloads.md`, `python/README.md`, and examples including `examples/checkout.html`.
-- CI (typecheck, build, tests, browser-bundle checks, amount→QR API logic, Python 3.9 + 3.13) and
+- `python/` — zero-dependency Python 3.9+ package (`pip install deshiqr`) with the same two functions,
+  the same edit keys (camelCase aliases stay camelCase), the same error/warning codes, dataclass
+  options (`UpdateOptions`, `ValidateOptions`), `DeshiQrError`/`.code`, an `unittest` suite and PyPI
+  trusted-publishing workflow.
+- `update` edge function — the stateless HTTP API: `POST /functions/v1/update` with
+  `{ payload, edits?, warnings? }` → `{ ok: true, payload, warnings }`, or
+  `{ ok: false, error: { code, message, tag? } }`. No database, no secrets, CORS `*` by default
+  (`DESHIQR_CORS_ORIGIN`), 16 KB request-body limit. `pnpm check:api` runs its request-independent
+  tests.
+- Documentation for the single purpose: `README.md`, [`docs/format.md`](./docs/format.md) (the full
+  field table, checksum rule, worked edit), [`docs/api.md`](./docs/api.md) (functions, edit rules,
+  warning/error codes, HTTP contract), [`docs/self-hosting.md`](./docs/self-hosting.md),
+  [`docs/demo-payloads.md`](./docs/demo-payloads.md), and one example per platform in
+  [`examples`](./examples) (browser, Node, Python, `curl`) plus the [`cdn`](./cdn) demo page.
+- CI (typecheck, build, tests, browser-bundle check, HTTP-function logic, Python 3.9 + 3.13) and
   release pipelines: npm with provenance for the single `deshiqr` package (`release.yml`), PyPI via
   trusted publishing (`release-python.yml`), and GitHub Pages browser-bundle publishing (`cdn.yml`).
-- Provider stance: bKash decoding **verified**; Nagad, Rocket and bank Bangla QR **planned** (the
-  parser is provider-agnostic but support is not asserted until real payloads are tested).
+- Provider-agnostic editing by construction: only the tags the caller edits, tag `01` (for amount
+  edits) and the re-sealed checksum change; everything else — account template, name, city, currency,
+  country, opaque token templates — is byte-identical. Pinned by tests on a synthetic non-bKash
+  layout in both languages and the HTTP function.
+
+### Changed
+
+- Final product scope is the payload editor only. There is no QR encoding or rendering, no web
+  component, no payload reading/verification helpers, no reference generation, and no database or
+  payment tooling. Render the returned payload with your own QR library.
 
 ### Security
 
 - No real merchant data is committed anywhere; all fixtures are synthetic (account `01000000000`,
   `DEMO STORE`, dummy NPSB tokens).
-- deshiQR edits payloads only. It does not take custody of funds, hold balances, route money, or act
-  as a payment service provider.
-- No payment confirmation in this release: a QR is an instruction to pay, not proof that money moved.
-  Provider APIs (or manual reconciliation in your own system) remain the confirmation path.
+- Edits are at the caller's risk: changing the account, institution or merchant name can mislead
+  payers, so `update` surfaces a `RISKY_EDIT` warning; only edit payloads you own. Payloads are public
+  data, but a swapped payload is a scam — verify where a payload came from.
+- deshiQR does not take custody of funds, hold balances, route money, or act as a payment service
+  provider. It does not confirm payments: a QR is an instruction to pay, not proof that money moved.
 
 [0.1.0]: https://github.com/hello2himel/deshiQR/releases/tag/v0.1.0

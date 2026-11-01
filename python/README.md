@@ -4,23 +4,25 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/deshiqr.svg)](https://pypi.org/project/deshiqr/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 
-Parse, verify, derive and build **Bangla QR** (NPSB / EMVCo) payment payloads — the QR format printed
-by bKash and accepted by Bangla-QR-capable wallets and banks in Bangladesh.
+Load a **Bangla QR** (NPSB / EMVCo) payload, edit any tag, validate it, and get
+the updated payload back. Two functions, no state, no network, no QR rendering —
+you render the QR however you like.
 
-This is a faithful, standard-library-only port of the payload library in the zero-dependency
+This is a faithful, standard-library-only port of the zero-dependency
 [`deshiqr`](https://www.npmjs.com/package/deshiqr) npm package
-([`packages/deshiqr`](../packages/deshiqr)). One package per platform: npm `deshiqr` covers payload +
-QR + the web component, and this Python package covers the payload only.
+([`packages/deshiqr`](../packages/deshiqr)); both expose exactly the same
+behaviour, codes and messages.
 
 - **Zero runtime dependencies.** Python 3.9+, standard library only.
-- Parse, verify (CRC-16/CCITT-FALSE) and decode payloads into structured data.
-- Derive dynamic payloads (`with_amount`) and static ones (`to_static`) with byte-identical output to
-  the TypeScript implementation.
-- Thorough, non-throwing validation with stable error codes.
+- `update(payload, edits, options=None)` — edit aliases or numeric tag paths,
+  remove tags with `None`, re-seal the checksum and return the new payload.
+- `validate(payload, options=None)` — non-throwing validation with stable error
+  and warning codes; never surprises you with an exception.
+- Provider-agnostic: only the tags you edit (plus the checksum, and tag `01`
+  when you change the amount) differ from the input.
 - Type hints throughout (`py.typed`).
 
-deshiQR never touches money and never talks to a bank or wallet API. It works with the payload text
-only.
+deshiQR never touches money, never talks to a bank and never generates a QR.
 
 ## Install
 
@@ -28,226 +30,158 @@ only.
 pip install deshiqr
 ```
 
-The library deliberately does **not** bundle a QR encoder — see [Render the QR](#render-the-qr) for the
-two-line integration with a third-party library, or call the stateless
-[amount→QR HTTP API](../docs/amount-qr.md) if you would rather receive an SVG from the server.
-
 ## Quickstart
 
 ```python
-from deshiqr import (
-    decode,
-    decode_safe,
-    format_taka,
-    mask_account,
-    new_reference,
-    validate,
-    with_amount,
-)
+from deshiqr import update, validate
 
-# Synthetic demo payload from docs/demo-payloads.md — not a real merchant.
+# Synthetic demo payload — not a real merchant.
 payload = (
     "00020101021126470014bd.org.bb.npsb0102020204200203110100000000053030505802"
     "BD5910DEMO STORE6005Dhaka63049C89"
 )
 
-qr = decode(payload)
-print(qr.kind)                      # "static"
-print(qr.merchant.name)             # "DEMO STORE"
-print(qr.merchant.city)             # "Dhaka"
-print(qr.merchant.institution)      # "bd.org.bb.npsb"
-print(mask_account(qr.merchant.account))  # "01000•••000"
-print(format_taka(500))             # "৳500"
+# Add an amount: tag 54 is inserted and tag 01 flips to dynamic ("12").
+updated = update(payload, {"amount": 500, "reference": "BILL123"})
+print(updated)
 
-# Derive a dynamic QR for 250.00 BDT with a generated 12-character reference.
-reference = new_reference(prefix="ORD", length=12)   # e.g. "ORDk2Q9xZ1M4"
-dynamic = with_amount(payload, 250, reference=reference)
+report = validate(updated)
+print(report.ok, report.errors, report.warnings)  # True [] []
 
-dynamic_qr = decode(dynamic)
-print(dynamic_qr.kind)              # "dynamic"
-print(dynamic_qr.amount)            # 250.0
-print(dynamic_qr.amount_text)       # "250.00"
-print(dynamic_qr.reference)         # the generated 12-character reference
-
-# Validation never raises: it collects errors and warnings.
-report = validate(dynamic)
-print(report.ok)                    # True
-print([issue.code for issue in report.warnings])  # []
-
-# Non-throwing decode alternative:
-result = decode_safe(payload)
-if result.ok:
-    print(result.qr.checksum)       # "9C89"
-else:
-    print(result.error.code, result.error.message)
+# Warnings go to the stdlib warnings module unless you redirect them.
+seen = []
+update(payload, {"name": "DEMO STORE 2"}, {"onWarning": seen.append})
+for issue in seen:
+    print(issue.code, issue.tag, issue.message)  # RISKY_EDIT 59 …
 ```
 
-All example payloads are **synthetic** (fake account `01000000000`, `DEMO STORE`, dummy NPSB tokens).
-The repo's data policy forbids committing real merchant or payment data; see
-[`docs/demo-payloads.md`](../docs/demo-payloads.md).
+`update` raises `DeshiQrError` for invalid input or invalid edits. `validate`
+never raises; it collects every problem and returns a `ValidationReport` with
+`.ok`, `.errors` and `.warnings` lists of `DeshiQrIssue` (`.code`, `.message`,
+`.tag`).
 
-## Render the QR
+## `update(payload, edits, options=None) -> str`
 
-`deshiqr` only produces the payload string — that is the part bKash validates. To turn it into a
-scannable image, use any QR encoder. Two popular choices:
+`edits` is a mapping from a named alias or a numeric tag path to a string, a
+number, or `None` (removal). Tag paths look like `"54"`, `"62/01"`, `"26/03"` or
+`"80/01"`. If a call contains both an alias and a tag path for the same target,
+**the tag path wins**. `None` removes the tag; removing every sub-tag empties and
+drops the enclosing template.
 
-### segno (SVG, no image dependencies)
-
-```sh
-pip install segno
-```
+| alias           | tag/path                                                   |
+| --------------- | ---------------------------------------------------------- |
+| `amount`        | `54` (number or numeric string, formatted to exactly 2 dp) |
+| `currency`      | `53`                                                       |
+| `country`       | `58`                                                       |
+| `mcc`           | `52`                                                       |
+| `name`          | `59`                                                       |
+| `city`          | `60`                                                       |
+| `reference`     | `62/01`                                                    |
+| `customerLabel` | `62/06`                                                    |
+| `account`       | `26/03`                                                    |
+| `institution`   | `26/00`                                                    |
 
 ```python
-import segno
-from deshiqr import with_amount, new_reference
-
-payload = "00020101021126470014bd.org.bb.npsb0102020204200203110100000000053030505802BD5910DEMO STORE6005Dhaka63049C89"
-dynamic = with_amount(payload, 250, reference=new_reference(prefix="ORD", length=12))
-
-segno.make(dynamic, error="m").save("deshiqr-demo.svg", scale=4)
+update(payload, {"amount": "1250.5"})        # tag 54 -> "1250.50", tag 01 -> "12"
+update(payload, {"amount": None})            # remove the amount, tag 01 -> "11"
+update(payload, {"62/01": "BILL123"})        # nested edit inside tag 62
+update(payload, {"city": None})              # remove tag 60
+update(payload, {"name": "X", "59": "Y"})    # "Y" (tag path wins)
 ```
 
-### qrcode (PNG)
+Rules enforced for you:
 
-```sh
-pip install "qrcode[pil]"
-```
+- **Tag `63` is never editable** — the CRC-16/CCITT-FALSE checksum is always
+  dropped and re-sealed (uppercase, 4 hex characters).
+- **Amounts are never rounded.** More than two decimals, zero, negatives,
+  non-numeric values and values above `99999999.99` raise `BAD_AMOUNT`.
+- **Tag `01` follows the amount** unless you edit `01` explicitly: after an edit
+  that touches `54`, `01` becomes `"12"` when an amount is present and `"11"`
+  when it is removed.
+- **New tags are inserted in ascending numeric order** at their level; existing
+  fields keep their current order. New tags are allowed, with an `UNKNOWN_TAG`
+  warning.
+- **Nested edits require a valid parent template.** Editing `"62/01"` when tag
+  `62` is missing or not valid TLV raises `BAD_TAG`. Tags `80` and `81` are
+  preserved verbatim until you edit inside them.
+
+## `validate(payload, options=None) -> ValidationReport`
+
+Reports every problem in one pass:
+
+| error code          | when                                                       |
+| ------------------- | ---------------------------------------------------------- |
+| `EMPTY_PAYLOAD`     | empty or non-string payload                                |
+| `BAD_TLV`           | malformed TLV, invalid nested template, bad checksum field |
+| `MISSING_FIELD`     | payload does not end with tag `63`                         |
+| `CHECKSUM_MISMATCH` | CRC of the input does not match                            |
+| `DUPLICATE_TAG`     | the same tag appears twice at the same level               |
+| `UNSUPPORTED`       | payload longer than 4096 characters                        |
+
+`update` additionally raises `BAD_AMOUNT`, `BAD_TAG` and `BAD_VALUE` for bad
+edits, and rejects duplicate tags in its input with `DUPLICATE_TAG`.
+
+Advisory warnings (all suppressible):
+
+| warning code             | when                                                                   |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `MISSING_TAG`            | recommended tag absent: `00`, `01`, `59`                               |
+| `UNKNOWN_TAG`            | tag/path not in the documented field table                             |
+| `BAD_FIELD_VALUE`        | value violates the field's documented syntax                           |
+| `FIELD_TOO_LONG`         | value longer than the field's documented maximum                       |
+| `UNKNOWN_CURRENCY`       | `53` not in `050, 356, 764, 840, 978`                                  |
+| `NON_BD_COUNTRY`         | `58` is not `BD`                                                       |
+| `UNKNOWN_INSTITUTION`    | `26/00` is not `bd.org.bb.npsb` (unverified provider, still supported) |
+| `UNKNOWN_MCC`            | `52` not in `5411, 6016, 5999`                                         |
+| `STATIC_WITH_AMOUNT`     | `01` is `11` but tag `54` is present                                   |
+| `DYNAMIC_WITHOUT_AMOUNT` | `01` is `12` but tag `54` is absent                                    |
+| `RISKY_EDIT`             | `update` edited an identity/account field (`26/00`, `26/03`, `59`)     |
+
+## Warnings and suppression
+
+Both functions accept an `options` argument that is either a dict or an options
+dataclass:
 
 ```python
-import qrcode
-from deshiqr import with_amount
+from deshiqr import UpdateOptions, ValidateOptions
 
-dynamic = with_amount(payload, 250, reference="ORDER12345")
-qrcode.make(dynamic).save("deshiqr-demo.png")
+# dict form (camelCase keys, matching the spec)
+update(payload, {"name": "X"}, {"warnings": ["59"], "onWarning": print})
+
+# dataclass form
+update(payload, {"name": "X"}, UpdateOptions(warnings=False))
+validate(payload, ValidateOptions(warnings=["26/00"]))
 ```
 
-Keep the encoder's error correction at **M** (or higher) and output at least ~256×256 px; print the QR
-at a size phones can scan. `examples/derive_svg.py` in this directory is a runnable version of the segno
-example.
+- `warnings=True` (default) shows every warning; `False` hides them all.
+- A list of tag/path strings suppresses warnings whose `.tag` matches **exactly**
+  (`"62"` does not suppress `"62/01"`).
+- `onWarning` / `on_warning` receives each visible `DeshiQrIssue`. Without it,
+  `update` calls the standard library's `warnings.warn` with
+  `deshiqr.DeshiQrWarning` (JavaScript uses `console.warn`).
+- `validate` only filters the `warnings` in its report; errors are always kept.
 
-## Deriving payloads
+Warnings never block an edit. Errors always raise from `update` and are returned
+by `validate`.
 
-Derivation only changes the fields that may legally change: the amount, the point of initiation (tag
-01), and the reference inside template 62. The account template, merchant name/city, MCC, currency,
-country and the opaque NPSB tokens are preserved verbatim, then the payload is re-sealed with
-CRC-16. That is why amount derivation is provider-agnostic: any valid Bangla QR payload works, without
-provider-specific code.
+## Documentation
 
-```python
-from deshiqr import build, to_static, with_amount
-
-# Explicit reference
-dynamic = with_amount(static_payload, 500, reference="DEMOQR0VZeK2MfbVRI6w36osd")
-
-# Generate a reference from the existing prefix/length
-dynamic = with_amount(static_payload, 250, reference_prefix="ORD", reference_length=12)
-
-# Reuse the reference already in the payload
-dynamic = with_amount(dynamic_payload, 777, keep_existing_reference=True)
-
-# No reference at all
-dynamic = with_amount(dynamic_payload, 900, reference_length=0)
-
-# `reference=None` drops the reference too; omitting the argument keeps the
-# TypeScript default (derive a new reference from the source payload's
-# prefix/length when one is present, otherwise no reference).
-
-# Back to a static QR (drops the amount and reference, tag 01 -> 11)
-static = to_static(dynamic_payload)
-
-# Static or dynamic depending on the amount
-payload = build(static_payload, amount=250)   # dynamic
-payload = build(dynamic_payload, amount=None) # static
-```
-
-The derivation rules are specified in
-[`docs/architecture.md` §Derivation rules](../docs/architecture.md#derivation-rules), and the field-level
-format in [`docs/format.md`](../docs/format.md).
-
-## Checksums
-
-```python
-from deshiqr import crc16, verify_checksum
-
-crc16("123456789")            # "29B1" — CRC-16/CCITT-FALSE anchor vector
-verify_checksum(payload)      # True when the trailing tag-63 checksum validates
-```
-
-## Validation
-
-`validate()` is strict about the checksum and required fields, and lenient about optional ones
-(over-long names, non-BDT currency, unusual tokens and so on are warnings that never raise):
-
-```python
-from deshiqr import validate
-
-report = validate(payload)
-for issue in report.errors:
-    print("error  ", issue.code, issue.message, issue.tag)
-for issue in report.warnings:
-    print("warning", issue.code, issue.message, issue.tag)
-
-if report.ok:
-    print(report.qr.merchant.name)
-```
-
-Every failure from the throwing API is a `DeshiQrError` with a stable `.code`: `EMPTY_PAYLOAD`,
-`BAD_TLV`, `CHECKSUM_MISMATCH`, `MISSING_FIELD`, `NOT_A_BANGLA_QR`, `BAD_AMOUNT`, `BAD_REFERENCE`,
-`UNSUPPORTED`.
-
-## API overview
-
-| Python name                                         | Purpose                                                     |
-| --------------------------------------------------- | ----------------------------------------------------------- |
-| `parse(payload)`                                    | Split a payload into top-level `Field(tag, value)` records. |
-| `encode_field` / `encode_fields`                    | Encode fields back to `TTLLVV…` text.                       |
-| `decode(payload)` / `decode_safe(payload)`          | Verified, structured `DecodedQr` / non-throwing result.     |
-| `verify_checksum(payload)`                          | CRC-16/CCITT-FALSE check.                                   |
-| `validate(payload)` / `is_bangla_qr(payload)`       | Full `ValidationReport` / boolean.                          |
-| `to_static`, `with_amount`, `build`                 | Derive static / dynamic payloads.                           |
-| `reference_from(payload)`                           | Reference in tag 62/01, or `None`.                          |
-| `new_reference(prefix="", length=25)`               | Cryptographically random payment reference.                 |
-| `crc16(text)`                                       | CRC-16/CCITT-FALSE as four uppercase hex characters.        |
-| `amount_to_field` / `parse_amount_field`            | `500` → `"500.00"` and back.                                |
-| `format_taka` / `mask_account`                      | Display helpers: `"৳1,250.50"`, `"01000•••000"`.            |
-| `institution_of(qr)` / `KNOWN_INSTITUTIONS`         | Known-institution metadata (NPSB today).                    |
-| `TAGS`, `MAX_AMOUNT`, `MAX_FIELD_LENGTH`, `VERSION` | Constants.                                                  |
-
-The dataclasses are `Field`, `MerchantDetails`, `Tokens`, `DecodedQr`, `DecodeResult`, `DeshiQrIssue`
-and `ValidationReport`.
-
-## Provider support
-
-**bKash is verified today**: decoding has been validated against real bKash payloads and the tests pin
-that behaviour. The parser is provider-agnostic, but support for other Bangla QR providers (Nagad,
-Rocket, bank/NPSB apps) is **planned**, not asserted, until their real payloads are part of the test
-suite. Amount derivation is provider-agnostic by construction (only tag `01`, `54` and the checksum
-change), so the payloads this package derives can be paid from any app that accepts Bangla QR.
-
-## Related docs and code
-
-- [Payload format (`docs/format.md`)](../docs/format.md)
-- [Architecture & internal contract (`docs/architecture.md`)](../docs/architecture.md)
-- [Amount→QR HTTP API (`docs/amount-qr.md`)](../docs/amount-qr.md)
-- [JavaScript/TypeScript package (`packages/deshiqr`)](../packages/deshiqr) — payload + QR + element
-- [A QR in a Node/Express server](../examples/node-express/server.mjs) —
-  `examples/node-express/server.mjs`
+- [`docs/format.md`](../docs/format.md) — the Bangla QR field table (tags,
+  aliases, syntax, lengths, known values).
+- [`docs/api.md`](../docs/api.md) — `update`/`validate` reference and the
+  stateless HTTP endpoint.
+- [`docs/demo-payloads.md`](../docs/demo-payloads.md) — synthetic fixtures used
+  by this test suite.
 
 ## Development
 
 ```sh
-cd python
-python3 -m unittest discover -s tests -v   # stdlib unittest, no pytest needed
-python3 -m compileall -q src
+python3 -m unittest discover -s tests -v
+# Python 3.9 (uv):
+PYTHONPATH=src uv run --python 3.9 --no-project python -m unittest discover -s tests
+python3 -m pip wheel . --no-deps
 ```
-
-The package is a port, not a reimplementation: the TypeScript sources in
-`packages/deshiqr/src/core` are the source of truth for behaviour, error codes and messages.
 
 ## License
 
-[MIT](../LICENSE) © Himel Das
-
-**Not affiliated with bKash, Nagad, Rocket, NPSB or any bank or payment provider.** Bangla QR is an
-open, publicly documented payment payload format; deshiQR is an independent toolkit for working with
-it.
+MIT — see [`LICENSE`](LICENSE).

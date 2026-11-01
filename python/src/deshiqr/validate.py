@@ -1,405 +1,296 @@
-"""Non-throwing, thorough validation.
+"""Non-throwing validation for Bangla QR payloads.
 
-Mirrors ``packages/deshiqr/src/core/validate.ts``. Collects every problem instead of
-stopping at the first one. Validation is strict about the checksum and required
-fields, lenient about optional ones (collected as warnings, never raises).
+``validate(payload, options=None)`` is the public entry point: it never raises,
+collects every problem, and returns a :class:`ValidationReport` whose ``errors``
+make ``ok`` false and whose ``warnings`` are advisory. Warning visibility is
+controlled by ``options`` (``True``, ``False`` or a list of tag/path strings to
+suppress).
+
+Mirrors ``packages/deshiqr/src/core/validate.ts`` exactly, including error and
+warning order.
 """
 
 from __future__ import annotations
 
-import re
-from dataclasses import dataclass, field as dataclass_field
-from typing import List, Optional
+from dataclasses import dataclass
+from typing import List, Mapping, Optional, Sequence, Union
 
-from .amount import MAX_AMOUNT
 from .crc import crc16
-from .decode import KNOWN_INSTITUTIONS, DecodedQr, decode
-from .errors import DeshiQrCode, DeshiQrError
-from .tlv import TAGS, Field, find_value, normalize, parse, parse_subfields
+from .errors import DeshiQrError, DeshiQrIssue
+from .fields import (
+    DYNAMIC_INITIATION,
+    MAX_PAYLOAD_LENGTH,
+    OPAQUE_TAGS,
+    PARSED_TEMPLATE_TAGS,
+    RECOMMENDED_TAGS,
+    STATIC_INITIATION,
+    field_warnings,
+)
+from .tlv import (
+    CRC_TAG,
+    Field,
+    find_field,
+    find_value,
+    is_hex_checksum,
+    normalize,
+    parse,
+    parse_subfields,
+)
 
 __all__ = [
     "DeshiQrIssue",
     "ValidationReport",
+    "ValidateOptions",
     "validate",
-    "is_bangla_qr",
 ]
 
-_AMOUNT_RE = re.compile(r"[0-9]{1,10}(?:\.[0-9]{1,2})?")
-_REFERENCE_RE = re.compile(r"[\x20-\x7E]{1,32}")
-_ACCOUNT_RE = re.compile(r"[0-9A-Za-z]{4,34}")
-_CHECKSUM_RE = re.compile(r"[0-9A-Fa-f]{4}")
+# Warning suppression: True = all, False = none, sequence = suppress these tags.
+WarningsOption = Union[bool, Sequence[str]]
 
 
 @dataclass
-class DeshiQrIssue:
-    """One validation problem: a stable ``code``, a message and an optional ``tag``."""
+class ValidateOptions:
+    """Options for :func:`validate`.
 
-    code: DeshiQrCode
-    message: str
-    tag: Optional[str] = None
+    ``warnings`` mirrors the JavaScript ``ValidateOptions.warnings``: ``True``
+    shows every warning, ``False`` hides them, and a list of tag/path strings
+    suppresses warnings whose ``tag`` matches exactly. Errors are always kept.
+    """
+
+    warnings: WarningsOption = True
 
 
 @dataclass
 class ValidationReport:
-    """Result of :func:`validate`."""
+    """Result of :func:`validate`.
 
-    #: No errors. Warnings are allowed.
+    ``ok`` is true when ``errors`` is empty; ``warnings`` never affect it.
+    """
+
     ok: bool
-    errors: List[DeshiQrIssue] = dataclass_field(default_factory=list)
-    warnings: List[DeshiQrIssue] = dataclass_field(default_factory=list)
-    #: Best-effort decode; ``None`` when the payload could not be decoded at all.
-    qr: Optional[DecodedQr] = None
+    errors: List[DeshiQrIssue]
+    warnings: List[DeshiQrIssue]
 
 
-def _issue(code: DeshiQrCode, message: str, tag: Optional[str] = None) -> DeshiQrIssue:
-    return DeshiQrIssue(code=code, message=message, tag=tag)
+def coerce_warnings(value: object) -> WarningsOption:
+    """Normalize the ``warnings`` option value to ``bool`` or a tuple of strings."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return tuple(str(item) for item in value)
+    raise TypeError("warnings must be a boolean or a list of tag paths")
 
 
-def _safe_subfields(value: str) -> Optional[List[Field]]:
-    try:
-        return parse_subfields(value)
-    except DeshiQrError:
-        return None
+def visible_warnings(
+    warnings: Sequence[DeshiQrIssue], option: WarningsOption
+) -> List[DeshiQrIssue]:
+    """Apply the ``warnings`` option to a list of issues."""
+    if option is True:
+        return list(warnings)
+    if option is False:
+        return []
+    suppressed = set(option)
+    return [issue for issue in warnings if issue.tag not in suppressed]
 
 
-def validate(payload: str) -> ValidationReport:
-    """Non-throwing, thorough validation of a Bangla QR payload."""
-    errors: List[DeshiQrIssue] = []
-    warnings: List[DeshiQrIssue] = []
+def _coerce_validate_options(options: object) -> ValidateOptions:
+    if options is None:
+        return ValidateOptions()
+    if isinstance(options, ValidateOptions):
+        return options
+    if isinstance(options, Mapping):
+        return ValidateOptions(warnings=coerce_warnings(options.get("warnings", True)))
+    raise TypeError("options must be a ValidateOptions instance, a dict or None")
 
-    def result(qr: Optional[DecodedQr]) -> ValidationReport:
-        return ValidationReport(
-            ok=len(errors) == 0,
-            errors=errors,
-            warnings=warnings,
-            qr=qr,
-        )
 
-    text = normalize(payload)
-    if len(text) == 0:
-        errors.append(_issue("EMPTY_PAYLOAD", "Paste a Bangla QR payload first."))
-        return result(None)
-    if len(text) > 4096:
-        errors.append(_issue("UNSUPPORTED", "This is far too long to be a Bangla QR payload."))
-        return result(None)
+def _issue(code: str, message: str, tag: Optional[str] = None) -> DeshiQrIssue:
+    return DeshiQrIssue(code, message, tag)
 
-    try:
-        fields = parse(text)
-    except DeshiQrError as error:
-        errors.append(_issue("BAD_TLV", error.message))
-        return result(None)
-    except Exception as error:  # pragma: no cover - defensive, mirrors `catch`
-        errors.append(_issue("BAD_TLV", str(error) or "Malformed payload."))
-        return result(None)
 
-    # ---- checksum ---------------------------------------------------------
-    last = fields[-1] if fields else None
-    checksum_ok = False
-    if last is None or last.tag != TAGS["CRC"]:
-        errors.append(
-            _issue(
-                "MISSING_FIELD",
-                "The payload does not end with a checksum (tag 63).",
-                TAGS["CRC"],
-            )
-        )
-    elif _CHECKSUM_RE.fullmatch(last.value) is None:
-        errors.append(
-            _issue(
-                "BAD_TLV",
-                "The checksum must be four hexadecimal characters.",
-                TAGS["CRC"],
-            )
-        )
-    elif crc16(text[:-4]) != last.value.upper():
-        errors.append(
-            _issue(
-                "CHECKSUM_MISMATCH",
-                "The checksum does not match, so this QR may be damaged or not a Bangla QR.",
-                TAGS["CRC"],
-            )
-        )
-    else:
-        checksum_ok = True
-
-    # ---- duplicates / ordering -------------------------------------------
-    seen = set()
-    for field in fields:
-        if field.tag == TAGS["CRC"]:
+def _parse_templates(fields: List[Field]) -> dict:
+    """Parse the documented templates once; ``None`` means invalid TLV."""
+    parsed = {}
+    for tag in PARSED_TEMPLATE_TAGS:
+        field = find_field(fields, tag)
+        if field is None:
             continue
-        if field.tag in seen:
-            warnings.append(
+        try:
+            parsed[tag] = parse_subfields(field.value)
+        except DeshiQrError:
+            parsed[tag] = None
+    return parsed
+
+
+def _duplicate_issues(fields: List[Field], parsed: dict) -> List[DeshiQrIssue]:
+    """``DUPLICATE_TAG`` errors, in canonical order: top level, then 26, then 62."""
+    issues: List[DeshiQrIssue] = []
+    seen_top = set()
+    for field in fields:
+        if field.tag in seen_top:
+            issues.append(
                 _issue(
-                    "BAD_TLV",
+                    "DUPLICATE_TAG",
                     "Tag {} appears more than once.".format(field.tag),
                     field.tag,
                 )
             )
-        seen.add(field.tag)
+        seen_top.add(field.tag)
 
-    # ---- required and optional top-level fields --------------------------
-    format_indicator = find_value(fields, TAGS["FORMAT"])
-    if format_indicator is None:
-        warnings.append(
-            _issue(
-                "MISSING_FIELD",
-                "Missing the format indicator (tag 00).",
-                TAGS["FORMAT"],
-            )
+    for tag in PARSED_TEMPLATE_TAGS:
+        children = parsed.get(tag)
+        if children is None:
+            continue
+        seen_nested = set()
+        for child in children:
+            path = tag + "/" + child.tag
+            if child.tag in seen_nested:
+                issues.append(
+                    _issue(
+                        "DUPLICATE_TAG",
+                        "Tag {} appears more than once.".format(path),
+                        path,
+                    )
+                )
+            seen_nested.add(child.tag)
+    return issues
+
+
+def assert_no_duplicate_tags(fields: List[Field]) -> None:
+    """Raise the first ``DUPLICATE_TAG`` error, in the same order as ``validate``."""
+    issues = _duplicate_issues(fields, _parse_templates(fields))
+    if issues:
+        first = issues[0]
+        raise DeshiQrError(first.code, first.message, first.tag)
+
+
+def collect(payload: object) -> ValidationReport:
+    """Collect an unfiltered report for ``payload`` (internal)."""
+    errors: List[DeshiQrIssue] = []
+    warnings: List[DeshiQrIssue] = []
+
+    text = normalize(payload)
+    if len(text) == 0:
+        return ValidationReport(
+            False, [_issue("EMPTY_PAYLOAD", "The payload is empty.")], []
         )
-    elif format_indicator != "01":
-        warnings.append(
-            _issue(
-                "UNSUPPORTED",
-                'Unexpected format indicator "{}".'.format(format_indicator),
-                TAGS["FORMAT"],
-            )
+    if len(text) > MAX_PAYLOAD_LENGTH:
+        return ValidationReport(
+            False,
+            [_issue("UNSUPPORTED", "The payload is longer than 4096 characters.")],
+            [],
         )
 
-    initiation = find_value(fields, TAGS["INITIATION"])
-    if initiation is None:
+    try:
+        fields = parse(text)
+    except DeshiQrError as error:
+        return ValidationReport(False, [_issue(error.code, error.message, error.tag)], [])
+
+    # ---- checksum ---------------------------------------------------------
+    last = fields[-1] if fields else None
+    if last is None or last.tag != CRC_TAG:
         errors.append(
             _issue(
                 "MISSING_FIELD",
-                "Missing the point-of-initiation tag (tag 01).",
-                TAGS["INITIATION"],
+                "The payload does not end with a checksum (tag 63).",
+                CRC_TAG,
             )
         )
-    elif initiation not in ("11", "12"):
+    elif not is_hex_checksum(last.value):
         errors.append(
             _issue(
-                "UNSUPPORTED",
-                'Unknown point of initiation "{}".'.format(initiation),
-                TAGS["INITIATION"],
+                "BAD_TLV",
+                "The checksum must be four hexadecimal characters.",
+                CRC_TAG,
             )
         )
+    elif crc16(text[:-4]) != last.value.upper():
+        errors.append(_issue("CHECKSUM_MISMATCH", "The checksum does not match.", CRC_TAG))
 
-    account_value = find_value(fields, TAGS["ACCOUNT"])
-    if account_value is None:
-        errors.append(
-            _issue(
-                "NOT_A_BANGLA_QR",
-                "Missing the account template (tag 26).",
-                TAGS["ACCOUNT"],
-            )
-        )
-    else:
-        template = _safe_subfields(account_value)
-        if template is None:
+    # ---- nested templates (26 and 62 are parsed; 80/81 stay opaque) ------
+    parsed = _parse_templates(fields)
+
+    # ---- duplicate tags ---------------------------------------------------
+    errors.extend(_duplicate_issues(fields, parsed))
+    for tag in PARSED_TEMPLATE_TAGS:
+        if tag in parsed and parsed[tag] is None:
             errors.append(
                 _issue(
                     "BAD_TLV",
-                    "The account template (tag 26) is not valid TLV.",
-                    TAGS["ACCOUNT"],
-                )
-            )
-        else:
-            institution = find_value(template, "00")
-            account = find_value(template, "03")
-            if not institution:
-                errors.append(
-                    _issue(
-                        "NOT_A_BANGLA_QR",
-                        "The account template has no institution identifier (tag 26/00).",
-                        TAGS["ACCOUNT"],
-                    )
-                )
-            elif institution not in KNOWN_INSTITUTIONS:
-                warnings.append(
-                    _issue(
-                        "UNSUPPORTED",
-                        'Unrecognised institution "{}". Decoding generically; support is not '
-                        "verified for this provider yet.".format(institution),
-                        TAGS["ACCOUNT"],
-                    )
-                )
-            if not account:
-                errors.append(
-                    _issue(
-                        "NOT_A_BANGLA_QR",
-                        "The account template has no account identifier (tag 26/03).",
-                        TAGS["ACCOUNT"],
-                    )
-                )
-            elif _ACCOUNT_RE.fullmatch(account) is None:
-                errors.append(
-                    _issue(
-                        "NOT_A_BANGLA_QR",
-                        "The account identifier does not look valid.",
-                        TAGS["ACCOUNT"],
-                    )
-                )
-
-    name = find_value(fields, TAGS["NAME"])
-    if name is None:
-        errors.append(
-            _issue(
-                "NOT_A_BANGLA_QR",
-                "The payload has no merchant name (tag 59).",
-                TAGS["NAME"],
-            )
-        )
-    elif len(name) == 0 or len(name) > 25:
-        warnings.append(
-            _issue(
-                "BAD_TLV",
-                "The merchant name should be 1–25 characters.",
-                TAGS["NAME"],
-            )
-        )
-
-    city = find_value(fields, TAGS["CITY"])
-    if city is not None and len(city) > 15:
-        warnings.append(
-            _issue(
-                "BAD_TLV",
-                "The merchant city should be at most 15 characters.",
-                TAGS["CITY"],
-            )
-        )
-
-    currency = find_value(fields, TAGS["CURRENCY"])
-    if currency is None:
-        warnings.append(
-            _issue(
-                "MISSING_FIELD",
-                "Missing the currency (tag 53).",
-                TAGS["CURRENCY"],
-            )
-        )
-    elif currency != "050":
-        warnings.append(
-            _issue(
-                "UNSUPPORTED",
-                'Currency is "{}", not BDT (050).'.format(currency),
-                TAGS["CURRENCY"],
-            )
-        )
-
-    country = find_value(fields, TAGS["COUNTRY"])
-    if country is None:
-        warnings.append(
-            _issue(
-                "MISSING_FIELD",
-                "Missing the country (tag 58).",
-                TAGS["COUNTRY"],
-            )
-        )
-    elif country != "BD":
-        warnings.append(
-            _issue(
-                "UNSUPPORTED",
-                'Country is "{}", not BD.'.format(country),
-                TAGS["COUNTRY"],
-            )
-        )
-
-    # ---- amount ----------------------------------------------------------
-    amount_text = find_value(fields, TAGS["AMOUNT"])
-    if amount_text is not None:
-        if _AMOUNT_RE.fullmatch(amount_text) is None:
-            errors.append(
-                _issue(
-                    "BAD_AMOUNT",
-                    'Invalid amount "{}".'.format(amount_text),
-                    TAGS["AMOUNT"],
-                )
-            )
-        else:
-            amount = float(amount_text)
-            if not (amount > 0) or amount > MAX_AMOUNT:
-                errors.append(
-                    _issue(
-                        "BAD_AMOUNT",
-                        'Amount "{}" is out of range.'.format(amount_text),
-                        TAGS["AMOUNT"],
-                    )
-                )
-        if initiation == "11":
-            warnings.append(
-                _issue(
-                    "BAD_TLV",
-                    "A static QR should not carry a fixed amount (tag 54).",
-                    TAGS["AMOUNT"],
-                )
-            )
-    elif initiation == "12":
-        warnings.append(
-            _issue(
-                "BAD_TLV",
-                "A dynamic QR usually carries an amount (tag 54).",
-                TAGS["AMOUNT"],
-            )
-        )
-
-    # ---- additional data / reference ------------------------------------
-    additional_value = find_value(fields, TAGS["ADDITIONAL"])
-    if additional_value is not None:
-        additional = _safe_subfields(additional_value)
-        if additional is None:
-            errors.append(
-                _issue(
-                    "BAD_TLV",
-                    "The additional data template (tag 62) is not valid TLV.",
-                    TAGS["ADDITIONAL"],
-                )
-            )
-        elif len(additional) == 0:
-            warnings.append(
-                _issue(
-                    "BAD_TLV",
-                    "The additional data template (tag 62) is empty.",
-                    TAGS["ADDITIONAL"],
-                )
-            )
-        else:
-            reference = find_value(additional, "01")
-            if reference is not None and _REFERENCE_RE.fullmatch(reference) is None:
-                errors.append(
-                    _issue(
-                        "BAD_REFERENCE",
-                        "The reference must be 1–32 printable ASCII characters.",
-                        TAGS["ADDITIONAL"],
-                    )
-                )
-
-    # ---- opaque NPSB tokens: warn only, never fail ----------------------
-    for tag in (TAGS["TOKEN_80"], TAGS["TOKEN_81"]):
-        value = find_value(fields, tag)
-        if value is not None and _safe_subfields(value) is None:
-            warnings.append(
-                _issue(
-                    "UNSUPPORTED",
-                    "The token template (tag {}) is not TLV; it is preserved verbatim.".format(
-                        tag
-                    ),
+                    "Malformed payload: tag {} is not a valid TLV template.".format(tag),
                     tag,
                 )
             )
 
-    if len(text) > 800:
-        warnings.append(
-            _issue(
-                "UNSUPPORTED",
-                "This payload is unusually long; check it before publishing.",
-            )
-        )
-
-    # ---- full decode for the structured result --------------------------
-    qr: Optional[DecodedQr] = None
-    if checksum_ok and len(errors) == 0:
-        try:
-            qr = decode(text)
-        except DeshiQrError as error:
-            errors.append(_issue(error.code, error.message, error.detail))
-        except Exception as error:  # pragma: no cover - defensive
-            errors.append(
-                _issue("UNSUPPORTED", str(error) or "Unknown error.")
+    # ---- warnings ---------------------------------------------------------
+    present = set(field.tag for field in fields)
+    for tag in RECOMMENDED_TAGS:
+        if tag not in present:
+            warnings.append(
+                _issue("MISSING_TAG", "Missing recommended tag {}.".format(tag), tag)
             )
 
-    return result(qr)
+    initiation = find_value(fields, "01")
+    amount_present = "54" in present
+
+    for field in fields:
+        tag = field.tag
+        value = field.value
+        if tag == CRC_TAG:
+            continue
+
+        if tag in PARSED_TEMPLATE_TAGS:
+            children = parsed.get(tag)
+            if children is None:
+                continue
+            for child in children:
+                warnings.extend(field_warnings(tag + "/" + child.tag, child.value))
+            if tag == "26" and find_field(children, "00") is None:
+                warnings.append(
+                    _issue(
+                        "UNKNOWN_INSTITUTION",
+                        'Unverified institution "".',
+                        "26/00",
+                    )
+                )
+            continue
+
+        if tag in OPAQUE_TAGS:
+            # Opaque token templates: never parsed, never warned about.
+            continue
+
+        warnings.extend(field_warnings(tag, value))
+
+        if tag == "01" and value == DYNAMIC_INITIATION and not amount_present:
+            warnings.append(
+                _issue(
+                    "DYNAMIC_WITHOUT_AMOUNT",
+                    "Dynamic QR has no amount (tag 54).",
+                    "54",
+                )
+            )
+        elif tag == "54" and initiation == STATIC_INITIATION:
+            warnings.append(
+                _issue(
+                    "STATIC_WITH_AMOUNT",
+                    "Static QR should not carry an amount (tag 54).",
+                    "54",
+                )
+            )
+
+    return ValidationReport(len(errors) == 0, errors, warnings)
 
 
-def is_bangla_qr(payload: str) -> bool:
-    """True when the payload is a checksum-valid Bangla QR with the required fields."""
-    return validate(payload).ok
+def validate(payload: object, options: object = None) -> ValidationReport:
+    """Validate a Bangla QR payload without ever raising.
+
+    Returns a :class:`ValidationReport`; ``errors`` always contain every problem
+    found, while ``warnings`` are filtered by ``options.warnings`` (or the
+    ``warnings`` key of a dict). ``ok`` is true when there are no errors.
+    """
+    resolved = _coerce_validate_options(options)
+    report = collect(payload)
+    return ValidationReport(
+        ok=report.ok,
+        errors=report.errors,
+        warnings=visible_warnings(report.warnings, resolved.warnings),
+    )

@@ -15,12 +15,11 @@ When you need a new fixture:
 2. Replace the account with `01000000000` (an unassignable operator prefix).
 3. Replace name/city with `DEMO STORE` / `Dhaka`.
 4. Replace NPSB tokens (tags 80/81) with a base64 string that literally says `deshiqr dummy ...`.
-5. Recompute the CRC-16 with the library (`seal()` from `packages/deshiqr/src/core/build.ts`, or the
-   payloads in [`docs/demo-payloads.md`](./docs/demo-payloads.md)).
+5. Regenerate the CRC-16/CCITT-FALSE checksum (any `update` call re-seals it).
 6. Add a test that pins the behaviour, not just the bytes.
 
-The canonical synthetic payloads live in [`docs/demo-payloads.md`](./docs/demo-payloads.md) and
-`packages/deshiqr/test/core/fixtures.ts`.
+The canonical synthetic payloads live in [`docs/demo-payloads.md`](./docs/demo-payloads.md) and the
+test fixtures in [`packages/deshiqr`](./packages/deshiqr) and [`python/tests`](./python/tests).
 
 ## Setup
 
@@ -28,76 +27,80 @@ Requirements: Node >= 22.18, pnpm 12. Python >= 3.9 for the Python package.
 
 ```sh
 pnpm install
-pnpm build          # the single npm package (payload + QR + element) and the browser bundle
-pnpm test           # builds, then runs the payload, QR and element test suites
+pnpm build          # the single npm package (update + validate) and the browser bundle
+pnpm test           # builds, then runs the TypeScript test suite
 pnpm typecheck
 pnpm check:globals  # verifies the <script src> bundle after a build
-pnpm check:qr-api   # tests the stateless amount→QR edge function logic
+pnpm check:api      # tests the stateless update HTTP function logic
+pnpm vendor:edge    # regenerates supabase/functions/_vendor after core changes
 
 cd python && python3 -m unittest discover -s tests -v   # Python port
 ```
 
 `pnpm format` runs Prettier (printWidth 110) over the repo.
 
-The repo ships libraries, an element and one HTTP endpoint; there is nothing else to run. To exercise
-the HTTP API, deploy the `qr` function as described in
-[`docs/self-hosting.md`](./docs/self-hosting.md).
+The repo ships two libraries and one HTTP endpoint; there is nothing else to run. To exercise the HTTP
+endpoint, deploy the `update` function as described in [`docs/self-hosting.md`](./docs/self-hosting.md).
 
 ## Repository conventions
 
-- **One npm package, one Python package.** Everything JavaScript/TypeScript ships from
-  `packages/deshiqr` as `deshiqr`: the payload library and QR encoder/renderers in the main entry
-  (`src/core`, `src/qr`), the `<deshiqr-pay>` web component behind the `deshiqr/element` subpath
-  (`src/element`), and one IIFE browser bundle (`src/global.ts` → `dist/deshiqr.global.js`, global
-  `DeshiQR`). Do not add a second public package name.
+- **One package per platform, one public API.** The npm package is `deshiqr` in
+  [`packages/deshiqr`](./packages/deshiqr); the Python package is `deshiqr` in [`python`](./python).
+  Both expose exactly two functions — `update(payload, edits, options?)` and `validate(payload,
+options?)` — and nothing else public. Do not add a second public package name or new top-level
+  helpers.
+- **No QR generation, no payload reading, no UI.** deshiQR edits payload strings. The caller encodes
+  and renders the QR. Do not add encoders, renderers, web components, merchant lookups or payment
+  confirmations.
 - `deshiqr` has **zero runtime dependencies** in both languages. Don't add one without discussing it
   in an issue first.
-- The main entry must stay pure — no DOM access, no element registration, no network — so it can run in
-  Node, Deno, workers and edge functions. DOM work belongs in `src/element`.
-- `python/` is a zero-dependency port of `src/core`. Behaviour changes must land in both, with the
-  TypeScript package as the source of truth.
+- The library is pure: no DOM access, no network, no I/O, no state. It must run in Node, browsers,
+  Deno, workers and edge functions.
+- `python/` is a zero-dependency port of the TypeScript core. Behaviour changes must land in both, with
+  TypeScript as the source of truth; error and warning codes/messages stay identical.
 - TypeScript strict mode; relative imports use explicit `.ts` extensions. Node runs and tests TS
   directly, bundlers rewrite on publish.
-- Tests use `node:test` + `node:assert/strict` (Python: `unittest`). No test framework. Tests live in
-  `packages/deshiqr/test/{core,qr,element}/`.
+- Tests use `node:test` + `node:assert/strict` (Python: `unittest`). No test framework.
 - Edge functions live in `supabase/functions/<name>/`. Keep request-independent logic in a `*-core.ts`
-  module with no Deno globals, so it can be tested with `node --test` (the `qr` function:
-  `qr-core.ts` + `qr-core.test.mts`). Vendored library copies come from `pnpm vendor:edge`;
-  regenerate and commit them whenever `src/core` or `src/qr` changes.
-- **The amount→QR path is provider-agnostic by contract:** only tag `01`, `54` and the checksum (plus
-  an optional `62/01` reference) may change. If a change would require provider-specific logic, keep it
-  in decode/validate, not in derivation, and re-pin the guarantee with
-  `packages/deshiqr/test/core/provider-agnostic.test.ts` (the synthetic non-bKash layout).
-- Public copy must stay honest: **bKash decoding is verified today; other Bangla QR providers are
-  planned/unverified.** Never assert a provider is supported without sanitised fixtures from it.
+  module with no Deno globals, so it can be tested with `node --test` (the `update` function:
+  `update-core.ts` + `update-core.test.mts`, run by `pnpm check:api`). Vendored library copies come
+  from `pnpm vendor:edge`; regenerate and commit them whenever the core changes.
+- **The edit invariant is provider-agnostic by contract:** only the tags the caller edited, tag `01`
+  (when the amount is edited) and the re-sealed checksum may change. Everything else is byte-identical.
+  If a change would require provider-specific logic, it does not belong in editing; re-pin the
+  guarantee with the provider-agnostic test.
+- **Warning/error ordering is deterministic:** `RISKY_EDIT` warnings first (sorted by tag path), then
+  validation warnings in document order. Edits apply deterministically (aliases first, then tag paths;
+  nested edits depth-ascending, then lexicographic). Keep both languages identical.
 
-## Adding a provider
+## Adding a provider or field
 
 1. Get a real payload from that provider and **sanitise it** as described above.
-2. Add it to `docs/demo-payloads.md`, `packages/deshiqr/test/core/fixtures.ts`, and a decode test.
-3. If the provider uses a different institution AID (tag 26/00), add it to `KNOWN_INSTITUTIONS` in
-   `packages/deshiqr/src/core/decode.ts` and set `verified: true` only once the tests cover it.
-4. Update the provider table in [`README.md`](./README.md#provider-agnostic-by-design) and
-   [`docs/architecture.md`](./docs/architecture.md#provider-stance).
-5. Keep the wording precise: "scan & pay with any Bangla QR app" is a property of the format;
-   "decode support" is what we assert for providers we have tested.
+2. Add it to [`docs/demo-payloads.md`](./docs/demo-payloads.md) and to the fixtures used by both test
+   suites.
+3. Add it to the field table in [`docs/format.md`](./docs/format.md) only if the new tag is understood;
+   otherwise document it as an unknown tag.
+4. Keep the wording precise: unknown values are warnings (`UNKNOWN_INSTITUTION`, `UNKNOWN_CURRENCY`,
+   `UNKNOWN_MCC`, `NON_BD_COUNTRY`), never hard errors. A provider can still be edited without being
+   verified — say so honestly.
 
 ## Before opening a PR
 
 - [ ] `pnpm typecheck` passes
-- [ ] `pnpm test` passes (payload, QR and element suites — 144 tests today)
+- [ ] `pnpm test` passes
 - [ ] `pnpm build` passes
 - [ ] `pnpm check:globals` passes if you touched `packages/deshiqr` (it runs after a build)
-- [ ] `pnpm check:qr-api` passes if you touched `supabase/functions/qr/` or derivation
-- [ ] `pnpm vendor:edge` was re-run and committed if `src/core` or `src/qr` changed
+- [ ] `pnpm check:api` passes if you touched `supabase/functions/update/` or the edit core
+- [ ] `pnpm vendor:edge` was re-run and committed if the vendored core changed
 - [ ] `cd python && python3 -m unittest discover -s tests -v` passes if you touched `python/`
 - [ ] No real payment data anywhere in the diff
-- [ ] If public behaviour changed, update `README.md`, `docs/`, and `CHANGELOG.md`
+- [ ] If public behaviour changed, update `README.md`, `docs/`, the examples where relevant, and
+      `CHANGELOG.md`
 
 ## Releases
 
 Maintainers only. Update the version in `packages/deshiqr/package.json` and `python/pyproject.toml`
-(keep `VERSION` in `packages/deshiqr/src/core/index.ts` in sync), commit, then push a tag:
+(keep `VERSION` in the package source in sync), commit, then push a tag:
 
 ```sh
 git tag v0.1.0 && git push origin v0.1.0

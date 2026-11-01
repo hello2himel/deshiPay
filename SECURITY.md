@@ -6,7 +6,7 @@ payload engine is a separate project: [deshiQR](https://github.com/hello2himel/d
 ## What DeshiPay is, in security terms
 
 - It hosts **public payment pages**: a username, a display name/note, the amount-free base of a Bangla
-  QR, and optional wallet/bank details that the page owner entered. Anyone with the link can see them —
+  QR, and optional wallet/bank details that the page owner entered. Anyone with the link can see them , 
   that is the product.
 - Accounts are email + password via **Supabase Auth**; page rows live in Supabase Postgres with
   **row-level security** (only the owner can update their row; public pages are read through a limited
@@ -15,7 +15,7 @@ payload engine is a separate project: [deshiQR](https://github.com/hello2himel/d
   ships in the site repo or the browser.
 - The site **never handles money**: it generates QR payloads in the browser and shows payment details.
   It does not confirm payments, hold funds, or act as a payment service provider. Running a payment
-  business in Bangladesh may require a Bangladesh Bank licence — get local legal advice.
+  business in Bangladesh may require a Bangladesh Bank licence, get local legal advice.
 
 ## Protecting your page
 

@@ -19,7 +19,7 @@
     { id: "pay", tab: "Wallet & bank", icon: "wallet", title: "Other ways to pay", lead: "Optional. Add a wallet number or bank account for customers who’d rather copy the details." },
     { id: "look", tab: "Look", icon: "palette", title: "Make it yours", lead: "Pick a colour and the quick amounts your customers will see." }
   ];
-  var DOWNLOAD = { id: "download", tab: "Download", icon: "download", title: "Take your page with you", lead: "Download your payment page as one HTML file. Host it anywhere — Netlify Drop, GitHub Pages, or your own server. No account needed." };
+  var DOWNLOAD = { id: "download", tab: "Download", icon: "download", title: "Take your page with you", lead: "Download your payment page as one HTML file. Host it anywhere: Netlify Drop, GitHub Pages, or your own server. No account needed." };
   var SHARE = { id: "share", tab: "Share", icon: "share" };
   var TAG_NAMES = { "00": "Format", "01": "Static (11) or dynamic (12)", "52": "Category", "53": "Currency (050 = BDT)", "54": "Amount", "58": "Country", "59": "Merchant name", "60": "City", "62": "Additional data", "63": "Checksum (recalculated)" };
 
@@ -602,7 +602,7 @@
         h("div", { class: "divider" }),
         h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("store")), h("h2", null, "How to host it")),
         tipList(hosts),
-        h("div", { class: "notice" }, icon("info"), h("span", null, "Only the web fonts load from the internet. Everything else is inside the file, so it works from any static host — or straight from a folder on your computer."))
+        h("div", { class: "notice" }, icon("info"), h("span", null, "Only the web fonts load from the internet. Everything else is inside the file, so it works from any static host, or straight from a folder on your computer."))
       ));
   }
 

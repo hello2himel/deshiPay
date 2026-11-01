@@ -32,7 +32,7 @@ The Chromium e2e suite (`site/tests/e2e/run.js`, mocked Supabase) needs Chromium
 it covers online, offline and recovery flows. Run it before touching landing, auth, dashboard, pay or
 standalone-export behaviour.
 
-Regenerate themes with `node site/scripts/gen-themes.js` and commit `site/public/css/themes.css` —
+Regenerate themes with `node site/scripts/gen-themes.js` and commit `site/public/css/themes.css` , 
 CI fails if the generated file is stale.
 
 ## Conventions

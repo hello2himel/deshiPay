@@ -1,6 +1,6 @@
 # DeshiPay website
 
-> This is the **DeshiPay website** — the [DeshiPay repo](../README.md) (served at
+> This is the **DeshiPay website**, the [DeshiPay repo](../README.md) (served at
 > <https://deshipay.netlify.app>). The payload-editing engine it runs comes from the separate
 > [deshiQR](https://github.com/hello2himel/deshiQR) library repo; this directory adds the pages, the
 > Supabase auth/database and the editor UI on top.
@@ -8,7 +8,7 @@
 One page to **receive payments, donations and support**. Anyone signs up, adds the Bangla QR they already
 use (bKash, Nagad, Rocket, Upay, any bank app) plus optional wallet/bank details, and picks a link. Their
 page at `yourdomain.com/username` puts the live, amount-ready QR first and the copyable details beside
-it — for a sale, an invoice, a tip, a donation or support. The QR is the headline method; the page is the
+it, for a sale, an invoice, a tip, a donation or support. The QR is the headline method; the page is the
 complete way to get paid.
 
 - **Static site** (plain HTML/CSS/JS, no build step for the pages) hosted on **Netlify** at <https://deshipay.netlify.app>
@@ -16,7 +16,7 @@ complete way to get paid.
 - **Light/dark toggle** in the nav: follows the OS by default, remembers an explicit light or dark choice per browser
 - **Payload editing in the browser** comes from the separate [deshiQR](https://github.com/hello2himel/deshiQR) engine: the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
 - **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
-- The page **only shows payment details** — no payment confirmation and no money handling of any kind. Customers pay from their own app, whether that is a QR scan or a wallet/bank transfer.
+- The page **only shows payment details**, no payment confirmation and no money handling of any kind. Customers pay from their own app, whether that is a QR scan or a wallet/bank transfer.
 
 ```
 site/
@@ -72,11 +72,11 @@ step and CI does not need the library toolchain.
 ### 1. Supabase
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. **Create the tables — automatically.** Supabase Dashboard → *Project Settings → Integrations → GitHub*, authorize this repository, set **Working directory** to `.`, and enable **Deploy to production**. Every push to `main` then applies the SQL in [`supabase/migrations/`](../supabase/migrations/) automatically. (Manual alternative: paste those files, in filename order, into the SQL editor once — safe to re-run.)
+2. **Create the tables, automatically.** Supabase Dashboard → *Project Settings → Integrations → GitHub*, authorize this repository, set **Working directory** to `.`, and enable **Deploy to production**. Every push to `main` then applies the SQL in [`supabase/migrations/`](../supabase/migrations/) automatically. (Manual alternative: paste those files, in filename order, into the SQL editor once, safe to re-run.)
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable** key. Never use the `service_role` key in this app.
    The site URL, `/app` redirect URLs and the auth options (sign-ups, anonymous sign-ins off, email
    confirmations off for now, JWT expiry) are versioned in
-   [`supabase/config.toml`](../supabase/config.toml) and applied by the same integration — see
+   [`supabase/config.toml`](../supabase/config.toml) and applied by the same integration, see
    *Supabase project settings (as code)* in [`docs/website.md`](../docs/website.md).
 4. **Authentication → URL Configuration**:
    - **Site URL**: the deployed site, e.g. `https://deshipay.netlify.app` (or your custom domain)
@@ -98,7 +98,7 @@ step and CI does not need the library toolchain.
    | `GOOGLE_AUTH` | `true` (only if you enabled Google) |
 
 4. Deploy. The build fails with a clear message if the two required variables are missing (unless you
-   deploy offline-only: set `SITE_OFFLINE=true` instead — no accounts, but the "Create my page" flow
+   deploy offline-only: set `SITE_OFFLINE=true` instead, no accounts, but the "Create my page" flow
    and standalone HTML downloads work). The live site is <https://deshipay.netlify.app>.
 
 The anon key is public by design; it ends up in the browser. What protects the data is Row Level Security (below). On public repos Netlify's secret scanning may flag these values once the build writes `public/js/config.js`; the repo-root `netlify.toml` sets `SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"` (or add that variable in Netlify's UI / use `SECRETS_SCAN_OMIT_PATHS = "site/public/js/config.js"`). Never expose the `service_role` key.
@@ -135,7 +135,7 @@ carries the rewrite rules). A plain static server does not, because `/<username>
 1. **Say who you are**: name or business name, and the link (`yourdomain/username`, checked live for availability).
 2. **Drop your Bangla QR**: upload, take a photo, paste a screenshot, or paste the code text. It's decoded in the browser; the image is never uploaded.
 3. **Other ways to pay** (optional): mobile wallets (bKash, Nagad, Rocket, Upay, Tap, mCash, OK Wallet, SureCash, MyCash, Pathao Pay, other) with account type, and bank accounts (bank, account name, number, branch, routing number, SWIFT).
-4. **Make it yours**: 10 colour themes (Emerald — the default — Rose, Crimson, Amber, Coffee, Olive, Teal, Ocean, Violet, Graphite), each with a matching dark mode, and the quick-amount buttons.
+4. **Make it yours**: 10 colour themes (Emerald, the default, Rose, Crimson, Amber, Coffee, Olive, Teal, Ocean, Violet, Graphite), each with a matching dark mode, and the quick-amount buttons.
 
 After publishing, the same sections become tabs, plus **Share** (link, link with a locked amount, a QR of the page, show/hide, delete).
 
@@ -144,7 +144,7 @@ After publishing, the same sections become tabs, plus **Share** (link, link with
 `/username?amount=1500` locks the amount.
 
 If the database is paused or unreachable, people can still build a page without an account and download
-it as one HTML file — see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download).
+it as one HTML file, see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download).
 
 ---
 
@@ -173,24 +173,24 @@ When it is **offline**:
   you”, “Download it”).
 - **Create my page** opens `/app` with the **same four-step wizard**, without an account: name and
   title, Bangla QR upload/paste, wallets/banks, colour and quick amounts. Step 1 asks only for the
-  name/business name and an optional note — **no link/username is asked at all** (there is no hosted
+  name/business name and an optional note, **no link/username is asked at all** (there is no hosted
   address to claim); the file name is derived from the name you enter. The host/username line at the
   top of the page is hidden in the offline preview and in the downloaded file.
-- The wizard gets a fifth step, **Download**. The page is saved as `deshiqr-<name>.html` (the name you entered, slugified) — one
+- The wizard gets a fifth step, **Download**. The page is saved as `deshiqr-<name>.html` (the name you entered, slugified), one
   self-contained HTML file (~140 KB) with the customer page, all styles, the QR engine and the page data
   inside it. Only the web fonts are loaded from the internet; everything else works offline and from
   `file://`.
 - The draft is kept in `localStorage` under `deshiqr.local.v1`, so a reload does not lose the work.
 
 **Visitors on existing pages.** While the database is down, opening any published page
-(`/<username>`) shows a friendly **“Temporarily unavailable”** screen — “Sorry — payment pages can’t be
-loaded right now. DeshiQR is temporarily unavailable; please try again in a little while.” — with a
+(`/<username>`) shows a friendly **“Temporarily unavailable”** screen, “Sorry, payment pages can’t be
+loaded right now. DeshiQR is temporarily unavailable; please try again in a little while.”, with a
 **Try again** button that re-checks and loads the page once the backend is back. It is not a broken
 page and it never shows the customer a database error.
 
 **Hosting the file.** It is a plain static file: drag it onto Netlify Drop, put it in a GitHub Pages
 repository, or upload it anywhere you already host files. `/page.html?amount=500` locks the amount, just
-like `/<username>?amount=500`. Old copies are frozen — edit in the wizard and download a fresh file.
+like `/<username>?amount=500`. Old copies are frozen, edit in the wizard and download a fresh file.
 
 **How the download works.** The browser fetches this site's own CSS/JS (the vendored `deshiqr` engine,
 `payload.js`, PayView, the styles) at generation time and inlines them, so the deployed site must be up
@@ -240,7 +240,7 @@ A few intentional differences from the site's original in-page engine come from 
 
 ## Customising
 
-- **Add a theme**: add a line to `THEMES` in [`site/scripts/gen-themes.js`](scripts/gen-themes.js), run `npm run themes`, then add the id and colour to `THEMES` in [`site/public/js/providers.js`](public/js/providers.js) and to `profiles_theme_valid` in a **new** migration under [`supabase/migrations/`](../supabase/migrations/) (drop and re-add that constraint there; never edit an applied migration). Every surface is generated from that one accent — page background, borders, secondary buttons/segments and soft tints (in light and dark mode), so the whole page follows the theme.
+- **Add a theme**: add a line to `THEMES` in [`site/scripts/gen-themes.js`](scripts/gen-themes.js), run `npm run themes`, then add the id and colour to `THEMES` in [`site/public/js/providers.js`](public/js/providers.js) and to `profiles_theme_valid` in a **new** migration under [`supabase/migrations/`](../supabase/migrations/) (drop and re-add that constraint there; never edit an applied migration). Every surface is generated from that one accent, page background, borders, secondary buttons/segments and soft tints (in light and dark mode), so the whole page follows the theme.
 - **Add a wallet or bank**: edit `WALLETS` / `BANKS` in [`site/public/js/providers.js`](public/js/providers.js). Wallet entries are decorative colour tiles, not logos.
 - **Fonts** come from Google Fonts. To self-host, download Bricolage Grotesque and Figtree, add `@font-face` rules to `base.css`, and drop the two `fonts.*` hosts from the CSP in the repo-root `netlify.toml`.
 - Social-share previews (Open Graph) would need server-rendering, e.g. a Netlify Edge Function. Not included.
@@ -261,11 +261,11 @@ The engine's own tests live in the [deshiQR repo](https://github.com/hello2himel
 ## Troubleshooting
 
 - *"Supabase isn't connected yet"* on the landing page: `config.js` still has the placeholders. Set the environment variables and redeploy.
-- *"The database tables aren't set up yet"* in `/app`: apply the SQL in `supabase/migrations/` — enable the Supabase GitHub integration (Project Settings → Integrations → GitHub, Working directory `.`, Deploy to production) or paste the files into the SQL editor once.
+- *"The database tables aren't set up yet"* in `/app`: apply the SQL in `supabase/migrations/`, enable the Supabase GitHub integration (Project Settings → Integrations → GitHub, Working directory `.`, Deploy to production) or paste the files into the SQL editor once.
 - *Confirmation email link goes to the wrong place*: fix **Site URL** and **Redirect URLs** in Supabase.
 - *`/username` shows a 404 from Netlify*: the rewrite rules in the repo-root `netlify.toml` weren't picked up. Check the file is at the repo root, that `base` is `site`, and that the **publish** directory is `public`.
 - *"That link was just taken"* when saving: another user got the name first; pick another.
-- *Landing shows "Create your page" although Supabase is configured*: the health probe could not get an answer — the project may be paused (HTTP 540) or restricted (402), the URL/anon key may be wrong, or the host is outside the CSP `connect-src` in the repo-root `netlify.toml`. That is the intended fallback; fix the project/config to get sign-in back.
+- *Landing shows "Create your page" although Supabase is configured*: the health probe could not get an answer, the project may be paused (HTTP 540) or restricted (402), the URL/anon key may be wrong, or the host is outside the CSP `connect-src` in the repo-root `netlify.toml`. That is the intended fallback; fix the project/config to get sign-in back.
 - *The Download step fails*: generating the file fetches this site's own CSS/JS, so the site must be reachable; reload and retry. The downloaded file itself then works without the site.
 - *Vendor engine is stale after a lib change*: copy the new `deshiqr.global.js` from the [deshiQR](https://github.com/hello2himel/deshiQR) build into `site/public/vendor/`, then commit it.
 

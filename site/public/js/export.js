@@ -99,7 +99,7 @@
     var value = bucket && bucket[key];
     if (typeof value !== "string" || !value) {
       throw new Error(
-        "DeshiPay export: missing " + group + "." + key + " asset — pass the contents of " + file + " as assets." + group + "." + key
+        "DeshiPay export: missing " + group + "." + key + " asset. Pass the contents of " + file + " as assets." + group + "." + key
       );
     }
     return value;
@@ -129,7 +129,7 @@
       js += "<script>\n" + guardScript(assetText(assets, "js", jsKey, JS_FILES[jsKey])) + "\n</script>\n";
     }
 
-    // The page data is injected as escaped JSON only — user text never lands in markup.
+    // The page data is injected as escaped JSON only: user text never lands in markup.
     var pageJson = jsonForScript(page);
     var footer = footerHref(assets);
     var fontUrl = typeof assets.fontUrl === "string" ? assets.fontUrl : FONT_URL;
@@ -224,7 +224,7 @@
 
   function originHref() {
     var loc = typeof location !== "undefined" ? location : null;
-    // location.origin is the string "null" on file: — fall back to the safe relative root.
+    // location.origin is the string "null" on file:, fall back to the safe relative root.
     return loc && loc.origin && loc.origin !== "null" ? loc.origin + "/" : "/";
   }
 
@@ -266,7 +266,7 @@
   }
 
   // Touch devices get the share sheet (it has "Save to Files"), everything else
-  // an anchor download — the same pattern as Deshi.saveImage.
+  // an anchor download, the same pattern as Deshi.saveImage.
   function saveHtml(html, filename) {
     var blob = new Blob([html], { type: "text/html;charset=utf-8" });
     var file = typeof File === "function" ? new File([blob], filename, { type: "text/html" }) : null;

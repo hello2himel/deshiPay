@@ -15,13 +15,13 @@
   /* ----- live payment demo -----
    * The actual customer page (PayView), mounted with a synthetic Bangla QR from
    * docs/demo-payloads.md. Visitors can type an amount and get a real,
-   * amount-bearing QR built by the same engine the site uses — no real account
+   * amount-bearing QR built by the same engine the site uses, with no real account
    * data, and nothing here talks to Supabase.
    */
   var DEMO_PAGE = {
     username: "demo",
     title: "Himel Das",
-    message: "Live demo of a real Bangla QR payment page — this QR pays the account inside it. Try a small amount.",
+    message: "Live demo of a real Bangla QR payment page. This QR pays the account inside it. Try a small amount.",
     theme: "emerald",
     presets: [100, 500, 1000, 5000],
     // Base payload of the demo QR (a real Bangla QR: NPSB account template,
@@ -168,7 +168,7 @@
     } }, fields, submit, msg);
 
     var head = {
-      signup: ["Create your page", "Free, and it takes about a minute — for payments, donations or support."],
+      signup: ["Create your page", "Free, and it takes about a minute. For payments, donations or support."],
       signin: ["Welcome back", "Sign in to edit your payment page."],
       forgot: ["Reset your password", "We’ll email you a link to choose a new one."]
     }[mode];

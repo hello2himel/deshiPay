@@ -229,6 +229,10 @@ async function scenarioOnline(browser) {
     ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 3, "the live demo has QR, Wallet and Bank methods");
     ok((await page.$$eval(".demo .pv-help", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0, "the homepage demo leaves out the “How to pay” block");
     ok((await page.$$eval(".demo .pv-foot", (els) => els.length)) === 0, "the homepage demo leaves out the page footer");
+    ok(
+      (await page.$$eval(".demo .slip-actions", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0,
+      "the homepage demo leaves out the Save QR image button"
+    );
     const demoMethods = await page.$$(".demo .pv-methods button");
     await demoMethods[1].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });

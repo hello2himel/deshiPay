@@ -39,5 +39,5 @@ payload engine is a separate project: [deshiQR](https://github.com/hello2himel/d
 
 ## Reporting a vulnerability
 
-Email **hello2himel@proton.me** with steps to reproduce and the affected URL. Please don't open a
+Email **stargzr.science@gmail.com** with steps to reproduce and the affected URL. Please don't open a
 public issue for a live vulnerability; we answer as quickly as we can.

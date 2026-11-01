@@ -178,13 +178,15 @@
   function renderAll() {
     root.replaceChildren(
       h("div", { class: "studio" },
-        h("main", { class: "studio-main" }, h("div", { id: "nav" }), h("div", { id: "panel" })),
+        h("main", { class: "studio-main" },
+          h("div", { id: "nav" }),
+          h("div", { id: "panel" }),
+          h("div", { class: "actionbar", id: "bar" })),
         h("aside", { class: "preview-col", "aria-label": localMode ? "Preview" : "Live preview" },
           h("div", { class: "frame" },
             h("div", { class: "frame-bar" }, h("span", { class: "live" }), localMode ? "Preview" : "Live preview"),
             h("div", { class: "frame-body", id: "previewBody" })))
-      ),
-      h("div", { class: "actionbar", id: "bar" })
+      )
     );
     pv = window.PayView.mount($("previewBody"), previewRow(), localMode ? { preview: true, hideHandle: true } : { preview: true });
     paintNav();

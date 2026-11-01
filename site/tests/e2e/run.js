@@ -364,6 +364,17 @@ async function scenarioOnline(browser) {
     await page.waitForFunction(() => location.pathname === "/app", { timeout: 8000 });
     await page.waitForSelector("#f-title");
     ok(true, "signed up and landed on /app");
+    const barLayout = await page.evaluate(() => {
+      const bar = document.querySelector("#bar");
+      const panel = document.querySelector("#panel");
+      return {
+        inMain: !!bar.closest(".studio-main"),
+        position: getComputedStyle(bar).position,
+        belowPanel: bar.getBoundingClientRect().top >= panel.getBoundingClientRect().bottom - 1,
+      };
+    });
+    ok(barLayout.inMain && barLayout.position === "static", "the action bar is in flow, under the form");
+    ok(barLayout.belowPanel, "Continue/Back sit directly below the form panel");
     const wiring = await page.evaluate(() => ({
       adapter: typeof window.DeshiQR.inspect === "function" && typeof window.DeshiQR.build === "function",
       engine: typeof window.DeshiQR.update === "function" && typeof window.DeshiQR.validate === "function",

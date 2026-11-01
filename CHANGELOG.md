@@ -70,6 +70,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Dashboard action bar sits under the form.** The fixed bottom bar (Back / Continue / Publish) is now
+  in normal flow inside the form column, directly below the panel, with the site footer underneath it.
+  No more empty fixed-bar padding or footer appearing above the buttons; mobile and desktop both put the
+  actions immediately after the form fields. e2e asserts the bar is in flow and below the panel.
+
+### Changed
+
 - **One sign-in / sign-up form.** `/login` no longer has separate signup and signin modes. A single
   email + password form (with "Continue") first tries to sign in; if the credentials are invalid it
   tries to create the account, so new visitors are signed up and returning visitors are signed in

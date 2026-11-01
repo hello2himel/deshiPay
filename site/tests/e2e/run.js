@@ -553,6 +553,27 @@ async function scenarioOnline(browser) {
     await page.waitForSelector(".qrbox svg");
     ok((await page.$eval(".amt-input", (e) => e.readOnly)) === true, "amount locked with ?amount=500");
 
+    console.log("Method deep links");
+    await page.goto(BASE + "/rahim-traders?method=wallet", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".copyrow");
+    ok((await page.$$eval(".pv-methods button", (els) => els.map((e) => e.getAttribute("aria-selected")))).join(",") === "false,true,false", "?method=wallet opens the Wallet tab");
+    ok((await page.evaluate(() => location.search)).includes("method=wallet"), "the tab is reflected in the URL");
+    await page.goto(BASE + "/rahim-traders?method=bank", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".item-foot");
+    ok((await page.$$eval(".pv-methods button", (els) => els.map((e) => e.getAttribute("aria-selected")))).join(",") === "false,false,true", "?method=bank opens the Bank tab");
+    await page.goto(BASE + "/rahim-traders?amount=500&method=bank", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".item-foot");
+    ok((await page.$$eval(".pv-methods button", (els) => els.map((e) => e.getAttribute("aria-selected")))).join(",") === "false,false,true", "amount and method deep links work together");
+    await page.goto(BASE + "/rahim-traders", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".pv-methods");
+    const tabs3 = await page.$$(".pv-methods button");
+    await tabs3[1].click();
+    await page.waitForSelector(".copyrow");
+    ok((await page.evaluate(() => location.search)).includes("method=wallet"), "switching tabs updates the URL so it can be shared");
+    const tabs4 = await page.$$(".pv-methods button");
+    await tabs4[0].click();
+    ok((await page.evaluate(() => location.search)).includes("method=") === false, "back on Scan QR the method param is dropped");
+
     console.log("Not found + dark mode + desktop");
     await page.goto(BASE + "/nobody-here", { waitUntil: "networkidle0" });
     await page.waitForSelector(".pv-state h1");

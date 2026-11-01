@@ -146,7 +146,7 @@ After publishing, the same sections become tabs, plus **Share** (link, link with
 
 **Customer page**: pick *Scan QR*, *Wallet* or *Bank* (only the ones the owner set up). For QR, type an amount (Bangla digits work) and the QR appears. On phones, *Save QR image* opens the share sheet so it can be saved and picked from the gallery inside a banking app. Wallet numbers and bank lines are tap-to-copy.
 
-`/username?amount=1500` locks the amount.
+`/username?amount=1500` locks the amount, and `?method=wallet` / `?method=bank` (or `?method=qr`) opens the page on that tab; switching tabs updates the URL so the address can be shared.
 
 If the database is paused or unreachable, people can still build a page without an account and download
 it as one HTML file, see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download).

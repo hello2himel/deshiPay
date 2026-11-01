@@ -39,6 +39,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Look step uses picker rows + sheets.** Avatar, colour and quick amounts are now compact rows that
+  always show the current choice (e.g. "Avatar · Shop", "Colour · Coffee", "Quick amounts ·
+  100, 500, 1000, 5000"). Tapping a row opens a modal sheet with the full list (or the quick-amount
+  editor): a proper `role="dialog"` with `aria-modal`, Escape/overlay close and focus returned to the
+  row; on phones it becomes a bottom sheet. The lists are no longer permanently on the page.
+
+### Changed
+
 - **Full-height homepage hero.** The first landing section (hero copy/CTA and the live demo) now fills
   at least `100svh` minus the sticky nav height (`100vh` fallback), with its content vertically centred
   and the demo aligned to it, so the first screen is a complete hero instead of a short strip. The

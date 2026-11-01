@@ -177,6 +177,20 @@
     store: '<path d="M4 9.500 5.500 4.500h13L20 9.500M4 9.500a2.700 2.700 0 0 0 5.300 0 2.700 2.700 0 0 0 5.400 0 2.700 2.700 0 0 0 5.300 0M5.500 12.500V20h13v-7.500"/>',
     user: '<circle cx="12" cy="8.500" r="3.800"/><path d="M4.500 20a7.500 7.500 0 0 1 15 0"/>'
   };
+  var MARK_D = "M42.89 35.39A12 12 0 0 0 22.4 43.87L22.4 67.6A10 10 0 0 0 32.4 77.6L56.13 77.6A12 12 0 0 0 64.61 57.11Z";
+  function mark(cls) {
+    var s = document.createElementNS(NS, "svg");
+    s.setAttribute("viewBox", "0 0 100 100");
+    s.setAttribute("class", "mark" + (cls ? " " + cls : ""));
+    s.setAttribute("aria-hidden", "true");
+    var bg = document.createElementNS(NS, "rect");
+    bg.setAttribute("width", "100"); bg.setAttribute("height", "100"); bg.setAttribute("rx", "32.4");
+    bg.setAttribute("class", "mark-bg");
+    var fg = document.createElementNS(NS, "path");
+    fg.setAttribute("d", MARK_D); fg.setAttribute("class", "mark-fg");
+    s.appendChild(bg); s.appendChild(fg);
+    return s;
+  }
   function icon(name, cls) {
     var s = document.createElementNS(NS, "svg");
     s.setAttribute("viewBox", "0 0 24 24");
@@ -360,7 +374,7 @@
 
   window.Deshi = {
     cfg: cfg, configured: configured, client: client, checkBackend: checkBackend, RESERVED: RESERVED,
-    h: h, fill: fill, icon: icon, toast: toast, copyText: copyText,
+    h: h, fill: fill, icon: icon, mark: mark, toast: toast, copyText: copyText,
     taka: taka, bnToEn: bnToEn, monogram: monogram, slugify: slugify, usernameError: usernameError,
     normalizePhone: normalizePhone, PHONE_RE: PHONE_RE, showPhone: showPhone, debounce: debounce, pageUrl: pageUrl,
     qrSvg: qrSvg, qrPng: qrPng, saveImage: saveImage

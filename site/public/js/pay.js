@@ -6,7 +6,7 @@
 
   function state(title, text, actions) {
     root.replaceChildren(h("div", { class: "pv-state" },
-      h("a", { class: "brand", href: "/" }, h("i"), "DeshiPay"),
+      h("a", { class: "brand", href: "/" }, T.mark(), "DeshiPay"),
       h("h1", null, title),
       h("p", null, text),
       actions

@@ -198,8 +198,9 @@ async function scenarioOnline(browser) {
 
     console.log("Landing + sign up");
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
+    ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
     ok(state.health === 0, "the landing itself makes no backend probe");
     const onlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
@@ -251,7 +252,7 @@ async function scenarioOnline(browser) {
       ok(!!(await page.$(".site-foot")), path + " has the site footer");
     }
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
 
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {
@@ -262,7 +263,7 @@ async function scenarioOnline(browser) {
     fs.writeFileSync(qrFile, Buffer.from(b64, "base64"));
 
     // The sign-in/sign-up form lives on its own page now.
-    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".cta-home a[href='/login']")]);
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".hero-cta[href='/login']")]);
     await page.waitForSelector("#email", { timeout: 10000 });
     ok(state.health > 0, "login page probes /auth/v1/health before showing sign-in");
     await page.type("#email", "owner@example.com");
@@ -445,7 +446,7 @@ async function scenarioOnline(browser) {
     await page.waitForFunction(() => location.pathname === "/", { timeout: 5000 });
     // signed out now, so this is a real landing page (a signed-in visitor is redirected to /app)
     await page.setViewport({ width: 1280, height: 860, deviceScaleFactor: 1 });
-    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     await shot("16-landing-desktop");
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await page.goto(BASE + "/login?mode=signin", { waitUntil: "networkidle0" });
@@ -475,7 +476,7 @@ async function scenarioOffline(browser) {
 
     console.log("Landing + offline sign-in page");
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline landing has no sign-in / sign-up form");
     ok(state.supa.length === 0, "the landing makes no backend request");
     const offlineLandingText = await page.evaluate(() => document.body.innerText);
@@ -497,7 +498,7 @@ async function scenarioOffline(browser) {
     fs.writeFileSync(qrFile, Buffer.from(b64, "base64"));
 
     console.log("Login page: offline create-page card");
-    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".cta-home a[href='/login']")]);
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click(".hero-cta[href='/login']")]);
     await page.waitForSelector('#auth a[href="/app"]', { timeout: 10000 });
     ok((await page.$("#email")) === null && (await page.$("#pw")) === null, "offline login page shows no sign-in form");
     ok((await page.$eval("#auth h2", (e) => e.textContent)) === "Create your page", "offline login page heading explains what to do");
@@ -676,7 +677,7 @@ async function scenarioRecovery(browser) {
 
     // Same-origin page first, to seed the mocked database with one published page.
     await page.goto(BASE + "/", { waitUntil: "networkidle0" });
-    await page.waitForSelector(".cta-home a[href='/login']", { timeout: 10000 });
+    await page.waitForSelector(".hero-cta[href='/login']", { timeout: 10000 });
     await page.evaluate((payload) => {
       localStorage.setItem("mock.supa", JSON.stringify({
         users: [],

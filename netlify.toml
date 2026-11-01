@@ -10,6 +10,9 @@
 #   SUPABASE_URL        https://xxxx.supabase.co
 #   SUPABASE_ANON_KEY   the public "anon" / publishable key (safe to expose)
 #   GOOGLE_AUTH         "true" to show the "Continue with Google" button (optional)
+#   SITE_OFFLINE        "true" to deploy without a database: the site runs in offline
+#                       mode (no accounts; "Create my page" + standalone HTML download still
+#                       work). Use this instead of the two Supabase variables, not with them.
 #
 # The anon key is public by design: Row Level Security in site/supabase/schema.sql
 # protects the data. Never put the service_role key here. Full guide: docs/website.md

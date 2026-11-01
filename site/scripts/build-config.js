@@ -42,11 +42,23 @@ if (!isPlaceholder(url) && !isPlaceholder(key)) {
 } else if (currentFileIsConfigured()) {
   console.log("[build-config] environment variables not set, keeping the existing public/js/config.js");
 } else if (process.env.NETLIFY) {
-  console.error(
-    "\n[build-config] SUPABASE_URL and SUPABASE_ANON_KEY are not set.\n" +
-      "Add them in Netlify: Site configuration > Environment variables, then redeploy.\n"
-  );
-  process.exit(1);
+  // A site with no database is a supported configuration now: the landing offers
+  // the no-login "Create my page" flow and pages can be downloaded as standalone
+  // HTML. Make that an explicit choice so a missing/typo'd key still fails loudly.
+  if (String(process.env.SITE_OFFLINE || "").toLowerCase() === "true") {
+    console.warn(
+      "\n[build-config] SITE_OFFLINE=true: no SUPABASE_URL / SUPABASE_ANON_KEY, keeping the placeholder " +
+        "public/js/config.js.\n" +
+        "[build-config] The site will run in offline mode (no accounts; \"Create my page\" + HTML download work).\n"
+    );
+  } else {
+    console.error(
+      "\n[build-config] SUPABASE_URL and SUPABASE_ANON_KEY are not set.\n" +
+        "Add them in Netlify: Site configuration > Environment variables, then redeploy.\n" +
+        "Or, to deploy the site without a database (offline mode only), set SITE_OFFLINE=true instead.\n"
+    );
+    process.exit(1);
+  }
 } else {
   console.warn(
     "[build-config] Supabase is not configured yet. Edit public/js/config.js or export SUPABASE_URL and SUPABASE_ANON_KEY."

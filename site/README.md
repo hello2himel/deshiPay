@@ -80,7 +80,9 @@ Commit the refreshed vendor files so the static site deploys without the monorep
    | `SUPABASE_ANON_KEY` | your anon key |
    | `GOOGLE_AUTH` | `true` (only if you enabled Google) |
 
-4. Deploy. The build fails with a clear message if the two required variables are missing. The live site is <https://deshiqr.netlify.app>.
+4. Deploy. The build fails with a clear message if the two required variables are missing (unless you
+   deploy offline-only: set `SITE_OFFLINE=true` instead — no accounts, but the "Create my page" flow
+   and standalone HTML downloads work). The live site is <https://deshiqr.netlify.app>.
 
 The anon key is public by design; it ends up in the browser. What protects the data is Row Level Security (below).
 

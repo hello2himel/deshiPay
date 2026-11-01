@@ -255,7 +255,7 @@ The download is a **single self-contained HTML file** (`deshiqr-<name>.html`, th
 customer page, all CSS, the vendored `deshiqr` engine, `payload.js`, PayView and the page data embedded
 as `window.DESHIQR_PAGE`. The only external reference is the Google Fonts stylesheet (system/Bengali
 font fallbacks still work); everything else works from `file://` or any static host (Netlify Drop,
-GitHub Pages, ordinary upload). It behaves like `/<username>`: `?amount=500` locks the amount. The small
+GitHub Pages, ordinary upload). It behaves like `/<username>`: `?amount=500` locks the amount, and `?method=wallet` / `?method=bank` / `?method=qr` opens that tab. Switching tabs rewrites the URL with `method` so the current view can be shared. The small
 “Made with DeshiQR” footer points at the site origin the file was generated on.
 
 Things an operator should know:

@@ -27,6 +27,12 @@
     return n > 0 && n <= window.DeshiQR.MAX_AMOUNT ? n : 0;
   }
 
+  // ?method=wallet|bank|qr opens the page on that tab (like ?amount locks it).
+  function initialMethod() {
+    var m = new URLSearchParams(location.search).get("method");
+    return m === "wallet" || m === "bank" || m === "qr" ? m : "";
+  }
+
   // A standalone export (see export.js) embeds its page data and has no
   // Supabase/config.js at all: render it straight away, then stop.
   if (window.DESHIQR_PAGE) {
@@ -38,6 +44,8 @@
     if (embeddedMeta && embeddedBg) embeddedMeta.setAttribute("content", embeddedBg);
     window.PayView.mount(root, embedded, {
       fixedAmount: fixedAmount(),
+      method: initialMethod(),
+      syncUrl: true,
       footerHref: window.DESHIQR_FOOTER_HREF || "/",
       hideHandle: true
     });
@@ -105,7 +113,7 @@
     var bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta && bg) meta.setAttribute("content", bg);
-    window.PayView.mount(root, page, { fixedAmount: fixedAmount() });
+    window.PayView.mount(root, page, { fixedAmount: fixedAmount(), method: initialMethod(), syncUrl: true });
   }
 
   async function boot() {

@@ -17,7 +17,7 @@
   function mount(root, initial, opts) {
     opts = opts || {};
     var page = initial;
-    var method = null;
+    var method = opts.method || null;
     var amount = opts.fixedAmount > 0 ? String(opts.fixedAmount) : "";
     var shown = false; // the "developing" animation only plays on first draw
     var qr = {}; // live refs for the QR panel
@@ -214,7 +214,18 @@
       if (ms.length > 1) {
         var meta = { qr: ["qr", "Scan QR"], wallet: ["wallet", "Wallet"], bank: ["bank", "Bank"] };
         switcher = h("div", { class: "seg pv-methods", role: "tablist", "aria-label": "How do you want to pay?" }, ms.map(function (m) {
-          return h("button", { type: "button", role: "tab", "aria-selected": String(m === method), onClick: function () { method = m; render(); } }, icon(meta[m][0]), meta[m][1]);
+          return h("button", { type: "button", role: "tab", "aria-selected": String(m === method), onClick: function () {
+          method = m;
+          if (opts.syncUrl) {
+            try {
+              var u = new URL(location.href);
+              if (m === "qr") u.searchParams.delete("method");
+              else u.searchParams.set("method", m);
+              history.replaceState(null, "", u);
+            } catch (e) { /* URL sync is a nicety */ }
+          }
+          render();
+        } }, icon(meta[m][0]), meta[m][1]);
         }));
       }
 

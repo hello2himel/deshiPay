@@ -13,6 +13,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Tab deep links for payment pages.** Like the amount lock, a customer page can open on a chosen
+  method tab: `/<username>?method=wallet`, `?method=bank` or `?method=qr` (combine with
+  `?amount=500&method=bank`). The same works for downloaded standalone pages. Switching tabs updates the
+  URL with `method` (removed on Scan QR) so the current view can be copied and shared; invalid or
+  unavailable methods fall back to the first available tab. e2e covers wallet/bank deep links, the
+  combination with a locked amount, and URL sync (200 checks).
+
+### Added
+
 - **Automatic push of auth config + email templates.** Added
   `.github/workflows/supabase-auth-config.yml`: once the repository has a `SUPABASE_ACCESS_TOKEN`
   secret, changes to `supabase/config.toml` or `supabase/templates/**` run `supabase config push`

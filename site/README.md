@@ -15,7 +15,7 @@ complete way to get paid.
 - **Auth + database** on **Supabase** (email/password, Postgres with Row Level Security)
 - **Light/dark toggle** in the nav: follows the OS by default, remembers an explicit light or dark choice per browser
 - **Payload editing in the browser** comes from the separate [deshiQR](https://github.com/hello2himel/deshiQR) engine: the site vendors the browser bundle at `public/vendor/deshiqr.global.js`, and `public/js/payload.js` is the thin site adapter that exposes it to the pages
-- **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
+- **Works without the database**: if Supabase is paused or unreachable, the landing page offers a no-login wizard and the page can be downloaded as one standalone HTML file to host anywhere. The login page also always offers **"Create a page without login"** (`/app?local=1`), which opens the same account-free wizard with the Download step even when sign-in is online (see [Offline mode](#offline-mode-paused-supabase-and-the-standalone-download))
 - The page **only shows payment details**, no payment confirmation and no money handling of any kind. Customers pay from their own app, whether that is a QR scan or a wallet/bank transfer.
 
 ```

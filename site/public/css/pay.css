@@ -119,14 +119,17 @@
 @container pv (min-width: 760px) {
   .pv-in {
     grid-template-columns: minmax(0, 1fr) 400px;
-    grid-template-areas: "head card" "help card" "foot foot";
-    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "head card" "help card" "foot card";
+    grid-template-rows: auto auto auto;
+    align-content: start;
     column-gap: 64px; row-gap: 28px; padding: 56px 28px 40px;
   }
   .pv-card { position: sticky; top: 28px; }
   .pv-head { gap: 18px; align-content: start; }
   .pv-avatar { width: 64px; height: 64px; border-radius: 20px; font-size: 30px; }
   .pv-help { align-content: start; }
+  .pv-foot { justify-items: start; text-align: left; padding-top: 0; }
+  .pv-foot .made-line { justify-content: flex-start; }
 }
 @container pv (max-width: 460px) {
   .pv-in { padding: 16px 14px 24px; }

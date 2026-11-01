@@ -218,6 +218,12 @@ async function scenarioOnline(browser) {
     const demoChips = await page.$$(".demo .chip");
     if (demoChips[1]) await demoChips[1].click();
     ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the live demo’s quick amounts update the amount");
+    ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 3, "the live demo has QR, Wallet and Bank methods");
+    ok((await page.$$eval(".demo .pv-help", (els) => els.length)) === 1, "the live demo shows the real “How to pay” section");
+    const demoMethods = await page.$$(".demo .pv-methods button");
+    await demoMethods[1].click();
+    await page.waitForSelector(".demo .copyrow", { timeout: 5000 });
+    ok(true, "the demo’s Wallet method renders the customer copy rows");
     await shot("01-landing-mobile");
     // make a QR image of the synthetic payload using the app's own renderer
     const b64 = await page.evaluate(async (p) => {

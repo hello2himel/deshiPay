@@ -135,7 +135,9 @@ carries the rewrite rules). A plain static server does not, because `/<username>
 1. **Say who you are**: name or business name, and the link (`yourdomain/username`, checked live for availability).
 2. **Drop your Bangla QR**: upload, take a photo, paste a screenshot, or paste the code text. It's decoded in the browser; the image is never uploaded.
 3. **Other ways to pay** (optional): mobile wallets (bKash, Nagad, Rocket, Upay, Tap, mCash, OK Wallet, SureCash, MyCash, Pathao Pay, other) with account type, and bank accounts (bank, account name, number, branch, routing number, SWIFT).
-4. **Make it yours**: 10 colour themes (Emerald, the default, Rose, Crimson, Amber, Coffee, Olive, Teal, Ocean, Violet, Graphite), each with a matching dark mode, and the quick-amount buttons.
+4. **Make it yours**: pick an avatar icon (letter monogram or a set of ~40 line icons), 10 colour themes
+   (Emerald, the default, Rose, Crimson, Amber, Coffee, Olive, Teal, Ocean, Violet, Graphite), each with
+   a matching dark mode, and the quick-amount buttons.
 
 After publishing, the same sections become tabs, plus **Share** (link, link with a locked amount, a QR of the page, show/hide, delete).
 

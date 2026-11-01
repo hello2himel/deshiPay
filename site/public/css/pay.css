@@ -23,6 +23,7 @@
 .pv-head { grid-area: head; display: grid; gap: 14px; }
 .pv-id { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .pv-avatar { flex: none; width: 56px; height: 56px; border-radius: 18px; background: var(--accent); color: var(--on-accent); font: 800 26px var(--disp); display: grid; place-items: center; }
+.pv-avatar .ic { width: 56%; height: 56%; stroke-width: 1.8; }
 .pv-id h1 { font-size: clamp(26px, 8cqi, 40px); overflow-wrap: anywhere; }
 .pv-handle { color: var(--muted); font-size: 14px; margin-top: 2px; overflow-wrap: anywhere; }
 .pv-msg { color: var(--muted); max-width: 46ch; font-size: 16px; }

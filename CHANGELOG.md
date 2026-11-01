@@ -13,6 +13,16 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Avatar icons instead of just the first letter.** The Look step of onboarding (and the dashboard's
+  Look tab) now has an avatar picker: "your initials" or ~40 hand-drawn line icons (shop, bag, coffee,
+  camera, mic, palette, bike, and so on). The choice is saved as `profiles.avatar` (new migration) and
+  returned by `get_public_page()`, shown in the live preview, on the customer page and in downloaded
+  standalone pages (which now also inline `js/avatars.js`). Existing pages fall back to the monogram.
+  The picker is a radio group with 46px tap targets and scrolls on small screens; export tests and
+  e2e cover it.
+
+### Added
+
 - **More useful homepage below the fold.** The old three-step "How it works" strip is replaced by a
   six-card feature grid (real QR, your own link, any reason, themes, downloadable/hostable, no money
   handling), a six-question FAQ built with native `<details>` (no JS), and a closing "Your page is a

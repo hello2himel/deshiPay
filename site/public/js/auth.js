@@ -21,6 +21,7 @@
   var DEMO_PAGE = {
     username: "demo",
     title: "Himel Das",
+    avatar: "shop",
     message: "Live demo of a real Bangla QR payment page. This QR pays the account inside it. Try a small amount.",
     theme: "emerald",
     presets: [100, 500, 1000, 5000],

@@ -59,11 +59,26 @@ jobs:
             site_url, uri_allow_list, external_email_enabled, disable_signup,
             mailer_autoconfirm, mailer_secure_email_change_enabled,
             mailer_otp_length, mailer_otp_exp, password_min_length,
-            rate_limit_email_sent, smtp_host, smtp_port, smtp_admin_email, smtp_sender_name,
-            mailer_templates_confirmation_subject,
-            mailer_templates_recovery_subject,
-            mailer_templates_magic_link_subject,
-            mailer_templates_email_change_subject,
-            mailer_templates_invite_subject,
-            mailer_templates_reauthentication_subject
+            password_hibp_enabled, security_update_password_require_current_password,
+            security_update_password_require_reauthentication,
+            refresh_token_rotation_enabled, mailer_allow_unverified_email_sign_ins,
+            rate_limit_email_sent, rate_limit_sign_in_sign_ups, rate_limit_token_verifications,
+            smtp_host, smtp_port, smtp_admin_email, smtp_sender_name,
+            smtp_user_present: (.smtp_user != null and .smtp_user != ""),
+            subjects: {
+              confirmation: .mailer_subjects_confirmation,
+              recovery: .mailer_subjects_recovery,
+              magic_link: .mailer_subjects_magic_link,
+              email_change: .mailer_subjects_email_change,
+              invite: .mailer_subjects_invite,
+              reauthentication: .mailer_subjects_reauthentication
+            },
+            template_chars: {
+              confirmation: (.mailer_templates_confirmation_content | length),
+              recovery: (.mailer_templates_recovery_content | length),
+              magic_link: (.mailer_templates_magic_link_content | length),
+              email_change: (.mailer_templates_email_change_content | length),
+              invite: (.mailer_templates_invite_content | length),
+              reauthentication: (.mailer_templates_reauthentication_content | length)
+            }
           }' /tmp/auth.json

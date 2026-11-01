@@ -18,24 +18,31 @@
   var DEMO_PAGE = {
     username: "demo",
     title: "Demo Store",
-    message: "Live demo — type an amount to generate a real QR. Synthetic demo data, not a real payment request.",
+    message: "Live demo of a real payment page — synthetic data, not a real payment request.",
     theme: "rose",
-    presets: [100, 500, 1000],
+    presets: [100, 500, 1000, 5000],
     qr_payload: "00020101021126470014bd.org.bb.npsb010202020420020311010000000005204601653030505802BD5910DEMO STORE6005Dhaka62060602FT80660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBBIG5vdCByZWFsISE=81660014bd.org.bb.npsb0144ZGVzaGlxciBkdW1teSB0b2tlbiBCIG5vdCByZWFsISE=6304295D",
     qr_name: "DEMO STORE",
     qr_city: "Dhaka",
     ref_prefix: "",
     ref_len: 0,
-    wallets: [],
-    banks: []
+    wallets: [
+      { provider: "bkash", type: "personal", number: "01868735269" },
+      { provider: "nagad", type: "personal", number: "01712345678" }
+    ],
+    banks: [
+      { bank: "BRAC Bank", name: "Demo Store", number: "1234567890123", branch: "Bogra", routing: "123456789", swift: "" }
+    ]
   };
 
   function mountDemo() {
     var host = document.getElementById("demoPayment");
     if (!host || !window.PayView) return;
-    window.PayView.mount(host, DEMO_PAGE, { preview: true, hideHandle: true });
-    // Show a real amount-bearing QR straight away so the demo looks alive; the
-    // visitor can edit the amount or use the quick-amount chips.
+    // Exactly how pay.js mounts a real customer page — same options, same page
+    // data shape, full QR / Wallet / Bank tabs and "How to pay" section.
+    window.PayView.mount(host, DEMO_PAGE);
+    // Start at ৳1,500 so the demo shows a real amount-bearing QR immediately;
+    // the visitor can edit it or use the quick-amount chips.
     var amount = host.querySelector(".amt-input");
     if (amount) {
       amount.value = "1500";

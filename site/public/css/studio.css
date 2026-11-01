@@ -11,9 +11,9 @@
 /* =====================================================================
    Landing
    ===================================================================== */
-.land { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 28px; align-items: start; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "auth" "rest"; }
+.land { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 28px; align-items: start; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "auth" "points" "demo" "how"; }
+.land-main { display: contents; }
 .hero-top { grid-area: top; display: grid; gap: 18px; }
-.hero-rest { grid-area: rest; display: grid; gap: 22px; }
 .auth { grid-area: auth; }
 .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); }
 .hero-top h1 { font-size: clamp(34px, 9vw, 60px); line-height: 1; }
@@ -40,12 +40,8 @@
 .mailed .ic-big { width: 56px; height: 56px; border-radius: 18px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
 .mailed .ic-big .ic { width: 28px; height: 28px; }
 
-/* The landing demo is the real customer page (PayView), in a phone-ish card. */
-.demo { width: 100%; max-width: 400px; justify-self: center; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--bg); box-shadow: 0 24px 60px -34px var(--shadow); }
-.demo .pv-in { padding: 18px 14px 24px; gap: 16px; }
-.demo .pv-id h1 { font-size: clamp(24px, 8cqi, 36px); }
-/* compact demo: the functional payment card is the point, not the help list */
-.demo .pv-help { display: none; }
+/* The landing demo is the real, full customer page (PayView) in a card. */
+.demo { width: 100%; max-width: 420px; justify-self: center; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--bg); box-shadow: 0 24px 60px -34px var(--shadow); }
 
 .how { display: grid; gap: 16px; margin-top: 8px; }
 .how h2 { font-size: 20px; }
@@ -57,21 +53,23 @@
 .land-foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; }
 
 @media (min-width: 900px) {
-  /* Desktop: the demo payment slip sits on the right, the sign-up card takes
-     the spot the slip used to have (left column, after the points), and the
-     "how it works" row spans both columns at the bottom. */
+  /* Desktop: a single left column (hero, points, then sign-up where the old QR
+     mock used to be) and the real demo page on the right; "how it works" spans
+     both columns underneath. */
   .land {
-    grid-template-columns: minmax(0, 1fr) 400px;
-    grid-template-areas:
-      "top    demo"
-      "points demo"
-      "auth   demo"
-      "how    how";
-    grid-template-rows: auto auto auto auto;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    grid-template-areas: "main demo" "how how";
     column-gap: 72px;
     padding-top: 56px;
   }
-  .hero-rest { display: contents; }
+  .land-main {
+    grid-area: main;
+    display: grid;
+    align-content: start;
+    gap: 28px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "top" "points" "auth";
+  }
   .points { grid-area: points; }
   .auth { grid-area: auth; position: static; width: 100%; max-width: 480px; }
   .demo { grid-area: demo; justify-self: center; align-self: start; margin: 0; }

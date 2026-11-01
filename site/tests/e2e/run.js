@@ -215,8 +215,8 @@ async function scenarioOnline(browser) {
     ok(state.health === 0, "the landing itself makes no backend probe");
     const onlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
-      onlineLandingText.includes("Get your own address") && onlineLandingText.includes("Pick your link") && onlineLandingText.includes("Share it"),
-      "online landing keeps the hosted-address copy"
+      onlineLandingText.includes("Get your own address") && onlineLandingText.includes("Everything you need to get paid") && onlineLandingText.includes("Questions people ask"),
+      "online landing has the address line plus the features and FAQ sections"
     );
     ok(
       onlineLandingText.includes("payments, donations and support") && onlineLandingText.includes("bank details"),
@@ -227,8 +227,8 @@ async function scenarioOnline(browser) {
     ok(!onlineLandingText.includes("Take it with you") && !onlineLandingText.includes("your-site.com"), "online landing has no offline-only copy");
     const topLinks = await page.$$eval(".top-links a", (els) => els.map((e) => e.getAttribute("href")));
     ok(
-      topLinks.includes("/#how") && topLinks.includes("/#demo") && topLinks.includes("/contact"),
-      "the top nav uses the bar: how it works, demo and FAQ"
+      topLinks.includes("/#features") && topLinks.includes("/#demo") && topLinks.includes("/#faq"),
+      "the top nav uses the bar: features, demo and FAQ"
     );
     ok(!!(await page.$(".top-actions a[href='/login']")), "the top nav offers a create-page action");
     ok(!!(await page.$(".top-actions a[href='/login?mode=signin']")), "the top nav offers a sign-in action");
@@ -544,7 +544,7 @@ async function scenarioOffline(browser) {
     ok(state.supa.length === 0, "the landing makes no backend request");
     const offlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
-      offlineLandingText.includes("Get your own address") && offlineLandingText.includes("Pick your link"),
+      offlineLandingText.includes("Get your own address") && offlineLandingText.includes("Questions people ask"),
       "the landing keeps its normal marketing copy in offline mode"
     );
     ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "offline landing still shows the live payment demo");

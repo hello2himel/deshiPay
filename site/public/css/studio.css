@@ -25,11 +25,11 @@
 /* =====================================================================
    Landing
    ===================================================================== */
-.land { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 28px; align-items: start; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "points" "demo" "how"; }
+.land { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 28px; align-items: start; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "points" "demo" "features" "faq" "cta"; }
 .land-main { display: contents; }
 .hero-top { grid-area: top; display: grid; gap: 18px; }
 /* anchors from the top nav / footer land below the sticky header */
-#how, #demo { scroll-margin-top: 84px; }
+#features, #faq, #demo { scroll-margin-top: 84px; }
 .auth { grid-area: auth; }
 /* hero CTA: one button below the lead, with an arrow */
 .hero-cta { justify-self: start; margin-top: 4px; }
@@ -74,13 +74,25 @@
 /* the demo is just the payment widget: no page header, how-to or footer tracks */
 .demo .pv-in { grid-template-areas: "card"; }
 
-.how { display: grid; gap: 16px; margin-top: 8px; }
-.how h2 { font-size: 20px; }
-.how ol { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
-.how li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
-.how li::before { content: counter(s); width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font: 800 15px var(--disp); }
-.how li b { display: block; font: 700 17px var(--disp); }
-.how li span { color: var(--muted); font-size: 15px; }
+.features, .faq, .home-cta { display: grid; gap: 16px; margin-top: 8px; }
+.features h2, .faq h2, .home-cta h2 { font-size: 22px; }
+.feat-grid { display: grid; gap: 12px; }
+.feat { display: grid; gap: 8px; align-content: start; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+.feat .ic-tile { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+.feat .ic-tile .ic { width: 20px; height: 20px; }
+.feat h3 { font-size: 17px; }
+.feat p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.faq-grid { display: grid; gap: 10px; align-items: start; }
+.faq details { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
+.faq summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; font: 700 15px var(--body); cursor: pointer; list-style: none; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--accent-text); font-weight: 800; font-size: 18px; transition: transform 0.18s ease; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin: 0 0 14px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+.home-cta { gap: 10px; justify-items: start; padding: 24px; border-radius: 22px; background: var(--accent-soft); }
+.home-cta p { margin: 0; color: var(--muted); max-width: 52ch; }
+@media (min-width: 720px) { .feat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .faq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .feat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .land-foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; }
 
 @media (max-width: 719px) {
@@ -98,12 +110,11 @@
 }
 
 @media (min-width: 900px) {
-  /* Desktop: a single left column (hero, points, then sign-up where the old QR
-     mock used to be) and the real demo page on the right; "how it works" spans
-     both columns underneath. */
+  /* Desktop: hero and points on the left, the live demo on the right; the
+     features, FAQ and closing CTA span both columns underneath. */
   .land {
     grid-template-columns: minmax(0, 1fr) 420px;
-    grid-template-areas: "main demo" "how how";
+    grid-template-areas: "main demo" "features features" "faq faq" "cta cta";
     column-gap: 72px;
     padding-top: 56px;
   }
@@ -113,14 +124,14 @@
     align-content: start;
     gap: 28px;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "top" "auth" "points";
+    grid-template-areas: "top" "points";
   }
   .points { grid-area: points; }
   .auth { grid-area: auth; position: static; width: 100%; max-width: 480px; }
   .demo { grid-area: demo; justify-self: center; align-self: start; margin: 0; }
-  .how { grid-area: how; margin-top: 12px; }
-  .how ol { grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .how li { grid-template-columns: 1fr; }
+  .features { grid-area: features; margin-top: 12px; }
+  .faq { grid-area: faq; }
+  .home-cta { grid-area: cta; }
 }
 
 /* =====================================================================

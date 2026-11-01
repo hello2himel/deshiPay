@@ -13,6 +13,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **More useful homepage below the fold.** The old three-step "How it works" strip is replaced by a
+  six-card feature grid (real QR, your own link, any reason, themes, downloadable/hostable, no money
+  handling), a six-question FAQ built with native `<details>` (no JS), and a closing "Your page is a
+  minute away" CTA. The nav and footer link to `#features` / `#faq` instead of the removed `#how`.
+
+### Added
+
 - **Light/dark toggle in the nav.** A sun/moon button in the header lets visitors force light or dark
   regardless of their OS setting, remembers the choice in `localStorage` (`deshipay.mode`), and applies
   before first paint via a tiny `site/public/js/mode.js` (so there is no flash). The button is icon-only

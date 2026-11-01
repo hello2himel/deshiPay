@@ -101,6 +101,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Fixed
 
+- **Theme toggle vs. nested theme scopes.** Choosing light while the OS was dark (or vice versa) left
+  the landing payment demo dark: PayView sets its own `data-theme` element, and the generated
+  `html[data-mode=…]` overrides only matched `<html>`. `gen-themes.js` now also emits
+  `html[data-mode=…] [data-theme=…]` rules, so an explicit choice reaches the demo card (and any
+  preview) too.
+
+### Fixed
+
 - **Netlify secret scanning false positive on the public Supabase values.** The build writes
   `SUPABASE_URL` and the public anon key into `site/public/js/config.js`; on public repositories
   Netlify's sensitive-variable policy can fail the deploy with *"Secrets scanning found secrets in

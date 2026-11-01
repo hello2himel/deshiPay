@@ -253,6 +253,13 @@ async function scenarioOnline(browser) {
     await page.click(".theme-toggle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-mode"))) === "light", "the nav theme toggle switches back to light");
     ok((await page.evaluate(() => getComputedStyle(document.body).backgroundColor)) === lightBg, "the light choice restores the light colours");
+    // Regression: explicit light must beat a dark OS preference inside nested theme scopes
+    // (the PayView demo sets its own data-theme, which used to stay dark).
+    await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "dark" }]);
+    await page.evaluate(() => { localStorage.setItem("deshipay.mode", "light"); document.documentElement.setAttribute("data-mode", "light"); });
+    const demoBg = await page.$eval(".demo .pv", (e) => getComputedStyle(e).backgroundColor);
+    ok(demoBg === "rgb(230, 240, 237)", "explicit light mode keeps the demo card light when the OS is dark");
+    await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
     // follow the system preference again for the rest of the suite (dark-mode tests)
     await page.evaluate(() => { localStorage.removeItem("deshipay.mode"); document.documentElement.removeAttribute("data-mode"); });
 

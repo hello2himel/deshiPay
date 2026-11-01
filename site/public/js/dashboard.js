@@ -36,7 +36,7 @@
 
   function uid() { return Math.random().toString(36).slice(2, 9); }
   function blank() {
-    return { username: "", usernameTouched: false, title: "", message: "", theme: "rose", presets: [100, 500, 1000, 5000], qr: null, qrInfo: null, wallets: [], banks: [], published: true };
+    return { username: "", usernameTouched: false, title: "", message: "", theme: "emerald", presets: [100, 500, 1000, 5000], qr: null, qrInfo: null, wallets: [], banks: [], published: true };
   }
   function fromRow(r) {
     return {

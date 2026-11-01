@@ -37,12 +37,12 @@
   ];
 
   var THEMES = [
+    { id: "emerald", name: "Emerald", color: "#056B4E" },
     { id: "rose", name: "Rose", color: "#E2136E" },
     { id: "crimson", name: "Crimson", color: "#C62432" },
     { id: "amber", name: "Amber", color: "#B45309" },
     { id: "coffee", name: "Coffee", color: "#7C4A2D" },
     { id: "olive", name: "Olive", color: "#4D7C0F" },
-    { id: "emerald", name: "Emerald", color: "#0B7F58" },
     { id: "teal", name: "Teal", color: "#0F766E" },
     { id: "ocean", name: "Ocean", color: "#1D5FD0" },
     { id: "violet", name: "Violet", color: "#6D3FD9" },

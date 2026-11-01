@@ -307,8 +307,8 @@ test("sets the footer href to the generating site's absolute origin", () => {
 test("escapes the theme into data-theme and rejects anything that isn't a theme id", () => {
   const evil = Object.assign({}, full, { theme: 'rose"><script>window.__pwned=1</script>' });
   const html = E.buildPageHtml(evil, assets());
-  assert.ok(html.includes('<html lang="en" data-theme="rose">'), "falls back to rose");
-  assert.strictEqual(html.indexOf("data-theme=\"rose\"><script>"), -1);
+  assert.ok(html.includes('<html lang="en" data-theme="emerald">'), "falls back to emerald (the site default)");
+  assert.strictEqual(html.indexOf("data-theme=\"emerald\"><script>"), -1);
   assert.strictEqual(html.indexOf("window.__pwned=1</script>"), -1);
   // and the valid id is preserved
   assert.ok(E.buildPageHtml(qrOnly, assets()).includes('<html lang="en" data-theme="rose">'));

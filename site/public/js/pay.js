@@ -31,7 +31,7 @@
   // Supabase/config.js at all: render it straight away, then stop.
   if (window.DESHIQR_PAGE) {
     var embedded = window.DESHIQR_PAGE;
-    document.documentElement.setAttribute("data-theme", embedded.theme || "rose");
+    document.documentElement.setAttribute("data-theme", embedded.theme || "emerald");
     document.title = "Pay " + embedded.title;
     var embeddedBg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
     var embeddedMeta = document.querySelector('meta[name="theme-color"]');
@@ -100,7 +100,7 @@
     if (!page) {
       return state("This page doesn’t exist", "The link may be mistyped, or the owner has hidden or removed it.", h("a", { class: "btn", href: "/" }, "Make your own payment page"));
     }
-    document.documentElement.setAttribute("data-theme", page.theme || "rose");
+    document.documentElement.setAttribute("data-theme", page.theme || "emerald");
     document.title = "Pay " + page.title;
     var bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
     var meta = document.querySelector('meta[name="theme-color"]');

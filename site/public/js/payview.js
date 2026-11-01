@@ -210,7 +210,7 @@
         h("div", { class: "pv-caution" }, icon("shield"), h("span", null, "Always check the name and amount in your app before you confirm. This page doesn’t take payments; you pay from your own app."))
       ) : null;
 
-      var tree = h("div", { class: "pv", "data-theme": page.theme || "rose" },
+      var tree = h("div", { class: "pv", "data-theme": page.theme || "emerald" },
         h("div", { class: "pv-in" },
           h("header", { class: "pv-head" },
             h("div", { class: "pv-id" },

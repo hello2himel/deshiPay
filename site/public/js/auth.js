@@ -6,12 +6,6 @@
   var card = document.getElementById("auth");
   var notice = document.getElementById("setupNotice");
 
-  document.querySelectorAll("[data-host]").forEach(function (el) { el.textContent = location.host; });
-  [["ic1", "scan"], ["ic2", "link"], ["ic3", "wallet"]].forEach(function (p) {
-    var el = document.getElementById(p[0]);
-    if (el) el.appendChild(icon(p[1]));
-  });
-
   /* ----- live payment demo -----
    * The actual customer page (PayView), mounted with a synthetic Bangla QR from
    * docs/demo-payloads.md. Visitors can type an amount and get a real,

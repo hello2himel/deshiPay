@@ -221,15 +221,13 @@ async function scenarioOnline(browser) {
     ok(state.health === 0, "the landing itself makes no backend probe");
     const onlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
-      onlineLandingText.includes("Get your own address") && onlineLandingText.includes("Everything you need to get paid") && onlineLandingText.includes("Questions people ask"),
+      onlineLandingText.includes("Everything you need to get paid") && onlineLandingText.includes("Questions people ask"),
       "online landing has the address line plus the features and FAQ sections"
     );
     ok(
       onlineLandingText.includes("payments, donations and support") && onlineLandingText.includes("bank details"),
       "landing positions DeshiPay as a complete way to receive money (QR + wallet + bank), not just a QR tool"
     );
-    const onlineHosts = await page.$$eval("[data-host]", (els) => els.map((e) => e.textContent));
-    ok(onlineHosts.length > 0 && onlineHosts.every((t) => t === "localhost:8899"), "online landing shows this site’s host");
     ok(!onlineLandingText.includes("Take it with you") && !onlineLandingText.includes("your-site.com"), "online landing has no offline-only copy");
     ok((await page.$$eval(".top-links", (els) => els.length)) === 0, "the top bar has no section links, only the actions");
     ok(!!(await page.$(".top-actions a[href='/login']")), "the top nav offers a create-page action");
@@ -589,7 +587,7 @@ async function scenarioOffline(browser) {
     ok(state.supa.length === 0, "the landing makes no backend request");
     const offlineLandingText = await page.evaluate(() => document.body.innerText);
     ok(
-      offlineLandingText.includes("Get your own address") && offlineLandingText.includes("Questions people ask"),
+      offlineLandingText.includes("Everything you need to get paid") && offlineLandingText.includes("Questions people ask"),
       "the landing keeps its normal marketing copy in offline mode"
     );
     ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "offline landing still shows the live payment demo");

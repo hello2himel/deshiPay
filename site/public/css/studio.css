@@ -46,9 +46,6 @@
 .hero-top h1 { font-size: clamp(34px, 9vw, 60px); line-height: 1; }
 .hero-top h1 em { font-style: normal; color: var(--accent-text); }
 .hero-top .lead { color: var(--muted); font-size: 17px; max-width: 50ch; }
-.points { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 12px; }
-.points li { display: flex; gap: 12px; align-items: flex-start; font-weight: 500; }
-.points .ic-tile { flex: none; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
 
 .auth { padding: 20px 20px 18px; display: grid; gap: 14px; box-shadow: 0 18px 40px -24px var(--shadow); }
 .auth h2 { font-size: 24px; }
@@ -133,8 +130,7 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "top" "points";
   }
-  .points { grid-area: points; }
-  .auth { grid-area: auth; position: static; width: 100%; max-width: 480px; }
+    .auth { grid-area: auth; position: static; width: 100%; max-width: 480px; }
   .demo { grid-area: demo; justify-self: center; align-self: start; margin: 0; }
   .features { grid-area: features; margin-top: 12px; }
   .faq { grid-area: faq; }

@@ -12,6 +12,7 @@
 (function () {
   "use strict";
   var T = window.Deshi, h = T.h, icon = T.icon;
+  var HELP_TEXT = "Paying from this phone? Save the image, then choose it from your gallery inside your payment app.";
 
   function mount(root, initial, opts) {
     opts = opts || {};
@@ -40,7 +41,8 @@
       var err = h("div", { class: "amt-err", role: "alert" });
       var box = h("div", { class: "qrbox empty", "aria-live": "polite" }, h("span", null, "Enter an amount to see the QR"));
       var save = h("button", { class: "btn", type: "button", disabled: true, onClick: onSave }, icon("download"), "Save QR image");
-      qr = { input: input, err: err, box: box, save: save, payload: "" };
+      var help = h("p", { class: "slip-help" }, HELP_TEXT);
+      qr = { input: input, err: err, box: box, save: save, help: help, payload: "" };
 
       input.addEventListener("input", function () {
         var s = window.DeshiQR.sanitizeAmount(input.value);
@@ -67,7 +69,7 @@
         h("div", { class: "slip-bot center" },
           box,
           h("div", { class: "slip-actions" }, save),
-          h("p", { class: "slip-help" }, "Paying from this phone? Save the image, then choose it from your gallery inside your payment app.")
+          help
         )
       );
       draw();
@@ -79,7 +81,7 @@
       var n = parseFloat(amount);
       input_len();
       qr.err.textContent = "";
-      if (!(n > 0)) return empty();
+      if (!(n > 0)) return showBaseQr();
       if (n > window.DeshiQR.MAX_AMOUNT) {
         qr.err.textContent = "That’s above the QR limit of ৳99,99,999.99";
         return empty();
@@ -91,8 +93,24 @@
         shown = true;
         qr.box.replaceChildren(T.qrSvg(qr.payload));
         qr.save.disabled = false;
+        qr.help.textContent = HELP_TEXT;
       } catch (e) {
         qr.err.textContent = "Couldn’t make this QR. " + e.message;
+        empty();
+      }
+    }
+    // No amount: show the owner's static QR so the payer can type the amount
+    // inside their own banking app.
+    function showBaseQr() {
+      if (!page.qr_payload) return empty();
+      try {
+        qr.payload = page.qr_payload;
+        qr.box.className = "qrbox" + (shown ? "" : " dev");
+        shown = true;
+        qr.box.replaceChildren(T.qrSvg(page.qr_payload));
+        qr.save.disabled = false;
+        qr.help.textContent = "No amount set. Scan this QR and type the amount in your payment app, or enter one above for a ready-made QR.";
+      } catch (e) {
         empty();
       }
     }
@@ -101,6 +119,7 @@
       qr.box.className = "qrbox empty";
       qr.box.replaceChildren(h("span", null, "Enter an amount to see the QR"));
       qr.save.disabled = true;
+      if (qr.help) qr.help.textContent = HELP_TEXT;
     }
     function input_len() {
       var l = qr.input.value.length;
@@ -111,7 +130,7 @@
     function onSave() {
       if (!qr.payload) return;
       T.qrPng(qr.payload, 1000).then(function (blob) {
-        return T.saveImage(blob, "pay-" + T.slugify(page.username || page.title || "qr") + "-" + amount + ".png");
+        return T.saveImage(blob, "pay-" + T.slugify(page.username || page.title || "qr") + "-" + (amount || "no-amount") + ".png");
       }).then(function (r) {
         if (r === "saved") T.toast("QR image saved");
       });

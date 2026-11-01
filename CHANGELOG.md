@@ -70,6 +70,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Empty amount shows the static QR.** On a payment page (or standalone export) with no amount entered, the
+  QR panel now renders the owner's amount-free Bangla QR instead of an empty placeholder, with the note
+  "No amount set. Scan this QR and type the amount in your payment app, or enter one above for a
+  ready-made QR." Typing an amount (or tapping a quick amount) still swaps in the amount-bearing QR;
+  Save QR image works for the static QR too. e2e decodes both states (194 checks).
+
+### Changed
+
 - **Dashboard action bar sits under the form.** The fixed bottom bar (Back / Continue / Publish) is now
   in normal flow inside the form column, directly below the panel, with the site footer underneath it.
   No more empty fixed-bar padding or footer appearing above the buttons; mobile and desktop both put the

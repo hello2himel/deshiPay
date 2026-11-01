@@ -45,9 +45,10 @@
 /* The landing demo is the real customer page (PayView) in a card. The
    page-only tail (How to pay + caution + footer) is left out of the homepage. */
 .demo { width: 100%; max-width: 420px; justify-self: center; border: 1px solid var(--line); border-radius: 26px; overflow: hidden; background: var(--bg); box-shadow: 0 24px 60px -34px var(--shadow); }
+.demo .pv-head { display: none; }
 .demo .pv-help { display: none; }
-/* drop the empty help/footer grid tracks too, so the card ends with the slip */
-.demo .pv-in { grid-template-areas: "head" "card"; }
+/* the demo is just the payment widget: no page header, how-to or footer tracks */
+.demo .pv-in { grid-template-areas: "card"; }
 
 .how { display: grid; gap: 16px; margin-top: 8px; }
 .how h2 { font-size: 20px; }

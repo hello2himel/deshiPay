@@ -330,6 +330,13 @@ async function scenarioOnline(browser) {
     await page.waitForSelector("#email", { timeout: 10000 });
     ok(state.health > 0, "login page probes /auth/v1/health before showing sign-in");
     ok(!!(await page.$(".no-login a[href='/app?local=1']")), "login page offers a no-login create option");
+    ok((await page.$$eval(".auth form", (els) => els.length)) === 1, "login and sign up are one form");
+    ok((await page.$eval(".auth form button[type=submit]", (e) => e.textContent.trim())) === "Continue", "the single form uses a Continue button");
+    ok((await page.$eval(".auth h2", (e) => e.textContent)) === "Create your page", "the unified card says Create your page");
+    ok(
+      (await page.$$eval(".auth-links button", (els) => els.some((b) => /I already have an account|New here/.test(b.textContent)))) === false,
+      "there is no separate sign-in/sign-up toggle"
+    );
     const noLoginStyle = await page.$eval(".no-login a[href='/app?local=1']", (e) => {
       const cs = getComputedStyle(e);
       return { borderStyle: cs.borderStyle, borderColor: cs.borderColor };

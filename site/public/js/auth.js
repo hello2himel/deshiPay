@@ -56,7 +56,7 @@
   }
   mountDemo();
 
-  var mode = new URLSearchParams(location.search).get("mode") === "signin" ? "signin" : "signup";
+  var mode = new URLSearchParams(location.search).get("mode") === "forgot" ? "forgot" : "unified";
   var busy = false;
 
   /* ----- online vs offline ----- */
@@ -106,7 +106,7 @@
     var fields = [h("div", { class: "field" }, h("label", { for: "email" }, "Email"), email)];
 
     if (mode !== "forgot") {
-      pw = h("input", { class: "input", id: "pw", type: "password", autocomplete: mode === "signup" ? "new-password" : "current-password", placeholder: mode === "signup" ? "At least 8 characters" : "Your password", minlength: "8", required: true });
+      pw = h("input", { class: "input", id: "pw", type: "password", autocomplete: "current-password", placeholder: "Your password (8+ characters)", minlength: "8", required: true });
       eye = h("button", { class: "eye", type: "button", "aria-label": "Show password", onClick: function () {
         var show = pw.type === "password";
         pw.type = show ? "text" : "password";
@@ -116,7 +116,7 @@
       fields.push(h("div", { class: "field" }, h("label", { for: "pw" }, "Password"), h("div", { class: "pw" }, pw, eye)));
     }
 
-    var label = { signup: "Create my page", signin: "Sign in", forgot: "Send reset link" }[mode];
+    var label = { unified: "Continue", forgot: "Send reset link" }[mode];
     var submit = h("button", { class: "btn block", type: "submit" }, label);
 
     function setBusy(b) {
@@ -131,48 +131,56 @@
       if (busy || !sb) return;
       var em = email.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { say("Enter a valid email address.", "bad"); email.focus(); return; }
-      if (pw && mode === "signup" && pw.value.length < 8) { say("Use at least 8 characters for your password.", "bad"); pw.focus(); return; }
-      if (pw && !pw.value) { say("Enter your password.", "bad"); pw.focus(); return; }
+      if (mode === "forgot") {
+        say("");
+        setBusy(true);
+        try {
+          var f = await sb.auth.resetPasswordForEmail(em, { redirectTo: location.origin + "/app" });
+          if (f.error) throw f.error;
+          return sent(em, "reset");
+        } catch (err) { say(friendly(err), "bad"); setBusy(false); }
+        return;
+      }
+      if (pw.value.length < 8) { say("Use at least 8 characters for your password.", "bad"); pw.focus(); return; }
       say("");
       setBusy(true);
       try {
-        if (mode === "signup") {
-          var r = await sb.auth.signUp({ email: em, password: pw.value, options: { emailRedirectTo: location.origin + "/app" } });
-          if (r.error) throw r.error;
-          if (r.data.session) return location.assign("/app");
-          if (r.data.user && r.data.user.identities && r.data.user.identities.length === 0) {
-            mode = "signin"; render();
-            document.getElementById("email").value = em;
-            say("You already have an account with this email. Sign in below.", "bad");
-            return;
-          }
-          return sent(em, "confirm");
+        // One form for both: try the existing account first, then create one.
+        var s = await sb.auth.signInWithPassword({ email: em, password: pw.value });
+        if (!s.error) return location.assign("/app");
+        var m = (s.error.message || "").toLowerCase();
+        var invalid = /invalid login credentials|invalid credentials/.test(m) || s.error.code === "invalid_credentials";
+        if (!invalid) throw s.error;
+        var r = await sb.auth.signUp({ email: em, password: pw.value, options: { emailRedirectTo: location.origin + "/app" } });
+        if (r.error) throw r.error;
+        if (r.data.session) return location.assign("/app");
+        var exists = r.data.user && r.data.user.identities && r.data.user.identities.length === 0;
+        if (exists) {
+          say("That email and password don’t match. This email already has an account; reset your password if you’ve forgotten it.", "bad");
+          setBusy(false);
+          return;
         }
-        if (mode === "signin") {
-          var s = await sb.auth.signInWithPassword({ email: em, password: pw.value });
-          if (s.error) throw s.error;
-          return location.assign("/app");
-        }
-        var f = await sb.auth.resetPasswordForEmail(em, { redirectTo: location.origin + "/app" });
-        if (f.error) throw f.error;
-        sent(em, "reset");
+        return sent(em, "confirm");
       } catch (err) {
+        var emsg = (err && (err.message || "")).toLowerCase();
+        if (/already registered|already been registered|user already/.test(emsg)) {
+          say("That email and password don’t match. This email already has an account; reset your password if you’ve forgotten it.", "bad");
+          setBusy(false);
+          return;
+        }
         say(friendly(err), "bad");
         setBusy(false);
       }
     } }, fields, submit, msg);
 
     var head = {
-      signup: ["Create your page", "Free, and it takes about a minute. For payments, donations or support."],
-      signin: ["Welcome back", "Sign in to edit your payment page."],
+      unified: ["Create your page", "Sign in, or create an account with your email and password. It takes about a minute."],
       forgot: ["Reset your password", "We’ll email you a link to choose a new one."]
     }[mode];
 
     var switcher = h("div", { class: "auth-links" },
-      mode === "signup" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "signin"; render(); } }, "I already have an account") : null,
-      mode === "signin" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "signup"; render(); } }, "New here? Create an account") : null,
-      mode === "signin" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "forgot"; render(); } }, "Forgot password?") : null,
-      mode === "forgot" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "signin"; render(); } }, "Back to sign in") : null
+      mode === "unified" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "forgot"; render(); } }, "Forgot password?") : null,
+      mode === "forgot" ? h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "unified"; render(); } }, "Back") : null
     );
 
     var google = T.cfg.googleAuth && sb && mode !== "forgot" ? [
@@ -196,7 +204,7 @@
       h("div", { class: "ic-big" }, icon("check")),
       h("h2", null, "Check your inbox"),
       h("p", { class: "sub" }, (kind === "reset" ? "We sent a password reset link to " : "We sent a confirmation link to ") + email + ". Open it on this device to continue."),
-      h("button", { class: "linkbtn", type: "button", onClick: function () { mode = kind === "reset" ? "signin" : "signup"; render(); } }, "Use a different email")
+      h("button", { class: "linkbtn", type: "button", onClick: function () { mode = "unified"; render(); } }, "Use a different email")
     ));
   }
 

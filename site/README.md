@@ -44,8 +44,10 @@ site/
                       e2e/ (browser smoke test, optional)
 ```
 
-The sign-in/sign-up form gets its own page at **`/login`** (the landing page only has a
-"Create your page" button that links there), so the homepage stays a landing page.
+The **unified sign-in/sign-up form** gets its own page at **`/login`** (the landing page only has a
+"Create your page" button that links there), so the homepage stays a landing page. There is one email +
+password form: it tries to sign in first, and creates the account if the email is new; the same card
+offers "Forgot password?" and the no-login flow.
 
 The database schema and Supabase config live at the **repo root**: `supabase/migrations/` (versioned SQL,
 applied automatically by the Supabase GitHub integration) and `supabase/config.toml`.

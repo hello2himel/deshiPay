@@ -47,6 +47,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **One sign-in / sign-up form.** `/login` no longer has separate signup and signin modes. A single
+  email + password form (with "Continue") first tries to sign in; if the credentials are invalid it
+  tries to create the account, so new visitors are signed up and returning visitors are signed in
+  without choosing a mode. An existing email with the wrong password gets a clear "that email and
+  password don’t match" message plus the "Forgot password?" link; the no-login flow stays below.
+
+### Changed
+
 - **New DeshiPay mark everywhere.** The supplied rounded-tile mark (white cut-out shape) replaces the old
   drawn square in the header on every page, the footer brand, the pay-page header, the customer-page
   "Made with DeshiPay" line and the favicon; standalone exports get it too. It is recoloured to the

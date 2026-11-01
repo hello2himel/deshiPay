@@ -282,3 +282,19 @@ body.has-bar .studio { padding-bottom: 160px; }
 
 /* offline mode (backend paused/unreachable): the status label stays visible on phones too */
 .user-chip.local { display: block; }
+
+/* ---------- landing motion ---------- */
+.hero-top > * { animation: rise 0.5s cubic-bezier(0.2, 0.65, 0.2, 1) both; }
+.hero-top > *:nth-child(2) { animation-delay: 0.05s; }
+.hero-top > *:nth-child(3) { animation-delay: 0.11s; }
+.hero-top > *:nth-child(4) { animation-delay: 0.17s; }
+.points { animation: rise 0.55s cubic-bezier(0.2, 0.65, 0.2, 1) 0.22s both; }
+.demo { animation: fade 0.6s ease 0.18s both; }
+
+.feat { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+.feat:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -26px var(--shadow); }
+.faq details[open] p { animation: fade 0.22s ease both; }
+
+.top-menu { animation: fade 0.14s ease both; }
+.theme-toggle .ic { transition: transform 0.2s ease; }
+.theme-toggle:hover .ic { transform: rotate(12deg); }

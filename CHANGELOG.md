@@ -13,6 +13,16 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Minimal motion across the site, with reduced-motion support.** Hero text/CTA and points rise in with a
+  small stagger, the live demo fades in, feature cards lift on hover, FAQ answers fade open, the mobile
+  menu/theme toggle have small fades/rotations, buttons nudge and their arrows slide, and customer pages
+  rise in (head, help, card, footer). Below-the-fold feature/FAQ cards fade up on scroll via
+  `site/public/js/motion.js` + `IntersectionObserver`; the content stays visible without JS, and
+  `@media (prefers-reduced-motion: reduce)` disables every animation/transition (JS also skips the
+  reveal setup), so reduced-motion visitors get the static page immediately.
+
+### Added
+
 - **More useful homepage below the fold.** The old three-step "How it works" strip is replaced by a
   six-card feature grid (real QR, your own link, any reason, themes, downloadable/hostable, no money
   handling), a six-question FAQ built with native `<details>` (no JS), and a closing "Your page is a

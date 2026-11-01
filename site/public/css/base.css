@@ -160,3 +160,29 @@ p { margin: 0; }
 .legal ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .legal code { font-family: var(--mono); font-size: 13px; }
 .legal .callout { margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--accent-soft); font-size: 14px; }
+
+/* ---------- motion (minimal, respects prefers-reduced-motion) ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.btn .ic { transition: transform 0.18s ease; }
+.btn:hover .ic { transform: translateX(2px); }
+.btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+.btn:active { transform: translateY(0) scale(0.99); }
+
+/* Below-the-fold sections fade up as they enter the viewport (see js/motion.js). */
+html.motion-ready [data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.2, 0.65, 0.2, 1); }
+html.motion-ready [data-reveal].is-in { opacity: 1; transform: none; }
+
+.auth-page .auth, .legal { animation: rise 0.45s cubic-bezier(0.2, 0.65, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  html.motion-ready [data-reveal] { opacity: 1; transform: none; }
+}

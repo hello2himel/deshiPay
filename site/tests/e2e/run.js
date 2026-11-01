@@ -393,11 +393,19 @@ async function scenarioOnline(browser) {
     await page.click("#primary");
 
     console.log("Step 4: theme and publish");
-    await page.waitForSelector(".themes");
-    await page.waitForSelector(".avatars .avatar-pick");
-    await page.click('.avatar-pick[aria-label="Shop"]');
+    await page.waitForSelector(".pick-list .pick-row");
+    ok((await page.$eval('.pick-row[data-pick="avatar"] .pick-value', (e) => e.textContent)).includes("initials"), "the avatar row shows the current choice");
+    await page.click('.pick-row[data-pick="avatar"]');
+    await page.waitForSelector(".sheet .avatars");
+    await page.click('.sheet .avatar-pick[aria-label="Shop"]');
+    await page.waitForSelector(".sheet", { hidden: true });
     ok((await page.$$eval("#previewBody .pv-avatar svg", (els) => els.length)) === 1, "choosing an avatar updates the live preview");
-    await page.click('.swatch[aria-label="Coffee"]');
+    ok((await page.$eval('.pick-row[data-pick="avatar"] .pick-value', (e) => e.textContent)) === "Shop", "the avatar row shows the selected icon");
+    await page.click('.pick-row[data-pick="colour"]');
+    await page.waitForSelector(".sheet .themes");
+    await page.click('.sheet .swatch[aria-label="Coffee"]');
+    await page.waitForSelector(".sheet", { hidden: true });
+    ok((await page.$eval('.pick-row[data-pick="colour"] .pick-value', (e) => e.textContent)) === "Coffee", "the colour row shows the selected theme");
     ok((await page.$eval(".pv", (e) => e.getAttribute("data-theme"))) === "coffee", "preview switched to the coffee theme");
     await shot("07-step4-look");
     await page.click("#primary");
@@ -651,8 +659,11 @@ async function scenarioOffline(browser) {
     console.log("Step 3 + 4: skip wallet, pick a theme");
     await page.waitForSelector(".add");
     await page.click("#primary");
-    await page.waitForSelector(".themes");
-    await page.click('.swatch[aria-label="Coffee"]');
+    await page.waitForSelector(".pick-list .pick-row");
+    await page.click('.pick-row[data-pick="colour"]');
+    await page.waitForSelector(".sheet .themes");
+    await page.click('.sheet .swatch[aria-label="Coffee"]');
+    await page.waitForSelector(".sheet", { hidden: true });
     ok((await page.$eval(".pv", (e) => e.getAttribute("data-theme"))) === "coffee", "preview uses the coffee theme");
     await page.click("#primary");
 

@@ -532,49 +532,111 @@
 
   /* ----- look ----- */
 
-  function lookPanel() {
-    var avatars = h("div", { class: "avatars", role: "radiogroup", "aria-label": "Avatar" });
-    function paintAvatars() {
-      var options = [{ id: "", label: "Your initials" }].concat(T.AVATARS);
-      avatars.replaceChildren.apply(avatars, options.map(function (a) {
-        var on = (S.avatar || "") === a.id;
-        return h("button", {
-          class: "avatar-pick", type: "button", role: "radio", "aria-checked": String(on),
-          "aria-label": a.label || "Your initials",
-          onClick: function () { S.avatar = a.id; paintAvatars(); changed(); }
-        }, a.id ? T.avatar(a.id) : h("span", { class: "avatar-letter" }, T.monogram(S.title || "A")));
-      }));
-    }
-    paintAvatars();
+  /* ----- look: selected value + a picker sheet ----- */
 
-    var group = h("div", { class: "themes", role: "radiogroup", "aria-label": "Colour theme" });
-    function paintThemes() {
-      group.replaceChildren.apply(group, T.THEMES.map(function (t, i) {
-        var on = t.id === S.theme;
-        return h("button", { class: "swatch", type: "button", role: "radio", "aria-checked": String(on), tabindex: on ? "0" : "-1", "aria-label": t.name,
-          onClick: function () { pick(t.id); },
-          onKeydown: function (e) {
-            var d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
-            if (!d) return;
-            e.preventDefault();
-            pick(T.THEMES[(i + d + T.THEMES.length) % T.THEMES.length].id, true);
-          } },
-          h("span", { class: "dot", style: "background:" + t.color }, icon("check")), t.name);
-      }));
+  function openSheet(title, build) {
+    var overlay = h("div", { class: "sheet" });
+    var closeBtn = h("button", { class: "sheet-close", type: "button", "aria-label": "Close" }, icon("x"));
+    var card = h("div", { class: "sheet-card", role: "dialog", "aria-modal": "true", "aria-labelledby": "sheetTitle" },
+      h("div", { class: "sheet-head" }, h("h2", { id: "sheetTitle" }, title), closeBtn));
+    var returnFocus = document.activeElement;
+    function onKey(e) { if (e.key === "Escape") { e.preventDefault(); close(); } }
+    function close() {
+      overlay.remove();
+      document.body.classList.remove("sheet-open");
+      document.removeEventListener("keydown", onKey);
+      if (returnFocus && returnFocus.focus) returnFocus.focus();
     }
-    function pick(id, focus) {
-      S.theme = id; paintThemes(); changed();
-      if (focus) { var el = group.querySelector('[aria-checked="true"]'); if (el) el.focus(); }
+    closeBtn.addEventListener("click", close);
+    overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+    document.addEventListener("keydown", onKey);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    document.body.classList.add("sheet-open");
+    build(card, close);
+    setTimeout(function () {
+      var first = card.querySelector('[aria-checked="true"]') || card.querySelector(".sheet-close");
+      if (first) first.focus();
+    }, 0);
+    return close;
+  }
+
+  function pickRow(name) {
+    var preview = h("span", { class: "pick-preview" });
+    var value = h("span", { class: "pick-value" });
+    var row = h("button", { class: "pick-row", type: "button", "aria-haspopup": "dialog", "data-pick": name.toLowerCase().replace(/\s+/g, "-") },
+      preview, h("span", { class: "pick-text" }, h("span", { class: "pick-name" }, name), value), h("span", { class: "pick-icon" }, icon("next")));
+    return { row: row, preview: preview, value: value };
+  }
+
+  function lookPanel() {
+    var avatar = pickRow("Avatar");
+    var colour = pickRow("Colour");
+    var amounts = pickRow("Quick amounts");
+
+    function avatarLabel() { return S.avatar ? (T.avatarLabel(S.avatar) || "Icon") : "Your initials"; }
+    function paintAvatar() {
+      avatar.preview.replaceChildren(S.avatar && T.avatar ? T.avatar(S.avatar) : h("span", { class: "pick-letter" }, T.monogram(S.title || "A")));
+      avatar.value.textContent = avatarLabel();
     }
-    var presets = h("input", { class: "input", id: "f-presets", type: "text", inputmode: "numeric", autocomplete: "off", placeholder: "100, 500, 1000, 5000", value: S.presets.join(", ") });
-    presets.addEventListener("input", function () { S.presets = parsePresets(presets.value); changed(); });
-    paintThemes();
+    function themeObj(id) { for (var i = 0; i < T.THEMES.length; i++) if (T.THEMES[i].id === id) return T.THEMES[i]; return null; }
+    function paintColour() {
+      var t = themeObj(S.theme);
+      colour.preview.replaceChildren(h("span", { class: "pick-dot", style: "background:" + (t ? t.color : "currentColor") }));
+      colour.value.textContent = t ? t.name : S.theme;
+    }
+    function paintAmounts() {
+      amounts.preview.replaceChildren(h("span", { class: "pick-letter" }, "৳"));
+      amounts.value.textContent = S.presets.length ? S.presets.join(", ") : "None";
+    }
+
+    avatar.row.addEventListener("click", function () {
+      openSheet("Avatar", function (card, close) {
+        var grid = h("div", { class: "avatars sheet-avatars", role: "radiogroup", "aria-label": "Avatar" });
+        var options = [{ id: "", label: "Your initials" }].concat(T.AVATARS);
+        options.forEach(function (a) {
+          var on = (S.avatar || "") === a.id;
+          grid.appendChild(h("button", {
+            class: "avatar-pick", type: "button", role: "radio", "aria-checked": String(on),
+            "aria-label": a.label || "Your initials",
+            onClick: function () { S.avatar = a.id; paintAvatar(); changed(); close(); }
+          }, a.id ? T.avatar(a.id) : h("span", { class: "avatar-letter" }, T.monogram(S.title || "A"))));
+        });
+        card.appendChild(grid);
+      });
+    });
+
+    colour.row.addEventListener("click", function () {
+      openSheet("Colour", function (card, close) {
+        var grid = h("div", { class: "themes sheet-themes", role: "radiogroup", "aria-label": "Colour theme" });
+        T.THEMES.forEach(function (t) {
+          var on = t.id === S.theme;
+          grid.appendChild(h("button", {
+            class: "swatch", type: "button", role: "radio", "aria-checked": String(on), "aria-label": t.name,
+            onClick: function () { S.theme = t.id; paintColour(); changed(); close(); }
+          }, h("span", { class: "dot", style: "background:" + t.color }, icon("check")), t.name));
+        });
+        card.appendChild(grid);
+      });
+    });
+
+    amounts.row.addEventListener("click", function () {
+      openSheet("Quick amounts", function (card, close) {
+        var input = h("input", { class: "input", id: "f-presets", type: "text", inputmode: "numeric", autocomplete: "off", placeholder: "100, 500, 1000, 5000", value: S.presets.join(", ") });
+        var hint = h("p", { class: "hint" }, "Taka, separated by commas. Up to 6. They appear as one-tap buttons on your page.");
+        var save = h("button", { class: "btn", type: "button", onClick: function () { S.presets = parsePresets(input.value); paintAmounts(); changed(); close(); } }, "Save");
+        card.appendChild(h("div", { class: "sheet-form" }, h("label", { class: "label", for: "f-presets" }, "Quick amounts"), input, hint,
+          h("div", { class: "sheet-actions" }, save)));
+      });
+    });
+
+    paintAvatar();
+    paintColour();
+    paintAmounts();
     return h("div", { class: "panel" }, head("look"),
       h("div", { class: "stack" },
-        h("div", { class: "field" }, h("span", { class: "label" }, "Avatar"), avatars,
-          h("p", { class: "hint" }, "Pick an icon for the top of your page, or keep your initials.")),
-        h("div", { class: "field" }, h("span", { class: "label" }, "Colour"), group),
-        field("Quick amounts", presets, "Taka, separated by commas. Up to 6. They appear as one-tap buttons on your page.", true)
+        h("div", { class: "pick-list" }, avatar.row, colour.row, amounts.row),
+        h("p", { class: "hint" }, "Tap a row to change it. Your page preview updates as you pick.")
       ));
   }
 

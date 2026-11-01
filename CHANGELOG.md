@@ -38,6 +38,12 @@ All notable changes to this project are documented here. The format is based on
   Add future schema changes as new `YYYYMMDDHHMMSS_name.sql` files. Setup instructions are in
   [`docs/website.md`](./docs/website.md#automatic-database-migrations).
 
+- **Supabase project settings as code.** [`supabase/config.toml`](./supabase/config.toml) pins the
+  production project's auth settings (site URL `https://deshiqr.netlify.app`, `/app` redirect URLs,
+  JWT expiry, sign-ups enabled, anonymous sign-ins off, email confirmations off until SMTP is set up)
+  via a `[remotes.production]` block, plus local-development defaults. The Supabase GitHub integration
+  applies these alongside the migrations, so most of the project configuration lives in the repo.
+
 ### Fixed
 
 - **Netlify secret scanning false positive on the public Supabase values.** The build writes

@@ -21,6 +21,7 @@
   ];
   var DOWNLOAD = { id: "download", tab: "Download", icon: "download", title: "Take your page with you", lead: "Download your payment page as one HTML file. Host it anywhere: Netlify Drop, GitHub Pages, or your own server. No account needed." };
   var SHARE = { id: "share", tab: "Share", icon: "share" };
+  var posterFormat = "a4";
   var TAG_NAMES = { "00": "Format", "01": "Static (11) or dynamic (12)", "52": "Category", "53": "Currency (050 = BDT)", "54": "Amount", "58": "Country", "59": "Merchant name", "60": "City", "62": "Additional data", "63": "Checksum (recalculated)" };
 
   var LOCAL_DRAFT_KEY = "deshiqr.local.v1";
@@ -644,6 +645,48 @@
       ));
   }
 
+  /* ----- printable poster (A4 / A5) ----- */
+
+  function posterPanel() {
+    var section = h("div", null);
+    if (!S.qr || !window.DeshiPoster) {
+      section.appendChild(h("p", { class: "hint", style: "margin:0" }, "Add a Bangla QR in step 2 to make a printable poster."));
+      return section;
+    }
+    var preview = h("div", { class: "poster-preview" });
+    var a4 = h("button", { class: "btn sec sm", type: "button", "aria-pressed": "true" }, "A4 portrait");
+    var a5 = h("button", { class: "btn sec sm", type: "button", "aria-pressed": "false" }, "A5 portrait");
+    var downloadBtn = h("button", { class: "btn sec", type: "button" }, icon("download"), "Download poster (.svg)");
+    var printBtn = h("button", { class: "btn sec", type: "button" }, icon("external"), "Print / Save as PDF");
+
+    function row() {
+      var r = toRow();
+      r.title = S.title.trim() || "Your business";
+      return r;
+    }
+    function paint() {
+      a4.setAttribute("aria-pressed", String(posterFormat === "a4"));
+      a5.setAttribute("aria-pressed", String(posterFormat === "a5"));
+      var svg = window.DeshiPoster.build(row(), posterFormat);
+      preview.replaceChildren(svg || h("p", { class: "hint" }, "Add a Bangla QR to make a poster."));
+    }
+    a4.addEventListener("click", function () { posterFormat = "a4"; paint(); });
+    a5.addEventListener("click", function () { posterFormat = "a5"; paint(); });
+    downloadBtn.addEventListener("click", function () {
+      var name = window.DeshiPoster.download(row(), posterFormat);
+      if (name) T.toast("Poster downloaded");
+    });
+    printBtn.addEventListener("click", function () {
+      if (!window.DeshiPoster.print(row(), posterFormat)) T.toast("Allow pop-ups to print the poster", { error: true });
+    });
+    paint();
+    section.appendChild(h("div", { class: "poster-formats" }, a4, a5, h("span", { class: "poster-hint-inline" }, "The QR is your Bangla QR, not your page link.")));
+    section.appendChild(preview);
+    section.appendChild(h("div", { class: "row-actions" }, downloadBtn, printBtn));
+    section.appendChild(h("p", { class: "hint" }, "Print at 100% (Actual size), portrait, no headers. On A5, scan from arm’s length. Payer scans and types the amount in their app."));
+    return section;
+  }
+
   /* ----- download (local mode only) ----- */
 
   function downloadFilename() {
@@ -684,6 +727,10 @@
         h("div", { class: "divider" }),
         h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("store")), h("h2", null, "How to host it")),
         tipList(hosts),
+        h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Printable poster")),
+        h("p", { class: "section-sub" }, "A4 or A5 portrait, for your counter, wall or stall. Your static Bangla QR is on it, plus bKash, Nagad, Rocket, upay and the top bank apps."),
+        posterPanel(),
         h("div", { class: "notice" }, icon("info"), h("span", null, "Only the web fonts load from the internet. Everything else is inside the file, so it works from any static host, or straight from a folder on your computer."))
       ));
   }
@@ -731,6 +778,10 @@
         h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Download your page as HTML")),
         h("p", { class: "section-sub" }, "One file with your page, styles and QR engine inside. Host it anywhere. Changes you make here won’t reach the file, so download a fresh copy after editing."),
         h("button", { class: "btn sec", type: "button", onClick: downloadShare }, icon("download"), "Download page (.html)"),
+        h("div", { class: "divider" }),
+        h("div", { class: "section-title" }, h("span", { class: "ic-tile" }, icon("download")), h("h2", null, "Printable poster")),
+        h("p", { class: "section-sub" }, "A4 or A5 portrait for your counter, wall or stall. Your static Bangla QR is on it, plus bKash, Nagad, Rocket, upay and the top bank apps. Customers scan and type the amount in their own app."),
+        posterPanel(),
         h("div", { class: "divider" }),
         h("label", { class: "switch" }, h("span", null, h("b", null, "Page is live"), h("span", { class: "d" }, "Turn off to hide it. The link shows “doesn’t exist” until you turn it back on.")), toggle, h("span", { class: "track" })),
         h("div", { class: "danger-zone" },

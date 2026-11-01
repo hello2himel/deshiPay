@@ -146,6 +146,16 @@ After publishing, the same sections become tabs, plus **Share** (link, link with
 
 **Customer page**: pick *Scan QR*, *Wallet* or *Bank* (only the ones the owner set up). For QR, type an amount (Bangla digits work) and the QR appears. On phones, *Save QR image* opens the share sheet so it can be saved and picked from the gallery inside a banking app. Wallet numbers and bank lines are tap-to-copy.
 
+### Printable poster (A4 / A5)
+
+The Share tab (and the local **Download** step) offers an **A4 or A5 portrait poster** as a
+self-contained SVG: download it or use **Print / Save as PDF** (100% scale, portrait, no headers).
+The poster's QR is the owner's static Bangla QR, never the DeshiPay page URL, so a customer scans it
+and enters the amount in their own app. It also shows the supported app artwork (Google Play icons):
+bKash, Nagad, Rocket, upay, Citytouch, BRAC Bank Astha, EBL Skybanking, NexusPay and MTB Neo, plus
+the Bangla QR mark. App icons are trademarks of their owners and are used only to identify
+compatibility; the artwork is embedded, so the file has no external image requests.
+
 `/username?amount=1500` locks the amount (amounts are capped at **৳50,000**), and `?method=wallet` / `?method=bank` (or `?method=qr`) opens the page on that tab; switching tabs updates the URL so the address can be shared.
 
 If the database is paused or unreachable, people can still build a page without an account and download

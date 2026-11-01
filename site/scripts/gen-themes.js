@@ -126,9 +126,13 @@ css += "}\n";
 
 // Explicit light/dark choice from the nav toggle overrides the system preference.
 css += "\n/* data-mode on <html> wins over prefers-color-scheme (theme toggle) */\n";
+// Both the root and any nested theme scope (e.g. the PayView preview's own
+// [data-theme] element) must follow the explicit mode, not the OS preference.
+const modeSel = (mode, id) =>
+  'html[data-mode="' + mode + '"][data-theme="' + id + '"], html[data-mode="' + mode + '"] [data-theme="' + id + '"]';
 THEMES.forEach((t) => {
-  css += block('html[data-mode="light"][data-theme="' + t.id + '"]', lightVars(t), "");
-  css += block('html[data-mode="dark"][data-theme="' + t.id + '"]', darkVars(t), "");
+  css += block(modeSel("light", t.id), lightVars(t), "");
+  css += block(modeSel("dark", t.id), darkVars(t), "");
 });
 
 fs.writeFileSync(path.join(__dirname, "..", "public", "css", "themes.css"), css);

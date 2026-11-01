@@ -405,7 +405,7 @@
 }
 
 /* data-mode on <html> wins over prefers-color-scheme (theme toggle) */
-html[data-mode="light"][data-theme="emerald"] {
+html[data-mode="light"][data-theme="emerald"], html[data-mode="light"] [data-theme="emerald"] {
   --bg: #E6F0ED;
   --panel: #FFFFFF;
   --sunk: #DAE9E4;
@@ -425,7 +425,7 @@ html[data-mode="light"][data-theme="emerald"] {
   --slip-accent-soft: #E6F0ED;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="emerald"] {
+html[data-mode="dark"][data-theme="emerald"], html[data-mode="dark"] [data-theme="emerald"] {
   --bg: #141F25;
   --panel: #1A212B;
   --sunk: #24313C;
@@ -445,7 +445,7 @@ html[data-mode="dark"][data-theme="emerald"] {
   --slip-accent-soft: #E6F0ED;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="rose"] {
+html[data-mode="light"][data-theme="rose"], html[data-mode="light"] [data-theme="rose"] {
   --bg: #FCE7F1;
   --panel: #FFFFFF;
   --sunk: #FBDCE9;
@@ -465,7 +465,7 @@ html[data-mode="light"][data-theme="rose"] {
   --slip-accent-soft: #FCE7F1;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="rose"] {
+html[data-mode="dark"][data-theme="rose"], html[data-mode="dark"] [data-theme="rose"] {
   --bg: #261023;
   --panel: #291429;
   --sunk: #3B1E39;
@@ -485,7 +485,7 @@ html[data-mode="dark"][data-theme="rose"] {
   --slip-accent-soft: #FCE7F1;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="crimson"] {
+html[data-mode="light"][data-theme="crimson"], html[data-mode="light"] [data-theme="crimson"] {
   --bg: #F9E9EB;
   --panel: #FFFFFF;
   --sunk: #F6DEE0;
@@ -505,7 +505,7 @@ html[data-mode="light"][data-theme="crimson"] {
   --slip-accent-soft: #F9E9EB;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="crimson"] {
+html[data-mode="dark"][data-theme="crimson"], html[data-mode="dark"] [data-theme="crimson"] {
   --bg: #281521;
   --panel: #2A1927;
   --sunk: #3D2437;
@@ -525,7 +525,7 @@ html[data-mode="dark"][data-theme="crimson"] {
   --slip-accent-soft: #F9E9EB;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="amber"] {
+html[data-mode="light"][data-theme="amber"], html[data-mode="light"] [data-theme="amber"] {
   --bg: #F8EEE6;
   --panel: #FFFFFF;
   --sunk: #F4E5DA;
@@ -545,7 +545,7 @@ html[data-mode="light"][data-theme="amber"] {
   --slip-accent-soft: #F8EEE6;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="amber"] {
+html[data-mode="dark"][data-theme="amber"], html[data-mode="dark"] [data-theme="amber"] {
   --bg: #271A1C;
   --panel: #2A1C23;
   --sunk: #3B2A31;
@@ -565,7 +565,7 @@ html[data-mode="dark"][data-theme="amber"] {
   --slip-accent-soft: #F8EEE6;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="coffee"] {
+html[data-mode="light"][data-theme="coffee"], html[data-mode="light"] [data-theme="coffee"] {
   --bg: #F2EDEA;
   --panel: #FFFFFF;
   --sunk: #EBE4E0;
@@ -585,7 +585,7 @@ html[data-mode="light"][data-theme="coffee"] {
   --slip-accent-soft: #F2EDEA;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="coffee"] {
+html[data-mode="dark"][data-theme="coffee"], html[data-mode="dark"] [data-theme="coffee"] {
   --bg: #241A21;
   --panel: #271C27;
   --sunk: #382A37;
@@ -605,7 +605,7 @@ html[data-mode="dark"][data-theme="coffee"] {
   --slip-accent-soft: #F2EDEA;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="olive"] {
+html[data-mode="light"][data-theme="olive"], html[data-mode="light"] [data-theme="olive"] {
   --bg: #EDF2E7;
   --panel: #FFFFFF;
   --sunk: #E4EBDB;
@@ -625,7 +625,7 @@ html[data-mode="light"][data-theme="olive"] {
   --slip-accent-soft: #EDF2E7;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="olive"] {
+html[data-mode="dark"][data-theme="olive"], html[data-mode="dark"] [data-theme="olive"] {
   --bg: #201F1E;
   --panel: #242025;
   --sunk: #333033;
@@ -645,7 +645,7 @@ html[data-mode="dark"][data-theme="olive"] {
   --slip-accent-soft: #EDF2E7;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="teal"] {
+html[data-mode="light"][data-theme="teal"], html[data-mode="light"] [data-theme="teal"] {
   --bg: #E7F1F1;
   --panel: #FFFFFF;
   --sunk: #DBEAE9;
@@ -665,7 +665,7 @@ html[data-mode="light"][data-theme="teal"] {
   --slip-accent-soft: #E7F1F1;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="teal"] {
+html[data-mode="dark"][data-theme="teal"], html[data-mode="dark"] [data-theme="teal"] {
   --bg: #151F29;
   --panel: #1B202D;
   --sunk: #253040;
@@ -685,7 +685,7 @@ html[data-mode="dark"][data-theme="teal"] {
   --slip-accent-soft: #E7F1F1;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="ocean"] {
+html[data-mode="light"][data-theme="ocean"], html[data-mode="light"] [data-theme="ocean"] {
   --bg: #E8EFFA;
   --panel: #FFFFFF;
   --sunk: #DDE7F8;
@@ -705,7 +705,7 @@ html[data-mode="light"][data-theme="ocean"] {
   --slip-accent-soft: #E8EFFA;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="ocean"] {
+html[data-mode="dark"][data-theme="ocean"], html[data-mode="dark"] [data-theme="ocean"] {
   --bg: #191B2E;
   --panel: #1F1D32;
   --sunk: #2B2B47;
@@ -725,7 +725,7 @@ html[data-mode="dark"][data-theme="ocean"] {
   --slip-accent-soft: #E8EFFA;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="violet"] {
+html[data-mode="light"][data-theme="violet"], html[data-mode="light"] [data-theme="violet"] {
   --bg: #F0ECFB;
   --panel: #FFFFFF;
   --sunk: #E9E2F9;
@@ -745,7 +745,7 @@ html[data-mode="light"][data-theme="violet"] {
   --slip-accent-soft: #F0ECFB;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="violet"] {
+html[data-mode="dark"][data-theme="violet"], html[data-mode="dark"] [data-theme="violet"] {
   --bg: #20192E;
   --panel: #241B32;
   --sunk: #332847;
@@ -765,7 +765,7 @@ html[data-mode="dark"][data-theme="violet"] {
   --slip-accent-soft: #F0ECFB;
   color-scheme: dark;
 }
-html[data-mode="light"][data-theme="graphite"] {
+html[data-mode="light"][data-theme="graphite"], html[data-mode="light"] [data-theme="graphite"] {
   --bg: #EAEBED;
   --panel: #FFFFFF;
   --sunk: #E0E1E4;
@@ -785,7 +785,7 @@ html[data-mode="light"][data-theme="graphite"] {
   --slip-accent-soft: #EAEBED;
   color-scheme: light;
 }
-html[data-mode="dark"][data-theme="graphite"] {
+html[data-mode="dark"][data-theme="graphite"], html[data-mode="dark"] [data-theme="graphite"] {
   --bg: #211D2A;
   --panel: #251F2E;
   --sunk: #342E42;

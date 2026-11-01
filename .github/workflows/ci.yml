@@ -39,7 +39,9 @@ jobs:
 
   python:
     name: python package (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    # Pin the runner: ubuntu-latest is migrating to 24.04+ images that no longer
+    # ship prebuilt Python 3.9, which pyproject.toml still supports (>=3.9).
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:

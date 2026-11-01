@@ -58,11 +58,27 @@
 .land-foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; }
 
 @media (min-width: 900px) {
-  .land { grid-template-columns: minmax(0, 1fr) 420px; grid-template-areas: "top auth" "rest auth"; grid-template-rows: auto 1fr; column-gap: 72px; padding-top: 56px; }
-  .auth { position: sticky; top: 92px; }
+  /* Desktop: the demo payment slip sits on the right, the sign-up card takes
+     the spot the slip used to have (left column, after the points), and the
+     "how it works" row spans both columns at the bottom. */
+  .land {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    grid-template-areas:
+      "top    demo"
+      "points demo"
+      "auth   demo"
+      "how    how";
+    grid-template-rows: auto auto auto auto;
+    column-gap: 72px;
+    padding-top: 56px;
+  }
+  .hero-rest { display: contents; }
+  .points { grid-area: points; }
+  .auth { grid-area: auth; position: static; width: 100%; max-width: 480px; }
+  .demo { grid-area: demo; justify-self: center; align-self: start; position: sticky; top: 92px; margin: 0; }
+  .how { grid-area: how; margin-top: 12px; }
   .how ol { grid-template-columns: repeat(3, 1fr); gap: 24px; }
   .how li { grid-template-columns: 1fr; }
-  .demo { justify-self: start; margin-left: 12px; }
 }
 
 /* =====================================================================

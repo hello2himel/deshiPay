@@ -39,6 +39,16 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Reserved usernames expanded from 68 to 216.** The list now also protects route/anchor names
+  (`features`, `faq`, `demo`, `login`, `checkout`...), auth/system words, support/moderation/reporting
+  addresses (`abuse`, `report`, `dmca`, `trust-safety`...), platform/brand variants
+  (`deshipay`, `deshi-pay`, `deshi-qr`, `takaqr`...), payment providers (`bkash`, `nagad`, `rocket`,
+  `upay`, `paypal`, `stripe`, `visa`, ...) and local bank names, so they cannot be used to impersonate
+  a route or a brand. A new migration recreates `is_reserved_username()` for existing projects, and
+  `site/tests/reserved.test.js` (now in CI) fails if the site's `RESERVED` and the database list drift.
+
+### Changed
+
 - **Footer disclaimer.** The footer blurb now opens with **"Not a payment processor."** and spells out
   what DeshiPay is: just a page that shows the live QR and wallet/bank details, with customers paying
   from their own banking app. It appears under the brand on every page.

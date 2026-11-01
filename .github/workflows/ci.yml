@@ -23,6 +23,7 @@ jobs:
         run: |
           node site/tests/qr.test.js
           node site/tests/export.test.js
+          node site/tests/reserved.test.js
 
       - name: Generated theme CSS is current
         run: |

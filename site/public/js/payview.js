@@ -32,22 +32,6 @@
       return m;
     }
 
-    // Small supported-app strip under the QR. Transparent brand marks
-    // (Nagad, upay, Bangla QR) keep their own shape; app icons get a rounded tile.
-    function appStrip() {
-      var L = window.DeshiPayIcons;
-      if (!L) return null;
-      var bare = { "Nagad": 1, "upay": 1, "Bangla QR": 1 };
-      function item(it) {
-        return h("div", { class: "pv-app" + (bare[it.name] ? " bare" : ""), title: it.name },
-          h("img", { src: it.src, alt: it.name, "data-app": it.name, loading: "lazy" }));
-      }
-      var row1 = L.mfs.concat([L.banglaqr]);
-      return h("div", { class: "pv-apps", "aria-label": "Apps that support this QR" },
-        h("div", { class: "pv-app-row" }, row1.map(item)),
-        h("div", { class: "pv-app-row" }, L.banks.map(item)));
-    }
-
     /* ---------- QR panel ---------- */
 
     function qrPanel() {
@@ -86,7 +70,6 @@
         h("div", { class: "cut" }),
         h("div", { class: "slip-bot center" },
           box,
-          appStrip(),
           h("div", { class: "slip-actions" }, save),
           help
         )

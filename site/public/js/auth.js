@@ -33,7 +33,7 @@
   };
 
   function mountDemo() {
-    var host = document.getElementById("demo") || document.getElementById("demoPayment");
+    var host = document.getElementById("demoPayment") || document.getElementById("demo");
     if (!host || !window.PayView) return;
     // The same customer page pay.js mounts, minus the page-only tail (footer)
     // and the landing-page autofocus: full QR / Wallet / Bank tabs. The
@@ -52,18 +52,6 @@
     }
   }
   mountDemo();
-
-  // Small proof strip in the hero: the same official marks used on payment pages.
-  (function mountHeroApps() {
-    var host = document.getElementById("heroApps");
-    var L = window.DeshiPayIcons;
-    if (!host || !L) return;
-    var bare = { "Nagad": 1, "upay": 1, "Bangla QR": 1 };
-    host.replaceChildren.apply(host, L.mfs.concat([L.banks[0]]).map(function (it) {
-      return h("span", { class: "hero-app" + (bare[it.name] ? " bare" : ""), title: it.name },
-        h("img", { src: it.src, alt: it.name, loading: "lazy" }));
-    }));
-  })();
 
   var mode = "email"; // "email" (send a code) or "otp" (enter the code)
   var lastEmail = "";

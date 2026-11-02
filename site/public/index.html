@@ -39,18 +39,16 @@
         <a class="btn hero-cta" href="/login">Create your page <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn sec hero-demo-link" href="#demo">See a live page <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
       </div>
-      <div class="hero-methods" aria-label="Works with">
-        <span class="hero-methods-label">Works with</span>
-        <span class="hero-apps" id="heroApps"></span>
-        <span>and any bank app</span>
-      </div>
       <div id="setupNotice"></div>
     </section>
 
   </div>
 
   <!-- The real customer page, mounted by auth.js with a synthetic demo QR. -->
-  <section class="demo" id="demo" aria-label="Live payment page demo"></section>
+  <section class="demo" id="demo" aria-label="Live payment page demo">
+    <div class="works-with demo-works" data-works-with></div>
+    <div id="demoPayment"></div>
+  </section>
 
   <section class="features" id="features">
     <h2>Everything you need to get paid</h2>
@@ -162,6 +160,7 @@
 <script src="/js/providers.js"></script>
 <script src="/js/avatars.js"></script>
 <script src="/js/pay-icons.js"></script>
+<script src="/js/works-with.js"></script>
 <script src="/js/payview.js"></script>
 <script src="/js/auth.js"></script>
 <script src="/js/nav.js"></script>

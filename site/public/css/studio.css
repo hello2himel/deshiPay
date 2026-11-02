@@ -11,7 +11,7 @@
 .top-actions .btn.ghost { color: var(--muted); }
 .top-actions .btn.ghost:hover { background: var(--sunk); color: var(--ink); filter: none; }
 .top-actions .btn.sm:not(.ghost) { margin-left: 6px; padding: 0 16px; min-height: 40px; border-radius: 11px; }
-.top-menu { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+.top-menu { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .nav-btn { display: none; width: 44px; height: 44px; flex: none; border: 0; border-radius: 12px; background: var(--sunk); color: var(--ink); align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 0; }
 .nav-btn span { display: block; width: 18px; height: 2px; border-radius: 2px; background: currentColor; }
 .theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 40px; min-height: 40px; padding: 0; flex: none; border: 0; border-radius: 11px; background: transparent; color: var(--muted); cursor: pointer; }

@@ -26,12 +26,9 @@
     qr_city: "Bogra",
     ref_prefix: "",
     ref_len: 0,
-    wallets: [
-      { provider: "bkash", type: "personal", number: "01700000000" },
-      { provider: "nagad", type: "personal", number: "01800000000" }
-    ],
+    wallets: [],
     banks: [
-      { bank: "BRAC Bank", name: "Demo Store", number: "1234567890123", branch: "Bogra", routing: "123456789", swift: "" }
+      { bank: "Dutch-Bangla Bank", name: "Himel Das", number: "1251070048232", branch: "Bogura", routing: "090100378", swift: "DBBLBDDH" }
     ]
   };
 
@@ -55,6 +52,18 @@
     }
   }
   mountDemo();
+
+  // Small proof strip in the hero: the same official marks used on payment pages.
+  (function mountHeroApps() {
+    var host = document.getElementById("heroApps");
+    var L = window.DeshiPayIcons;
+    if (!host || !L) return;
+    var bare = { "Nagad": 1, "upay": 1, "Bangla QR": 1 };
+    host.replaceChildren.apply(host, L.mfs.concat([L.banks[0]]).map(function (it) {
+      return h("span", { class: "hero-app" + (bare[it.name] ? " bare" : ""), title: it.name },
+        h("img", { src: it.src, alt: it.name, loading: "lazy" }));
+    }));
+  })();
 
   var mode = "email"; // "email" (send a code) or "otp" (enter the code)
   var lastEmail = "";

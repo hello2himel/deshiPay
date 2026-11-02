@@ -105,6 +105,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Richer home hero.** The hero now has a secondary “See a live page” jump link, a “Works with” strip of
+  official app marks, and no longer forces an empty full viewport on phones, so the live payment demo
+  peeks into the first screen. Desktop keeps the full-height split with the demo card beside the copy.
+
+### Changed
+
 - **Homepage live demo now uses DeshiPay’s own details.** The hero PayView demo is titled DeshiPay and its
   bank tab shows the real Dutch-Bangla Bank account (Himel Das, 1251070048232, Bogura, routing 090100378,
   SWIFT DBBLBDDH); the dummy wallet numbers were removed, leaving the live QR and bank method. The demo

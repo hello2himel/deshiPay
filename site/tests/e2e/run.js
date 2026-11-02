@@ -220,7 +220,7 @@ async function scenarioOnline(browser) {
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
     ok(!!(await page.$(".hero-actions .hero-demo-link[href='#demo']")), "the hero links to the live demo");
-    ok((await page.$$eval(".hero-works img", (els) => els.length)) === 7, "the hero shows the supported app marks");
+    ok((await page.$$eval(".hero-works img", (els) => els.length)) === 8, "the hero shows the supported app marks");
     ok(
       (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "emerald",
       "the site uses the green default theme"
@@ -623,7 +623,7 @@ async function scenarioOnline(browser) {
     ok((await page.$$eval(".pv-avatar svg", (els) => els.length)) === 1, "customer page shows the chosen avatar icon");
     ok(!(await page.$(".pv-apps")), "the customer QR no longer carries the app icon grid");
     await page.waitForSelector(".pv-works img");
-    ok((await page.$$eval(".pv-works img", (els) => els.length)) === 7, "the pay page shows Works with below How to pay");
+    ok((await page.$$eval(".pv-works img", (els) => els.length)) === 8, "the pay page shows Works with below How to pay");
     const worksBelowHelp = await page.evaluate(() => {
       const help = document.querySelector(".pv-help").getBoundingClientRect();
       const works = document.querySelector(".pv-works").getBoundingClientRect();
@@ -803,7 +803,7 @@ async function scenarioOnline(browser) {
         donateText.includes("Dutch-Bangla Bank") && donateText.includes("090100378") && donateText.includes("DBBLBDDH"),
       "the donate page shows the full bank details"
     );
-    ok((await page.$$eval(".pv-works img", (els) => els.length)) === 7, "the donate page repeats the Works with strip below How to pay");
+    ok((await page.$$eval(".pv-works img", (els) => els.length)) === 8, "the donate page repeats the Works with strip below How to pay");
 
     console.log("Forgot password: OTP then new password");
     await page.click(".auth-links button");

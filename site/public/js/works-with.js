@@ -4,7 +4,7 @@
   function render() {
     var L = window.DeshiPayIcons;
     if (!L) return;
-    var wanted = { "Citytouch": 1, "BRAC Bank Astha": 1, "MTB Neo": 1 };
+    var wanted = { "Citytouch": 1, "BRAC Bank Astha": 1, "EBL Skybanking": 1, "MTB Neo": 1 };
     var items = L.mfs.concat(L.banks.filter(function (b) { return wanted[b.name]; }));
     Array.prototype.forEach.call(document.querySelectorAll("[data-works-with]"), function (host) {
       var apps = document.createElement("span");

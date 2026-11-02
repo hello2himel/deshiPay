@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  :root { --green:#056B4E; --bright:#34D6A4; --mint:#E6F0ED; --ink:#181D2B; --muted:#5F6573; --paper:#F7FBF9; --line:#B9D6CD; --dark:#082A20; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:#0b1712; }
+  #stage { position:relative; width:1920px; height:1080px; overflow:hidden; font-family:Figtree,Arial,sans-serif; color:var(--ink); background:var(--paper); }
+  .scene { position:absolute; inset:0; padding:96px 120px; opacity:0; overflow:hidden; }
+  .dark { background:var(--dark); color:#fff; }
+  .light { background:var(--paper); }
+  .mint { background:var(--mint); }
+  .eyebrow { margin:0 0 20px; font:800 20px/1.2 Figtree,sans-serif; letter-spacing:.17em; text-transform:uppercase; color:var(--green); }
+  .dark .eyebrow { color:var(--bright); }
+  .display { margin:0; font-family:"Bricolage Grotesque",Arial,sans-serif; font-weight:800; letter-spacing:-.045em; }
+  .sub { margin:24px 0 0; font-size:34px; line-height:1.4; color:var(--muted); max-width:840px; }
+  .dark .sub { color:rgba(230,240,237,.76); }
+  .orb { position:absolute; border-radius:50%; pointer-events:none; }
+  .mark { display:block; }
+  .qr-slot svg { display:block; width:100%; height:auto; }
+  .typing { white-space:pre-wrap; }
+
+  /* S1 hook */
+  #s1 .orb1 { width:1000px; height:1000px; right:-340px; top:-420px; background:radial-gradient(circle,rgba(52,214,164,.24),transparent 68%); }
+  #s1 .orb2 { width:520px; height:520px; left:-220px; bottom:-260px; background:radial-gradient(circle,rgba(5,107,78,.7),transparent 70%); }
+  #s1 .display { font-size:118px; line-height:1.0; max-width:1180px; position:relative; z-index:2; }
+  #s1 { display:flex; flex-direction:column; justify-content:center; }
+  #s1 .sub { font-size:28px; color:rgba(230,240,237,.62); max-width:620px; }
+  .chips { position:absolute; inset:0; pointer-events:none; }
+  .chip { position:absolute; padding:15px 22px; border:1px solid rgba(230,240,237,.2); border-radius:14px; color:rgba(230,240,237,.55); font:700 24px Figtree,sans-serif; background:rgba(255,255,255,.025); }
+  .chip:nth-child(1){ top:8%; right:9%; }
+  .chip:nth-child(2){ top:23%; right:3%; }
+  .chip:nth-child(3){ bottom:14%; left:7%; }
+  .chip:nth-child(4){ bottom:7%; right:9%; }
+  .chip:nth-child(5){ bottom:23%; left:2%; }
+  .chip:nth-child(6){ top:50%; right:1%; }
+
+  /* S2 problem */
+  .s2-grid { display:grid; grid-template-columns:1fr 660px; gap:100px; align-items:center; height:100%; }
+  #s2 .display { font-size:84px; line-height:1.02; max-width:780px; }
+  .chat { width:660px; border-radius:28px; background:#fff; border:1px solid var(--line); box-shadow:0 34px 70px -46px rgba(8,42,32,.42); padding:24px; }
+  .chat-top { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:16px; margin-bottom:20px; }
+  .chat-top b { font:800 23px "Bricolage Grotesque",sans-serif; }
+  .chat-top span { font-size:15px; color:var(--muted); }
+  .bubble { max-width:82%; padding:15px 18px; border-radius:16px; font-size:22px; line-height:1.35; margin-bottom:12px; }
+  .bubble.in { background:var(--mint); border-bottom-left-radius:5px; }
+  .bubble.out { margin-left:auto; background:var(--green); color:#fff; border-bottom-right-radius:5px; }
+  .bubble small { display:block; font-size:11px; opacity:.65; margin-top:4px; }
+
+  /* S3 fees */
+  #s3 { display:flex; flex-direction:column; justify-content:center; }
+  #s3 .display { font-size:82px; line-height:1.02; max-width:1020px; }
+  #s3 .sub { max-width:800px; }
+  .fee-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:46px; }
+  .fee-card { background:#fff; border:1px solid var(--line); border-radius:20px; padding:22px 20px 20px; box-shadow:0 24px 45px -40px rgba(8,42,32,.4); }
+  .fee-card b { display:block; font:800 31px "Bricolage Grotesque",sans-serif; letter-spacing:-.03em; margin:14px 0 6px; }
+  .fee-card p { margin:0; color:var(--muted); font-size:18px; line-height:1.4; }
+  .fee-card .num { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:var(--mint); color:var(--green); font:800 15px Figtree,sans-serif; }
+  .fee-note { margin-top:24px; display:inline-flex; align-items:center; gap:10px; padding:13px 18px; border-radius:12px; background:rgba(5,107,78,.07); color:var(--green); font:700 20px Figtree,sans-serif; }
+
+  /* S4 meet */
+  #s4 .display { font-size:112px; line-height:1.0; }
+  #s4 .sub { max-width:600px; }
+  .meet-grid { display:grid; grid-template-columns:1fr 520px; gap:120px; align-items:center; height:100%; }
+  .brand-line { display:flex; align-items:center; gap:16px; margin-bottom:28px; font:800 30px "Bricolage Grotesque",sans-serif; letter-spacing:-.03em; color:var(--green); }
+  .brand-line .mark { width:48px; height:48px; }
+  .phone-wrap { position:relative; display:flex; justify-content:center; }
+
+  /* phone */
+  .phone { width:440px; padding:12px; border-radius:54px; background:#0B1712; box-shadow:0 50px 90px -40px rgba(0,0,0,.55); }
+  .phone-screen { height:770px; border-radius:44px; overflow:hidden; background:var(--mint); padding:24px 22px; display:flex; flex-direction:column; gap:15px; }
+  .mini-brand { display:flex; align-items:center; gap:10px; font:800 24px "Bricolage Grotesque",sans-serif; color:var(--ink); }
+  .mini-brand .mark { width:32px; height:32px; }
+  .mini-tabs { display:flex; gap:4px; background:#fff; border-radius:16px; padding:5px; font:700 16px Figtree,sans-serif; color:var(--muted); }
+  .mini-tabs span { flex:1; padding:12px 4px; text-align:center; border-radius:12px; }
+  .mini-tabs span.on { color:var(--ink); box-shadow:0 5px 14px rgba(8,42,32,.09); }
+  .mini-card { background:#fff; border-radius:24px; padding:20px 20px 18px; color:var(--ink); box-shadow:0 20px 40px -30px rgba(8,42,32,.35); }
+  .mini-payto { display:flex; align-items:start; justify-content:space-between; gap:10px; }
+  .mini-payto small { color:var(--muted); font-size:16px; }
+  .mini-payto b { font:800 20px "Bricolage Grotesque",sans-serif; }
+  .mini-amt { display:flex; align-items:baseline; gap:4px; margin:16px 0 10px; font:800 52px "Bricolage Grotesque",sans-serif; letter-spacing:-.04em; }
+  .mini-amt .sym { font-size:28px; color:var(--green); }
+  .qr-slot { position:relative; width:100%; aspect-ratio:1; margin:0 auto 10px; border-radius:12px; overflow:hidden; background:#fff; }
+  .qr-stamp { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; }
+  .qr-stamp span { transform:rotate(-28deg); color:rgba(5,107,78,.72); border:2px solid rgba(5,107,78,.55); background:rgba(255,255,255,.82); padding:4px 10px; border-radius:6px; font:800 11px Figtree,sans-serif; letter-spacing:.16em; }
+  .mini-note { text-align:center; color:var(--muted); font-size:16px; line-height:1.4; }
+  .mini-note b { color:var(--ink); }
+
+  /* S5 scan */
+  #s5 .display { font-size:98px; line-height:1.0; max-width:720px; }
+  #s5 .sub { max-width:600px; }
+  .scan-grid { display:grid; grid-template-columns:1fr 560px; gap:100px; align-items:center; height:100%; }
+  .qr-big { position:relative; background:#fff; border-radius:28px; padding:24px; box-shadow:0 40px 80px -44px rgba(0,0,0,.55); }
+  .qr-big .qr-slot { margin:0; }
+  .qr-big .qr-stamp span { font-size:18px; padding:8px 16px; }
+  .scanline { position:absolute; left:24px; right:24px; height:3px; background:var(--bright); box-shadow:0 0 18px 4px rgba(52,214,164,.4); border-radius:2px; }
+  .qr-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; font:800 22px "Bricolage Grotesque",sans-serif; }
+  .qr-head span { font:700 12px Figtree,sans-serif; letter-spacing:.12em; color:var(--muted); }
+  .qr-amt { display:flex; align-items:baseline; gap:5px; justify-content:center; margin-top:18px; font:800 56px "Bricolage Grotesque",sans-serif; letter-spacing:-.04em; color:var(--ink); }
+  .qr-amt .sym { font-size:30px; color:var(--green); }
+  .qr-caption { text-align:center; margin-top:8px; color:var(--muted); font-size:17px; line-height:1.45; }
+  .tabs-note { display:flex; gap:10px; margin-top:30px; flex-wrap:wrap; }
+  .tabs-note span { padding:11px 15px; border:1px solid rgba(230,240,237,.18); border-radius:10px; color:rgba(230,240,237,.62); font:700 17px Figtree,sans-serif; }
+  .tabs-note span.on { background:var(--bright); border-color:var(--bright); color:var(--dark); }
+  .copy-card { margin-top:22px; border:1px solid rgba(230,240,237,.16); border-radius:16px; padding:18px 20px; max-width:520px; background:rgba(255,255,255,.03); }
+  .copy-card b { font:800 20px "Bricolage Grotesque",sans-serif; color:#fff; }
+  .copy-card p { margin:6px 0 0; color:rgba(230,240,237,.62); font-size:20px; line-height:1.45; }
+
+
+  /* S5 payment methods phone */
+  .pay-phone { width: 460px; }
+  .pay-phone .phone { width: 100%; }
+  .pay-phone .phone-screen { height: 770px; }
+  .pay-tabs span.on { background: #fff; color: var(--ink); }
+  .pay-panels { position: relative; flex: 1; min-height: 0; }
+  .pay-panel .mini-card { width: 100%; height: 100%; }
+  #panel-wallet .mini-card, #panel-bank .mini-card { display: flex; flex-direction: column; justify-content: center; }
+  .wallet-amt { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 10px; padding-bottom: 10px; }
+  .wallet-amt span { color: var(--muted); font: 800 12px Figtree, sans-serif; letter-spacing: .12em; }
+  .wallet-amt b { color: var(--green); font: 800 48px "Bricolage Grotesque", sans-serif; letter-spacing: -.05em; }
+  .pay-panel { position: absolute; inset: 0; opacity: 0; }
+  .demo-chip { display: inline-block; padding: 4px 8px; border-radius: 5px; background: var(--mint); color: var(--green); font: 800 12px Figtree, sans-serif; letter-spacing: .1em; margin-bottom: 12px; }
+  .panel-title { margin: 0 0 14px; font: 800 30px "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+  .detail-row { display: grid; grid-template-columns: 88px 1fr auto; align-items: center; gap: 8px; padding: 13px 0; border-top: 1px solid var(--line); font-size: 22px; }
+  .detail-row span { color: var(--muted); font-size: 18px; }
+  .detail-row b { font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .detail-row i { font: 700 11px Figtree, sans-serif; font-style: normal; color: var(--green); padding: 5px 7px; border-radius: 6px; background: var(--mint); }
+  .panel-note { margin: 14px 0 0; color: var(--muted); font-size: 20px; line-height: 1.45; }
+  .pay-legend { margin-top: 34px; display: grid; gap: 3px; max-width: 560px; }
+  .pay-legend div { display: flex; align-items: baseline; gap: 14px; padding: 13px 0; border-top: 1px solid rgba(230,240,237,.16); }
+  .pay-legend b { width: 100px; flex: none; color: #fff; font: 800 20px Figtree, sans-serif; }
+  .pay-legend span { color: rgba(230,240,237,.62); font-size: 19px; }
+
+
+  /* S3 cinematic fee stack */
+  #s3 .orb1 { width: 760px; height: 760px; right: -260px; top: -340px; background: radial-gradient(circle, rgba(52,214,164,.16), transparent 68%); }
+  #s3 .sub { color: rgba(230,240,237,.7); }
+  .fee-stack { margin-top: 38px; width: 1120px; }
+  .fee-line { display: grid; grid-template-columns: 74px 330px 1fr; align-items: baseline; gap: 18px; padding: 17px 0; border-top: 1px solid rgba(230,240,237,.17); opacity: 0; }
+  .fee-line:last-child { border-bottom: 1px solid rgba(230,240,237,.17); }
+  .fee-line b { color: var(--bright); font: 800 18px Figtree, sans-serif; letter-spacing: .12em; }
+  .fee-line strong { color: #fff; font: 800 42px "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+  .fee-line em { font-style: normal; color: rgba(230,240,237,.58); font-size: 22px; }
+  .fee-statement { margin: 30px 0 0; max-width: 960px; color: var(--bright); font: 800 38px/1.18 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; opacity: 0; }
+
+  /* S5 changing caption */
+  .pay-caption { display: flex; align-items: flex-start; gap: 18px; margin-top: 38px; max-width: 560px; }
+  .pay-index { flex: none; color: var(--bright); font: 800 72px/.8 "Bricolage Grotesque", sans-serif; letter-spacing: -.05em; }
+  .pay-caption b { display: block; color: #fff; font: 800 36px "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+  .pay-caption p { margin: 7px 0 0; color: rgba(230,240,237,.62); font-size: 21px; line-height: 1.4; }
+
+  /* S7 editorial share scene */
+  #s7 .sub { margin-top: 14px; }
+  .share-stage { display: grid; grid-template-columns: minmax(0,1fr) 640px; gap: 80px; align-items: center; margin-top: 34px; }
+  .share-list { display: grid; }
+  .share-list [data-tag] { display: flex; align-items: baseline; gap: 20px; padding: 18px 0; border-top: 1px solid var(--line); opacity: 0; }
+  .share-list [data-tag]:last-child { border-bottom: 1px solid var(--line); }
+  .share-list b { width: 34px; flex: none; color: var(--green); font: 800 17px Figtree, sans-serif; letter-spacing: .1em; }
+  .share-list span { color: var(--ink); font: 800 35px "Bricolage Grotesque", sans-serif; letter-spacing: -.035em; }
+  .share-visual { position: relative; height: 560px; opacity: 0; }
+  .link-strip { position: absolute; left: -10px; top: 8px; width: 620px; z-index: 2; padding: 20px 24px; border-radius: 3px; background: var(--dark); color: #fff; transform: rotate(-2deg); box-shadow: 0 30px 60px -38px rgba(8,42,32,.55); }
+  .link-strip span { display: block; color: var(--bright); font: 800 13px Figtree, sans-serif; letter-spacing: .16em; margin-bottom: 7px; }
+  .link-strip b { font: 700 24px Figtree, sans-serif; letter-spacing: -.01em; }
+  .poster-card { position: absolute; right: 16px; bottom: -10px; width: 358px; padding: 22px; border-radius: 4px; background: #fff; border: 1px solid var(--line); transform: rotate(3.2deg); box-shadow: 0 24px 55px -34px rgba(8,42,32,.4); }
+  .poster-qr { padding: 10px; background: var(--mint); border-radius: 2px; }
+  .poster-card .qr-slot { margin: 0; border-radius: 0; }
+  .poster-meta { display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 10px; margin-top: 16px; }
+  .poster-meta b { color: var(--green); font: 800 58px/.9 "Bricolage Grotesque", sans-serif; letter-spacing: -.06em; }
+  .poster-meta span { color: var(--ink); font: 800 18px Figtree, sans-serif; letter-spacing: .12em; }
+  .poster-meta em { grid-column: 1 / -1; color: var(--muted); font-style: normal; font-size: 15px; margin-top: 6px; }
+
+  .s3-ghost { position: absolute; right: 30px; bottom: -56px; color: rgba(230,240,237,.035); font: 800 300px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.08em; pointer-events: none; }
+
+  /* S6B pay-with-any-app segment */
+  .paywith-grid { display: grid; grid-template-columns: minmax(0,1fr) 780px; gap: 90px; align-items: center; height: 100%; }
+  #s6b .display { font-size: 92px; line-height: 1.0; max-width: 720px; }
+  #s6b .sub { max-width: 640px; }
+  .app-cloud { display: grid; gap: 30px; align-content: center; }
+  .app-block { display: grid; gap: 12px; }
+  .app-group-label { color: var(--green); font: 800 18px Figtree, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+  .app-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .app-tile { width: 92px; height: 92px; display: grid; place-items: center; border-radius: 20px; background: #fff; border: 1px solid var(--line); box-shadow: 0 18px 34px -28px rgba(8,42,32,.4); opacity: 0; }
+  .app-tile img { width: 64px; height: 64px; object-fit: contain; }
+  .app-any { margin: 4px 0 0; color: var(--muted); font-size: 22px; line-height: 1.45; opacity: 0; }
+  .app-any b { color: var(--green); font-weight: 700; }
+  .receive-dest { margin-top: 16px; padding-top: 26px; border-top: 1px solid rgba(5,107,78,.22); opacity: 0; }
+  .receive-label { display: block; color: var(--green); font: 800 16px Figtree, sans-serif; letter-spacing: .16em; margin-bottom: 14px; }
+  .receive-dest b { display: block; color: var(--ink); font: 800 42px/1.08 "Bricolage Grotesque", sans-serif; letter-spacing: -.04em; }
+  .receive-dest i { display: block; margin: 3px 0; color: var(--muted); font-style: normal; font-size: 19px; }
+
+  /* S6 trust */
+  #s6 .display { font-size:94px; line-height:1.02; max-width:1200px; }
+  .trust-copy { position:absolute; left:120px; top:160px; width:1120px; }
+  .trust-copy .display span { display:block; white-space:nowrap; }
+  .trust-copy .display .green { color:var(--bright); }
+  .trust-copy .sub { max-width:800px; }
+  .disclosure { margin-top:30px; color:rgba(230,240,237,.78); font-size:30px; line-height:1.4; max-width:800px; }
+  .direct { position:absolute; right:120px; top:210px; width:520px; display:grid; gap:16px; justify-items:center; }
+  .direct-node { width:360px; display:flex; align-items:center; gap:16px; border:1px solid rgba(230,240,237,.18); border-radius:18px; padding:16px 20px; background:rgba(255,255,255,.035); color:#fff; font:700 19px Figtree,sans-serif; }
+  .direct-node .n { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; background:var(--bright); color:var(--dark); font:800 14px Figtree,sans-serif; }
+  .direct-arrow { color:var(--bright); font-size:30px; line-height:.7; }
+  .direct-note { margin-top:10px; padding:12px 18px; border-radius:999px; border:1px dashed rgba(230,240,237,.25); color:rgba(230,240,237,.55); font-size:14px; }
+  .direct-page { position:absolute; right:150px; bottom:128px; color:rgba(230,240,237,.38); font:700 14px Figtree,sans-serif; letter-spacing:.08em; text-transform:uppercase; }
+
+  /* S7 features */
+  #s7 { display:flex; flex-direction:column; justify-content:center; }
+  #s7 .display { font-size:74px; line-height:1.05; max-width:1240px; }
+  #s7 .sub { max-width:900px; font-size:26px; margin-top:14px; }
+  .feature-layout { display:grid; grid-template-columns:1fr 440px; gap:70px; align-items:start; margin-top:40px; }
+  .dash { background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:0 30px 65px -44px rgba(8,42,32,.4); overflow:hidden; }
+  .dash-top { display:flex; align-items:center; gap:9px; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .dash-dot { width:9px; height:9px; border-radius:50%; background:#D9E6E1; }
+  .dash-brand { margin-left:8px; font:800 20px "Bricolage Grotesque",sans-serif; }
+  .dash-body { display:grid; grid-template-columns:1fr 320px; gap:26px; padding:24px; }
+  .dash-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
+  .dash-tab { padding:9px 13px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font:700 16px Figtree,sans-serif; }
+  .dash-tab.on { background:var(--green); border-color:var(--green); color:#fff; }
+  .dash-panel h4 { margin:0 0 12px; font:800 28px "Bricolage Grotesque",sans-serif; }
+  .linkfield { display:flex; align-items:center; justify-content:space-between; gap:8px; border:1px solid var(--line); border-radius:10px; padding:13px 15px; font-size:18px; color:var(--muted); margin-bottom:10px; }
+  .linkfield b { color:var(--ink); font-weight:700; }
+  .dash-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 15px; border-radius:9px; background:var(--green); color:#fff; font:700 16px Figtree,sans-serif; margin:0 6px 8px 0; }
+  .dash-btn.ghost { background:transparent; border:1px solid var(--line); color:var(--green); }
+  .poster { border-radius:16px; background:var(--mint); padding:16px; display:flex; flex-direction:column; align-items:center; }
+  .poster .qr-slot { width:190px; margin-bottom:12px; }
+  .poster b { font:800 18px Figtree,sans-serif; }
+  .poster span { color:var(--muted); font-size:14px; margin-top:3px; }
+  .features { display:grid; gap:12px; }
+  .feature-tag { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #B9D6CD; border-radius:14px; padding:17px 19px; color:var(--ink); font:700 20px Figtree,sans-serif; box-shadow:0 12px 25px -24px rgba(8,42,32,.35); }
+  .feature-tag .dot { width:9px; height:9px; border-radius:50%; background:var(--green); }
+
+
+  /* S8 end card */
+  #s8 { display: flex; align-items: center; background: #061E17; }
+  .cta-glow { position: absolute; width: 1100px; height: 1100px; right: -360px; top: -380px; border-radius: 50%; background: radial-gradient(circle, rgba(5,107,78,.9), transparent 65%); pointer-events: none; }
+  .cta-ghost { position: absolute; left: 76px; bottom: -170px; z-index: 0; color: rgba(230,240,237,.035); font: 800 500px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.08em; pointer-events: none; }
+  .cta-mark-bg { position: absolute; right: -130px; bottom: -170px; width: 760px; opacity: .045; transform: rotate(-12deg); pointer-events: none; }
+  .cta-mark-bg .mark { width: 100%; height: auto; }
+  .cta-grid { position: relative; z-index: 2; width: 100%; display: grid; grid-template-columns: 1fr 560px; gap: 80px; align-items: center; }
+  .cta-copy { max-width: 900px; }
+  .cta-lock { display: flex; align-items: center; gap: 16px; font: 800 34px "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; color: #fff; }
+  .cta-lock .mark { width: 56px; height: 56px; }
+  #s8 .display { font-size: 116px; line-height: .98; color: #fff; margin-top: 54px; letter-spacing: -.05em; }
+  .cta-sub { margin: 22px 0 0; color: rgba(230,240,237,.76); font-size: 35px; }
+  .cta-row { display: flex; align-items: center; gap: 22px; margin-top: 36px; }
+  .cta-btn { display: inline-flex; align-items: center; gap: 18px; padding: 21px 28px 21px 32px; border-radius: 16px; background: var(--bright); color: var(--dark); font: 800 27px Figtree, sans-serif; }
+  .cta-arrow { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(8,42,32,.12); font-size: 23px; }
+  .cta-url { margin: 38px 0 0; display: inline-block; padding-bottom: 8px; border-bottom: 3px solid var(--bright); color: #fff; font: 800 41px Figtree, sans-serif; letter-spacing: -.02em; }
+  .cta-pay { max-width: 760px; margin: 42px 0 0; }
+  .cta-pay-label { margin: 0 0 14px; color: rgba(230,240,237,.5); font: 700 17px Figtree, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+  .cta-apps { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cta-apps img { width: 56px; height: 56px; object-fit: contain; border-radius: 13px; background: rgba(255,255,255,.075); padding: 5px; }
+  .cta-receive { margin: 20px 0 0; color: rgba(230,240,237,.68); font-size: 26px; line-height: 1.45; }
+  .cta-receive b { color: #fff; font-weight: 700; }
+  .cta-visual { position: relative; height: 690px; }
+  .cta-poster { position: absolute; inset: 8px 16px 0 auto; width: 500px; padding: 30px 30px 24px; border-radius: 4px; background: #F7FBF9; color: var(--ink); transform: rotate(-3.2deg); box-shadow: 0 50px 100px -50px rgba(0,0,0,.8); }
+  .poster-kicker { color: var(--green); font: 800 16px Figtree, sans-serif; letter-spacing: .18em; margin-bottom: 18px; }
+  .cta-poster .qr-slot { margin: 0; }
+  .cta-poster .qr-stamp span { font-size: 15px; padding: 7px 13px; }
+  .poster-brand { display: flex; flex-direction: column; gap: 5px; margin-top: 18px; }
+  .poster-brand b { font: 800 28px "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+  .poster-brand span { color: var(--muted); font-size: 16px; }
+  .poster-rule { height: 1px; background: var(--line); margin: 18px 0 14px; }
+  .poster-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .poster-foot span { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .poster-foot b { color: var(--green); font: 800 17px "Bricolage Grotesque", sans-serif; }
+  #s8 .foot-tag { position: absolute; left: 120px; bottom: 64px; color: rgba(230,240,237,.35); font: 700 15px Figtree, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+
+</style></head>
+<body>
+<div id="stage">
+
+  <!-- 1 HOOK -->
+  <section class="scene dark" id="s1">
+    <div class="orb orb1"></div><div class="orb orb2"></div>
+    <div class="chips" data-chips></div>
+    <p class="eyebrow" id="s1e">The old way</p>
+    <h1 class="display typing" id="s1h"></h1>
+    <p class="sub typing" id="s1s"></p>
+  </section>
+
+  <!-- 2 PROBLEM -->
+  <section class="scene light" id="s2">
+    <div class="s2-grid">
+      <div>
+        <p class="eyebrow">Every time</p>
+        <h2 class="display typing" id="s2h"></h2>
+        <p class="sub typing" id="s2s"></p>
+      </div>
+      <div class="s2-right">
+        <div class="chat" id="chat">
+          <div class="chat-top"><b>Support this cause</b><span>demo chat</span></div>
+          <div class="bubble in" data-bubble>Which number should I send to?</div>
+          <div class="bubble out" data-bubble>bKash 017••• ••••</div>
+          <div class="bubble in" data-bubble>Can I pay from my bank?</div>
+          <div class="bubble out" data-bubble>Yes. Bank transfer. BRAC 125••• ••••</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 FEES -->
+  <section class="scene dark" id="s3">
+    <div class="orb orb1"></div>
+    <div class="s3-ghost">FEES</div>
+    <p class="eyebrow">The gateway tax</p>
+    <h2 class="display typing" id="s3h"></h2>
+    <p class="sub typing" id="s3s"></p>
+    <div class="fee-stack">
+      <div class="fee-line" data-fee><b>01</b><strong>Upfront</strong><em>Thousands of taka to get started.</em></div>
+      <div class="fee-line" data-fee><b>02</b><strong>Renewal</strong><em>Another fee when the subscription returns.</em></div>
+      <div class="fee-line" data-fee><b>03</b><strong>Transaction</strong><em>A slice of every payment.</em></div>
+      <div class="fee-line" data-fee><b>04</b><strong>Processing</strong><em>More charges on top.</em></div>
+    </div>
+    <p class="fee-statement" id="fee-note">A small campaign should not need a gateway just to take payments.</p>
+  </section>
+
+  <!-- 4 MEET -->
+  <section class="scene light" id="s4">
+    <div class="meet-grid">
+      <div>
+        <div class="brand-line" id="brand-line"><span data-mark></span>DeshiPay</div>
+        <h1 class="display typing" id="s4h"></h1>
+        <p class="sub typing" id="s4s"></p>
+      </div>
+      <div class="phone-wrap" id="phone4">
+        <div class="phone"><div class="phone-screen">
+          <div class="mini-brand"><span data-mark></span>Your business</div>
+          <div class="mini-tabs"><span class="on">Scan QR</span><span>Wallet</span><span>Bank</span></div>
+          <div class="mini-card">
+            <div class="mini-payto"><b>YOUR BUSINESS</b></div>
+            <div class="mini-amt"><span class="sym">৳</span>500</div>
+            <div class="qr-slot" data-qr><div class="qr-stamp"><span>SAMPLE QR</span></div></div>
+            <div class="mini-note">Scan with <b>bKash, Nagad, Rocket</b> or any bank app.</div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 SCAN -->
+  <section class="scene dark" id="s5">
+    <div class="scan-grid">
+      <div>
+        <p class="eyebrow">Pay your way</p>
+        <h2 class="display typing" id="s5h"></h2>
+        <p class="sub typing" id="s5s"></p>
+        <div class="pay-caption" id="pay-caption">
+          <span class="pay-index" id="pay-index">01</span>
+          <div><b id="pay-word">Scan</b><p id="pay-line">Any bank app. Amount ready.</p></div>
+        </div>
+      </div>
+      <div class="pay-phone" id="pay-phone">
+        <div class="phone"><div class="phone-screen">
+          <div class="mini-brand"><span data-mark></span>Your business</div>
+          <div class="mini-tabs pay-tabs">
+            <span class="on" data-paytab="qr">Scan QR</span><span data-paytab="wallet">Wallet</span><span data-paytab="bank">Bank</span>
+          </div>
+          <div class="pay-panels">
+          <div class="pay-panel qr" id="panel-qr">
+            <div class="mini-card">
+              <div class="mini-payto"><small>Pay to</small><b>YOUR BUSINESS</b></div>
+              <div class="mini-amt"><span class="sym">৳</span><span id="scan-amt">0</span></div>
+              <div class="qr-slot" data-qr><div class="qr-stamp"><span>SAMPLE QR</span></div>
+                <div class="scanline" id="scanline"></div>
+              </div>
+              <div class="mini-note">Scan with <b>bKash, Nagad, Rocket</b> or any bank app.</div>
+            </div>
+          </div>
+          <div class="pay-panel wallet" id="panel-wallet">
+            <div class="mini-card">
+              <div class="demo-chip">DEMO DETAILS</div>
+              <h4 class="panel-title">Send to a wallet</h4>
+              <div class="wallet-amt"><span>AMOUNT</span><b>৳500</b></div>
+              <div class="detail-row"><span>Wallet</span><b>017••• ••••</b><i>Copy</i></div>
+              <div class="detail-row"><span>Or</span><b>018••• ••••</b><i>Copy</i></div>
+              <p class="panel-note">Use Send Money, then enter the amount shown on this page.</p>
+            </div>
+          </div>
+          <div class="pay-panel bank" id="panel-bank">
+            <div class="mini-card">
+              <div class="demo-chip">DEMO DETAILS</div>
+              <h4 class="panel-title">Bank transfer</h4>
+              <div class="detail-row"><span>Bank</span><b>Demo Bank</b></div>
+              <div class="detail-row"><span>Name</span><b>YOUR BUSINESS</b></div>
+              <div class="detail-row"><span>Amount</span><b>৳500</b></div>
+              <div class="detail-row"><span>Account</span><b>0123 4567 8901</b><i>Copy</i></div>
+              <div class="detail-row"><span>Routing</span><b>090 100 378</b></div>
+              <div class="detail-row"><span>SWIFT</span><b>DEMOBDDH</b></div>
+            </div>
+          </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- 6B PAY WITH ANY APP -->
+  <section class="scene mint" id="s6b">
+    <div class="paywith-grid">
+      <div>
+        <p class="eyebrow">Pay any way</p>
+        <h2 class="display typing" id="s6bh"></h2>
+        <p class="sub typing" id="s6bs"></p>
+      </div>
+      <div class="app-cloud">
+        <div class="app-block">
+          <span class="app-group-label">MFS</span>
+          <div class="app-row" data-mfs-icons></div>
+        </div>
+        <div class="app-block">
+          <span class="app-group-label">Bank apps</span>
+          <div class="app-row" data-bank-icons></div>
+        </div>
+        <p class="app-any" id="app-any">or any other app that <b>supports Bangla QR</b>.</p>
+        <div class="receive-dest">
+          <span class="receive-label">RECEIVE TO</span>
+          <b>Your bKash, Nagad or Rocket</b>
+          <i>or</i>
+          <b>Your bank account</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 TRUST -->
+  <section class="scene dark" id="s6">
+    <div class="trust-copy">
+      <p class="eyebrow">Direct to you</p>
+      <h2 class="display typing" id="s6h"></h2>
+      <p class="sub">DeshiPay only hosts the page. The money never passes through us.</p>
+      <p class="disclosure" id="s6d">Normal payment-app charges may still apply.</p>
+    </div>
+    <div class="direct" id="direct">
+      <div class="direct-node" data-node><span class="n">1</span>Customer taps or scans</div>
+      <div class="direct-arrow">↓</div>
+      <div class="direct-node" data-node><span class="n">2</span>Their bank app pays you</div>
+      <div class="direct-arrow">↓</div>
+      <div class="direct-node" data-node><span class="n">3</span>Straight to your account</div>
+      <div class="direct-note">No gateway in the middle</div>
+    </div>
+    <p class="direct-page">DeshiPay page · not in the money path</p>
+  </section>
+
+  <!-- 7 FEATURES -->
+  <section class="scene light" id="s7">
+    <p class="eyebrow">Built to share</p>
+    <h2 class="display typing" id="s7h"></h2>
+    <p class="sub">Update it whenever you need. Share it anywhere.</p>
+    <div class="share-stage">
+      <div class="share-list">
+        <div data-tag><b>01</b><span>Edit anytime</span></div>
+        <div data-tag><b>02</b><span>Download standalone HTML</span></div>
+        <div data-tag><b>03</b><span>Print A4 or A5 poster</span></div>
+        <div data-tag><b>04</b><span>Share one link</span></div>
+      </div>
+      <div class="share-visual" id="dash">
+        <div class="link-strip"><span>ONE LINK</span><b>deshipay.netlify.app/yourname</b></div>
+        <div class="poster-card">
+          <div class="poster-qr"><div class="qr-slot" data-qr><div class="qr-stamp"><span>SAMPLE</span></div></div></div>
+          <div class="poster-meta"><b>A5</b><span>POSTER</span><em>Print at 300 dpi</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 CTA -->
+  <section class="scene dark" id="s8">
+    <div class="cta-glow"></div>
+    <div class="cta-ghost">৳</div>
+    <div class="cta-mark-bg" data-mark aria-hidden="true"></div>
+    <div class="cta-grid">
+      <div class="cta-copy">
+        <div class="cta-lock" id="cta-lock"><span data-mark></span>DeshiPay</div>
+        <h1 class="display typing" id="s8h"></h1>
+        <p class="cta-sub" id="cta-sub">One link. No cut.</p>
+        <p class="cta-url" id="cta-url">deshipay.netlify.app</p>
+        <div class="cta-pay" id="cta-pay">
+          <p class="cta-pay-label">Your customer can pay with</p>
+          <div class="cta-apps" data-cta-apps aria-label="Supported payment apps"></div>
+          <p class="cta-receive">They pay from their own app. <b>You receive it in your bKash, Nagad, Rocket or bank account.</b></p>
+        </div>
+      </div>
+      <div class="cta-visual" id="cta-visual">
+        <div class="cta-poster">
+          <div class="poster-kicker">SCAN TO PAY</div>
+          <div class="qr-slot" data-qr><div class="qr-stamp"><span>SAMPLE QR</span></div></div>
+          <div class="poster-brand"><b>YOUR BUSINESS</b><span>Any amount. Any bank app.</span></div>
+          <div class="poster-rule"></div>
+          <div class="poster-foot"><span>deshipay.netlify.app/yourname</span><b>DeshiPay</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="../../../site/public/js/pay-icons.js"></script>
+<script src="../../../site/public/vendor/qrcode.js"></script>
+<script src="../../../site/public/js/common.js"></script>
+<script>
+(function () {
+  var PAYLOAD = "00020101021126450014bd.org.bb.npsb0102020202040311017000000005204601653030505802BD5913YOUR BUSINESS6005Dhaka62060602FT8010TOKENA/+==63049FC4";
+  var MARK = '<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="32.4" fill="#056B4E"/><path fill="#fff" d="M42.89 35.39A12 12 0 0 0 22.4 43.87L22.4 67.6A10 10 0 0 0 32.4 77.6L56.13 77.6A12 12 0 0 0 64.61 57.11Z"/></svg>';
+  document.querySelectorAll("[data-mark]").forEach(function (slot) { slot.innerHTML = MARK; });
+  var qr = window.Deshi && window.Deshi.qrSvg ? window.Deshi.qrSvg(PAYLOAD) : null;
+  document.querySelectorAll("[data-qr]").forEach(function (slot) {
+    if (!qr) return;
+    var clone = qr.cloneNode(true);
+    clone.removeAttribute("role"); clone.removeAttribute("aria-label");
+    slot.insertBefore(clone, slot.firstChild);
+  });
+  [["data-mfs-icons", window.DeshiPayIcons && window.DeshiPayIcons.mfs], ["data-bank-icons", window.DeshiPayIcons && window.DeshiPayIcons.banks]].forEach(function (spec) {
+    var host = document.querySelector("[" + spec[0] + "]");
+    if (!host || !spec[1]) return;
+    spec[1].forEach(function (it) {
+      var tile = document.createElement("span"); tile.className = "app-tile";
+      var im = document.createElement("img"); im.src = it.src; im.alt = it.name; im.title = it.name;
+      tile.appendChild(im); host.appendChild(tile);
+    });
+  });
+  var ctaApps = document.querySelector("[data-cta-apps]");
+  if (ctaApps && window.DeshiPayIcons) {
+    window.DeshiPayIcons.mfs.concat(window.DeshiPayIcons.banks).forEach(function (it) {
+      var im = document.createElement("img");
+      im.src = it.src; im.alt = it.name; im.title = it.name; im.loading = "eager";
+      ctaApps.appendChild(im);
+    });
+  }
+  var chips = document.querySelector("[data-chips]");
+  ["bKash", "Nagad", "Rocket", "Bank transfer", "Cards", "More"].forEach(function (x) {
+    var c = document.createElement("span"); c.className = "chip"; c.textContent = x; chips.appendChild(c);
+  });
+  function clamp(v) { return Math.max(0, Math.min(1, v)); }
+  function ease(v) { return 1 - Math.pow(1 - clamp(v), 3); }
+  function range(t, a, b) { return clamp((t - a) / (b - a)); }
+  function show(el, p, y, blur) {
+    if (!el) return;
+    var e = ease(p);
+    el.style.opacity = String(clamp(p));
+    el.style.transform = "translateY(" + ((1 - e) * (y == null ? 24 : y)) + "px)";
+    if (blur) el.style.filter = "blur(" + ((1 - e) * blur) + "px)";
+  }
+  function type(el, text, a, b, t) { if (el) el.textContent = text.slice(0, Math.ceil(text.length * range(t, a, b))); }
+  function scene(t, id, a, b) {
+    var el = document.getElementById(id), p = 0;
+    if (t >= a && t <= b) p = Math.min(1, (t - a) / .55, (b - t) / .55);
+    el.style.opacity = String(clamp(p));
+    return clamp(p);
+  }
+  window.render = function (t) {
+    // 45s edit: type, hold, breathe, fade.
+    scene(t, "s1", 0, 5.2);
+    if (t < 5.2) {
+      type(document.getElementById("s1h"), "Still juggling six payment methods?", .55, 2.7, t);
+      type(document.getElementById("s1s"), "There is a better way to get paid.", 2.4, 3.6, t);
+      document.getElementById("s1e").style.opacity = String(range(t, .2, .7));
+      document.querySelectorAll(".chip").forEach(function (el, i) { show(el, range(t, .3 + i * .15, .8 + i * .15), 18); });
+    }
+    scene(t, "s2", 4.8, 11.8);
+    if (t > 4.8 && t < 11.8) {
+      type(document.getElementById("s2h"), "You list every method. They still ask.", 4.9, 6.6, t);
+      type(document.getElementById("s2s"), "Every campaign, creator, artist and shop repeats the same replies.", 6.4, 7.6, t);
+      show(document.getElementById("chat"), range(t, 5.7, 6.5), 28);
+      document.querySelectorAll("[data-bubble]").forEach(function (el, i) { show(el, range(t, 6.0 + i * .32, 6.5 + i * .32), 12); });
+    }
+    scene(t, "s3", 11.4, 18.2);
+    if (t > 11.4 && t < 18.2) {
+      type(document.getElementById("s3h"), "Gateways can help. The costs add up.", 11.6, 13.3, t);
+      type(document.getElementById("s3s"), "Popular gateways add upfront, renewal, transaction and processing fees.", 13.05, 14.6, t);
+      document.querySelectorAll("[data-fee]").forEach(function (el, i) { show(el, range(t, 13.4 + i * .28, 14.1 + i * .28), 20); });
+      show(document.getElementById("fee-note"), range(t, 15.6, 16.3), 14);
+    }
+    scene(t, "s4", 17.8, 24.8);
+    if (t > 17.8 && t < 24.8) {
+      show(document.getElementById("brand-line"), range(t, 17.8, 18.4), 14);
+      type(document.getElementById("s4h"), "So I built DeshiPay.", 17.9, 19.3, t);
+      type(document.getElementById("s4s"), "One page for your Bangla QR, wallet and bank details, without a gateway.", 19.1, 20.5, t);
+      show(document.getElementById("phone4"), range(t, 19.5, 20.4), 34);
+    }
+    scene(t, "s5", 24.4, 33.0);
+    if (t > 24.4 && t < 33.0) {
+      type(document.getElementById("s5h"), "Scan. Or copy. Paid directly to you.", 24.6, 26.1, t);
+      type(document.getElementById("s5s"), "QR, wallet or bank. The whole page in one link.", 25.9, 27.0, t);
+      show(document.getElementById("pay-caption"), range(t, 26.0, 26.7), 14);
+      show(document.getElementById("pay-phone"), range(t, 25.6, 26.4), 30);
+      var active = t < 28.15 ? "qr" : t < 30.15 ? "wallet" : "bank";
+      document.querySelectorAll("[data-paytab]").forEach(function (tab) { tab.classList.toggle("on", tab.getAttribute("data-paytab") === active); });
+      var cap = active === "qr" ? ["01", "Scan", "Any bank app. Amount ready."] : active === "wallet" ? ["02", "Copy", "bKash or Nagad. Send Money."] : ["03", "Transfer", "Account, routing and SWIFT."];
+      document.getElementById("pay-index").textContent = cap[0];
+      document.getElementById("pay-word").textContent = cap[1];
+      document.getElementById("pay-line").textContent = cap[2];
+      [["qr", 25.7, 28.4], ["wallet", 28.1, 30.4], ["bank", 30.1, 33.1]].forEach(function (spec) {
+        var panel = document.getElementById("panel-" + spec[0]);
+        var p = Math.min(1, Math.max(0, Math.min((t - spec[1]) / .35, (spec[2] - t) / .35)));
+        panel.style.opacity = String(clamp(p));
+        panel.style.transform = "translateY(" + ((1 - ease(range(t, spec[1], spec[1] + .35))) * 10) + "px)";
+      });
+      var amt = Math.round(500 * ease(range(t, 26.0, 27.5)));
+      document.getElementById("scan-amt").textContent = amt.toLocaleString("en-US");
+      var scan = document.getElementById("scanline");
+      scan.style.top = (24 + 440 * ease(range(t, 26.15, 27.7))) + "px";
+      scan.style.opacity = String(Math.min(1, range(t, 26.0, 26.4)) * (1 - range(t, 27.8, 28.1)));
+    }
+    scene(t, "s6b", 32.4, 39.2);
+    if (t > 32.4 && t < 39.2) {
+      type(document.getElementById("s6bh"), "They pay with the app they already use.", 32.9, 34.6, t);
+      type(document.getElementById("s6bs"), "You receive it in your bKash, Nagad, Rocket or bank account.", 34.3, 35.6, t);
+      document.querySelectorAll(".app-tile").forEach(function (el, i) { show(el, range(t, 33.3 + i * .11, 33.8 + i * .11), 16); });
+      show(document.getElementById("app-any"), range(t, 35.0, 35.6), 12);
+      show(document.querySelector(".receive-dest"), range(t, 35.7, 36.5), 20);
+    }
+    scene(t, "s6", 38.6, 44.0);
+    if (t > 38.6 && t < 44.0) {
+      var h = document.getElementById("s6h");
+      var lines = ["No gateway.", "No cut.", "No commission from us."];
+      var activeLine = t < 40.0 ? 0 : t < 41.2 ? 1 : 2;
+      h.innerHTML = "";
+      for (var i = 0; i <= activeLine; i++) {
+        var sp = document.createElement("span");
+        sp.style.display = "block";
+        sp.style.opacity = String(i === activeLine ? clamp((t - (38.8 + i * 1.2)) / .35) : 1);
+        if (i === 2) sp.className = "green";
+        sp.textContent = lines[i];
+        h.appendChild(sp);
+      }
+      show(document.getElementById("s6d"), range(t, 42.5, 43.2), 16);
+      document.querySelectorAll("[data-node]").forEach(function (el, i) { show(el, range(t, 39.1 + i * .55, 39.6 + i * .55), 14); });
+      show(document.querySelector(".direct-note"), range(t, 41.2, 41.8), 10);
+      show(document.querySelector(".direct-page"), range(t, 42.4, 43.0), 10);
+    }
+    scene(t, "s7", 43.4, 47.8);
+    if (t > 43.4 && t < 47.8) {
+      type(document.getElementById("s7h"), "One link. Edit, download, print.", 43.7, 45.0, t);
+      show(document.getElementById("dash"), range(t, 45.0, 46.0), 30);
+      document.querySelectorAll("[data-tag]").forEach(function (el, i) { show(el, range(t, 45.3 + i * .18, 45.85 + i * .18), 14); });
+    }
+    scene(t, "s8", 47.4, 52.2);
+    if (t > 47.4) {
+      show(document.getElementById("cta-lock"), range(t, 47.5, 48.0), 14);
+      show(document.getElementById("cta-visual"), range(t, 47.9, 48.9), 30);
+      type(document.getElementById("s8h"), "Create your page.", 47.8, 48.8, t);
+      show(document.getElementById("cta-sub"), range(t, 48.6, 49.1), 12);
+      show(document.getElementById("cta-url"), range(t, 48.8, 49.4), 12);
+      show(document.getElementById("cta-pay"), range(t, 49.1, 49.7), 12);
+    }
+  };
+  window.render(0);
+})();
+</script>
+</body></html>

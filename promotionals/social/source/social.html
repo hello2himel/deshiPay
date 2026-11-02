@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  @font-face { font-family:"Hind Siliguri"; src:url("fonts/HindSiliguri-Bold.ttf") format("truetype"); font-weight:700; font-style:normal; font-display:block; }
+  :root { --green:#056B4E; --bright:#34D6A4; --mint:#E6F0ED; --ink:#181D2B; --muted:#5F6573; --paper:#F7FBF9; --dark:#082A20; --line:#B9D6CD; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#0b1712; }
+  #stage { position:relative; width:1080px; height:1080px; overflow:hidden; font-family:Figtree,Arial,sans-serif; color:var(--ink); }
+  .slide { position:absolute; inset:0; display:none; padding:72px; overflow:hidden; }
+  .slide.active { display:block; }
+  .dark { background:var(--dark); color:#fff; }
+  .paper { background:var(--paper); }
+  .mint { background:var(--mint); }
+  .bright { background:var(--bright); color:var(--dark); }
+  .kicker { margin:0; position:relative; z-index:4; font:800 14px Figtree,sans-serif; letter-spacing:.18em; text-transform:uppercase; color:var(--green); }
+  .dark .kicker { color:var(--bright); }
+  .bright .kicker { color:var(--dark); }
+  .headline { position:relative; z-index:4; margin:0; font-family:"Bricolage Grotesque",Arial,sans-serif; font-weight:800; letter-spacing:-.052em; line-height:.96; }
+  .body { position:relative; z-index:4; margin:0; font-size:32px; line-height:1.45; color:var(--muted); }
+  .dark .body { color:rgba(230,240,237,.66); }
+  .bright .body { color:rgba(8,42,32,.7); }
+  .hairline { position:absolute; left:72px; right:72px; top:810px; height:2px; background:rgba(24,29,43,.28); z-index:1; }
+  .dark .hairline { background:rgba(52,214,164,.5); }
+  .bright .hairline { background:rgba(8,42,32,.45); }
+  .footer { position:absolute; left:72px; right:72px; bottom:54px; z-index:6; display:flex; align-items:center; justify-content:space-between; gap:24px; font:700 15px Figtree,sans-serif; color:var(--muted); }
+  .dark .footer { color:rgba(230,240,237,.5); }
+  .bright .footer { color:rgba(8,42,32,.6); }
+  .footer .brand { display:flex; align-items:center; gap:10px; color:inherit; font:800 18px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.03em; }
+  .footer .brand .mark { width:30px; height:30px; }
+  .footer .mid { flex:1; text-align:center; }
+  .footer .num { font-weight:800; letter-spacing:.08em; }
+  .dark .footer .brand { color:#fff; }
+  .bright .footer .brand { color:var(--dark); }
+
+  /* 01 */
+  #s1 { background: radial-gradient(115% 62% at 50% 8%, rgba(6,120,88,.52) 0%, rgba(6,120,88,0) 62%), radial-gradient(95% 55% at 50% 104%, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 64%), #082A20; }
+  .bubble { position:absolute; z-index:3; box-sizing:border-box; margin:0; padding:13px 22px; border-radius:33px; white-space:nowrap; text-align:center; font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif; font-weight:700; font-size:30px; line-height:1.35; background:#E9E9EB; color:#111; box-shadow:0 10px 24px rgba(0,0,0,.16); }
+  .bubble.grey { background:#E9E9EB; color:#111; }
+  .bubble.blue { background:#0A84FF; color:#fff; box-shadow:0 0 22px rgba(10,132,255,.20),0 10px 24px rgba(0,0,0,.18); }
+  .bubble.red { background:#FF3B30; color:#fff; box-shadow:0 0 24px rgba(255,59,48,.18),0 10px 24px rgba(0,0,0,.22); }
+  .b1 { left:96px; top:122px; width:354px; transform:rotate(-1.2deg); }
+  .b2 { left:712px; top:168px; width:276px; transform:rotate(1.2deg); }
+  .b3 { left:196px; top:246px; width:560px; font-size:52px; padding:16px 28px; border-radius:30px; transform:rotate(-1.5deg); }
+  .b4 { left:330px; top:356px; width:497px; font-size:52px; padding:16px 28px; border-radius:30px; transform:rotate(1deg); }
+  .b5 { left:628px; top:472px; width:356px; transform:rotate(1.2deg); }
+  .b6 { left:96px; top:528px; width:491px; font-size:34px; padding:14px 24px; border-radius:30px; transform:rotate(-.8deg); }
+  .s1-head { position:absolute; z-index:4; left:72px; right:72px; top:650px; margin:0; text-align:center; font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif; font-weight:700; letter-spacing:-.01em; }
+  .s1-head span { display:block; font-size:100px; line-height:1.06; }
+  .s1-head span:first-child { color:#fff; }
+  .s1-head .accent { color:var(--bright); font-size:112px; line-height:1.04; margin-top:2px; }
+  #s1 .hairline { display:none; }
+  /* page 6 ledger */
+  #s6 { background: radial-gradient(circle at 82% 8%, rgba(52,214,164,.14), transparent 46%), var(--dark); }
+  #s6 .kicker { color:var(--bright); }
+  #s6 .s6-head { position:relative; z-index:4; margin:64px 0 0; font-family:"Bricolage Grotesque",Arial,sans-serif; font-size:76px; line-height:.98; letter-spacing:-.05em; color:#fff; }
+  .s6-list { position:absolute; z-index:4; left:72px; right:72px; top:348px; bottom:150px; display:grid; grid-template-rows:repeat(3,1fr); border-top:1px solid rgba(230,240,237,.18); }
+  .s6-row { display:grid; grid-template-columns:150px 360px 1fr; align-items:center; gap:24px; padding:0 18px 0 0; border-bottom:1px solid rgba(230,240,237,.18); }
+  .s6-num { color:transparent; -webkit-text-stroke:1.5px rgba(52,214,164,.75); font:800 82px/1 "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.04em; }
+  .s6-row h2 { margin:0; color:#fff; font:800 42px/1.03 "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.045em; }
+  .s6-row p { margin:0; color:rgba(230,240,237,.62); font-size:22px; line-height:1.55; max-width:520px; }
+  /* 02 QR macro */
+  #s2 .headline { font-size:64px; margin-top:142px; max-width:480px; }
+  #s2 .body { margin-top:34px; max-width:440px; }
+  #s2 .hairline { right:auto; width:330px; background:rgba(5,107,78,.3); }
+  .qr-crop { position:absolute; z-index:3; right:-200px; top:96px; width:690px; height:760px; overflow:hidden; background:#fff; border:1px solid var(--line); }
+  .qr-crop svg { width:1560px; height:auto; max-width:none; margin-left:-190px; margin-top:-120px; }
+  .qr-label { position:absolute; z-index:4; right:72px; top:878px; color:var(--muted); font:800 11px Figtree,sans-serif; letter-spacing:.18em; text-transform:uppercase; }
+
+  /* 03 icon matrix */
+  #s3 .headline { font-size:64px; margin-top:136px; max-width:620px; }
+  #s3 .body { margin-top:28px; max-width:520px; font-size:30px; }
+  .matrix { position:absolute; z-index:3; right:72px; top:150px; width:286px; display:grid; grid-template-columns:repeat(2,130px); gap:26px; }
+  .app { width:130px; height:130px; background:transparent; border-radius:28px; display:grid; place-items:center; overflow:hidden; }
+  .app.mtb { background:#fff; }
+  .app img { width:100%; height:100%; object-fit:contain; border-radius:28px; display:block; }
+  .app.mtb img { object-fit:contain; background:#fff; }
+  #s3 .subnote { position:absolute; z-index:4; right:72px; top:564px; width:352px; color:var(--bright); font:800 13px Figtree,sans-serif; letter-spacing:.06em; line-height:1.5; }
+  #s3 .hairline { right:auto; width:510px; }
+
+  .s3-ghost { position:absolute; z-index:1; left:-42px; bottom:-128px; color:rgba(230,240,237,.045); font:800 450px/1 "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.08em; pointer-events:none; }
+  /* 04 phone crop */
+  #s4 .headline { font-size:82px; margin-top:138px; max-width:410px; }
+  #s4 .body { margin-top:30px; max-width:390px; font-size:28px; }
+  #s4 .hairline { right:auto; width:500px; }
+  .phone-wrap { position:absolute; z-index:5; right:46px; top:126px; width:470px; }
+  .phone { width:424px; margin-left:auto; padding:10px; border-radius:54px; background:#0B1712; box-shadow:0 40px 80px -20px rgba(8,42,32,.35); transform:rotate(2.5deg); }
+  .screen { border-radius:45px; background:var(--mint); padding:20px 18px; }
+  .mini-brand { display:flex; align-items:center; gap:10px; font:800 20px "Bricolage Grotesque",Arial,sans-serif; }
+  .mini-brand .mark { width:31px; height:31px; }
+  .mini-tabs { display:flex; gap:4px; background:#fff; border-radius:14px; padding:5px; font:700 14px Figtree,sans-serif; color:var(--muted); margin-top:16px; }
+  .mini-tabs span { flex:1; text-align:center; padding:10px 3px; border-radius:10px; }
+  .mini-tabs span.on { color:var(--ink); box-shadow:0 4px 12px rgba(8,42,32,.09); }
+  .card { background:#fff; border-radius:22px; padding:18px; margin-top:14px; color:var(--ink); }
+  .payto { display:flex; justify-content:space-between; align-items:start; gap:10px; }
+  .payto small { color:var(--muted); font-size:13px; }
+  .payto b { font:800 18px "Bricolage Grotesque",Arial,sans-serif; }
+  .amount { display:flex; align-items:baseline; gap:3px; margin:13px 0 9px; font:800 40px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.04em; }
+  .amount .sym { color:var(--green); font-size:25px; }
+  .qrbox { width:100%; aspect-ratio:1; background:#fff; overflow:hidden; }
+  .qrbox svg { display:block; width:100%; height:auto; }
+  .note { text-align:center; color:var(--muted); font-size:12.5px; line-height:1.45; margin-top:9px; }
+  .note b { color:var(--ink); }
+
+  /* 05 manifesto */
+  #s5 .headline { font-size:96px; line-height:1.0; margin-top:118px; max-width:860px; }
+  #s5 .body { margin-top:34px; max-width:700px; color:rgba(8,42,32,.72); font-size:31px; }
+  #s5 .cta { position:relative; z-index:5; display:inline-block; margin-top:24px; padding-bottom:7px; border-bottom:3px solid var(--dark); color:var(--dark); font:800 34px Figtree,sans-serif; letter-spacing:-.02em; }
+  #s5 .hairline { left:72px; right:auto; width:820px; top:810px; background:rgba(8,42,32,.5); }
+  .finder { position:absolute; z-index:2; right:112px; top:778px; width:64px; height:64px; border:8px solid var(--dark); }
+  .finder:before { content:""; position:absolute; inset:11px; border:6px solid var(--dark); }
+  .finder:after { content:""; position:absolute; inset:23px; background:var(--dark); }
+</style></head>
+<body>
+<div id="stage">
+  <section class="slide dark active" id="s1">
+    <div class="chat-cloud" lang="bn">
+      <p class="bubble b1 grey">ভাই, বিকাশ নম্বরটা পাঠান।</p>
+      <p class="bubble b2 blue">রকেটে পাঠালে হবে?</p>
+      <p class="bubble b3 blue">পেমেন্ট, নাকি সেন্ড মানি?</p>
+      <p class="bubble b4 blue">বিকাশ নাই, নগদ হবে?</p>
+      <p class="bubble b5 grey">ব্যাংক অ্যাকাউন্ট নম্বর দেন</p>
+      <p class="bubble b6 red">ওওপস, ভুল নম্বরে টাকা চলে গেছে</p>
+    </div>
+    <h1 class="s1-head" lang="bn"><span>এই সমস্যার</span><span class="accent">সমাধান এসে গেছে!</span></h1>
+    <div class="hairline"></div>
+    <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid"></span><span class="num">01 / 06</span></footer>
+  </section>
+
+  <section class="slide paper" id="s2">
+    <p class="kicker">One page</p>
+    <h1 class="headline">One link.<br>Every payment<br>method.</h1>
+    <p class="body">Scan to pay, copy a wallet number, or send to your bank.</p>
+    <div class="qr-crop" data-qr="site"></div>
+    <span class="qr-label">Bangla QR · sample crop</span>
+    <div class="hairline"></div>
+    <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">02 / 06</span></footer>
+  </section>
+
+  <section class="slide dark" id="s3">
+    <p class="kicker">Pay any way</p>
+    <div class="s3-ghost" aria-hidden="true">8</div>
+    <h1 class="headline">Customers pay<br>using any<br>Payment Method</h1>
+    <p class="body">You receive it in your preferred account.</p>
+    <div class="matrix" data-apps></div>
+    <div class="hairline"></div>
+    <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">03 / 06</span></footer>
+  </section>
+
+  <section class="slide mint" id="s4">
+    <p class="kicker">How it works</p>
+    <h1 class="headline">One page.<br>Straight through.</h1>
+    <p class="body">Scan, copy or bank transfer. Your customer pays from their own app. The money lands in your account.</p>
+    <div class="phone-wrap">
+      <div class="phone"><div class="screen">
+        <div class="mini-brand"><span data-mark></span>Your business</div>
+        <div class="mini-tabs"><span class="on">Scan QR</span><span>Wallet</span><span>Bank</span></div>
+        <div class="card">
+          <div class="payto"><small>Pay to</small><b>YOUR BUSINESS</b></div>
+          <div class="amount"><span class="sym">৳</span>500</div>
+          <div class="qrbox" data-qr="pay"></div>
+          <div class="note">Scan with <b>bKash, Nagad, Rocket</b> or any bank app.</div>
+        </div>
+      </div></div>
+    </div>
+    <div class="hairline"></div>
+    <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">04 / 06</span></footer>
+  </section>
+
+  <section class="slide bright" id="s5">
+    <p class="kicker">Start here</p>
+    <h1 class="headline">No commission.<br>No fees.<br>No charge.</h1>
+    <p class="body">You get the money. We only host the page. Normal payment-app charges may still apply.</p>
+    <a class="cta">deshipay.netlify.app</a>
+    <div class="hairline"></div>
+    <div class="finder"></div>
+    <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid"></span><span class="num">05 / 06</span></footer>
+  </section>
+
+  <section class="slide dark" id="s6">
+    <p class="kicker">Why DeshiPay</p>
+    <h1 class="s6-head">Built to be<br>trusted.</h1>
+    <div class="s6-list">
+      <div class="s6-row"><span class="s6-num">01</span><h2>Open source</h2><p>Read the code, fork it or self-host your page.</p></div>
+      <div class="s6-row"><span class="s6-num">02</span><h2>Free</h2><p>Create and share a page at no cost. No commission, no cut.</p></div>
+      <div class="s6-row"><span class="s6-num">03</span><h2>Secure</h2><p>Payment happens in your banking app. We never hold the money.</p></div>
+    </div>
+    <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">06 / 06</span></footer>
+  </section>
+</div>
+
+<script src="../../../site/public/js/pay-icons.js"></script>
+<script src="../../../site/public/vendor/qrcode.js"></script>
+<script src="../../../site/public/js/common.js"></script>
+<script>
+(function () {
+  var PAY_PAYLOAD = "00020101021126450014bd.org.bb.npsb0102020202040311017000000005204601653030505802BD5913YOUR BUSINESS6005Dhaka62060602FT8010TOKENA/+==63049FC4";
+  var SITE_URL = "https://deshipay.netlify.app";
+  var MARK = '<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="32.4" fill="#056B4E"/><path fill="#fff" d="M42.89 35.39A12 12 0 0 0 22.4 43.87L22.4 67.6A10 10 0 0 0 32.4 77.6L56.13 77.6A12 12 0 0 0 64.61 57.11Z"/></svg>';
+  document.querySelectorAll("[data-mark]").forEach(function (el) { el.innerHTML = MARK; });
+  if (window.Deshi && window.Deshi.qrSvg) {
+    document.querySelectorAll('[data-qr="pay"]').forEach(function (el) { el.appendChild(window.Deshi.qrSvg(PAY_PAYLOAD)); });
+    document.querySelectorAll('[data-qr="site"]').forEach(function (el) { el.appendChild(window.Deshi.qrSvg(SITE_URL)); });
+  }
+  var L = window.DeshiPayIcons;
+  var host = document.querySelector("[data-apps]");
+  if (L && host) {
+    L.mfs.concat(L.banks).filter(function (it) { return it.name !== "NexusPay"; }).forEach(function (it) {
+      var tile = document.createElement("div"); tile.className = "app" + ((it.name === "MTB Neo" || it.name === "Nagad" || it.name === "upay") ? " mtb" : "");
+      var im = document.createElement("img"); im.src = it.src; im.alt = it.name; im.title = it.name;
+      tile.appendChild(im); host.appendChild(tile);
+    });
+    window.socialReady = Promise.all(Array.prototype.map.call(host.querySelectorAll(".app:not(.mtb) img"), function (img) {
+      return new Promise(function (resolve) {
+        function clean() {
+          try {
+            var w = img.naturalWidth, h = img.naturalHeight;
+            var c = document.createElement("canvas"); c.width = w; c.height = h;
+            var ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0);
+            var data = ctx.getImageData(0, 0, w, h), p = data.data;
+            function white(i) { return p[i] > 244 && p[i + 1] > 244 && p[i + 2] > 244; }
+            var corners = [0, (w - 1) * 4, ((h - 1) * w) * 4, ((h - 1) * w + (w - 1)) * 4];
+            if (corners.every(white)) {
+              for (var i = 0; i < p.length; i += 4) if (white(i)) p[i + 3] = 0;
+              ctx.putImageData(data, 0, 0);
+              var minX = w, minY = h, maxX = 0, maxY = 0;
+              for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+                if (p[(y * w + x) * 4 + 3] > 10) {
+                  if (x < minX) minX = x; if (x > maxX) maxX = x;
+                  if (y < minY) minY = y; if (y > maxY) maxY = y;
+                }
+              }
+              var bw = maxX - minX + 1, bh = maxY - minY + 1;
+              if (bw > 0 && bh > 0) {
+                var c2 = document.createElement("canvas"); c2.width = bw; c2.height = bh;
+                c2.getContext("2d").drawImage(c, minX, minY, bw, bh, 0, 0, bw, bh);
+                img.src = c2.toDataURL("image/png");
+              } else { img.src = c.toDataURL("image/png"); }
+            }
+          } catch (e) { /* leave image untouched */ }
+          resolve();
+        }
+        if (img.complete && img.naturalWidth) clean(); else img.addEventListener("load", clean, { once: true });
+      });
+    }));
+  }
+  window.showSlide = function (n) {
+    document.querySelectorAll(".slide").forEach(function (el) { el.classList.remove("active"); });
+    document.getElementById("s" + n).classList.add("active");
+  };
+})();
+</script>
+</body></html>

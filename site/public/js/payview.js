@@ -242,7 +242,7 @@
     function worksWithStrip() {
       var L = window.DeshiPayIcons;
       if (!L) return null;
-      var wanted = { "Citytouch": 1, "BRAC Bank Astha": 1, "MTB Neo": 1 };
+      var wanted = { "Citytouch": 1, "BRAC Bank Astha": 1, "EBL Skybanking": 1, "MTB Neo": 1 };
       var apps = h("span", { class: "works-with-apps" }, L.mfs.concat(L.banks.filter(function (b) { return wanted[b.name]; })).map(function (it) {
         return h("span", { class: "works-with-app", title: it.name },
           h("img", { src: it.src, alt: it.name, loading: "lazy" }));

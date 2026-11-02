@@ -107,7 +107,6 @@
 .home-cta { gap: 16px; justify-items: start; padding: 24px; border-radius: 22px; background: var(--accent-soft); }
 .home-cta p { margin: 0; color: var(--muted); max-width: 52ch; }
 .home-cta .cta-action { display: grid; gap: 10px; justify-items: start; }
-.cta-note { color: var(--muted); font-size: 13px; }
 @media (min-width: 720px) {
   .home-cta { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 32px; padding: 30px 34px; }
   .home-cta .cta-action { justify-items: end; }

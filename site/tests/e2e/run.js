@@ -475,6 +475,13 @@ async function scenarioOnline(browser) {
       "mobile: the active tab shows icon + label");
     ok(mobileTabs.filter((t) => !t.selected).every((t) => t.hasLabel && !t.labelVisible),
       "mobile: every inactive tab is icon-only");
+    const tabLayout = await page.evaluate(() => {
+      const bar = document.querySelector(".tabs");
+      const tops = new Set(Array.from(bar.querySelectorAll("button")).map((b) => Math.round(b.getBoundingClientRect().top)));
+      return { scroll: bar.scrollWidth, client: bar.clientWidth, rows: tops.size };
+    });
+    ok(tabLayout.scroll <= tabLayout.client + 1, "mobile: the tab bar does not overflow horizontally");
+    ok(tabLayout.rows > 1, "mobile: extra tabs wrap onto a new row");
 
     console.log("Share tab: download the page as HTML");
     ok(

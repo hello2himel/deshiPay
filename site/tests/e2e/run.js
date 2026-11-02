@@ -221,7 +221,7 @@ async function scenarioOnline(browser) {
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
     ok(!!(await page.$(".hero-actions .hero-demo-link[href='#demo']")), "the hero links to the live demo");
     ok((await page.$$eval(".hero-works img", (els) => els.length)) === 8, "the hero shows the supported app marks");
-    ok((await page.$eval(".hero-zero", (e) => e.textContent)).includes("No commission"), "the hero highlights no commission");
+    ok((await page.$eval(".hero-top .lead", (e) => e.textContent)).includes("Not a payment processor") && (await page.$eval(".hero-top .lead", (e) => e.textContent)).includes("no cut or commission"), "the hero copy carries the not-a-processor no-cut line");
     ok(
       (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "emerald",
       "the site uses the green default theme"

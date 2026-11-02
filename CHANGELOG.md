@@ -13,6 +13,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Avatar picker now uses Remix Icon.** Replaced the hand-drawn avatar glyphs with Remix Icon 4.9.1
+  line icons, keeping the existing labels and ids. The STEM group is Atom, Flask, DNA, Circuit chip and
+  Function; Physics is Pulse, Light and Vibration; Space is Planet, Meteor and Rocket. Remix Icon is
+  Apache-2.0 with its license in `THIRD_PARTY_LICENSES/remixicon.txt`.
+
+### Added
+
 - **Donate to DeshiPay page and links.** New `/deshipay` page (also in the sitemap) shows the DeshiPay
   donation methods: the Dutch-Bangla Bank details (Himel Das, 1251070048232, Bogura branch, routing
   090100378, SWIFT DBBLBDDH), bKash and Nagad personal numbers (01868 735269), and the DeshiPay Bangla

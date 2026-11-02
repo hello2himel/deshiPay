@@ -4,14 +4,14 @@
   function render() {
     var L = window.DeshiPayIcons;
     if (!L) return;
-    var bare = { "Bangla QR": 1 };
-    var items = L.mfs.concat([L.banglaqr]);
+    var wanted = { "Citytouch": 1, "BRAC Bank Astha": 1, "MTB Neo": 1 };
+    var items = L.mfs.concat(L.banks.filter(function (b) { return wanted[b.name]; }));
     Array.prototype.forEach.call(document.querySelectorAll("[data-works-with]"), function (host) {
       var apps = document.createElement("span");
       apps.className = "works-with-apps";
       items.forEach(function (it) {
         var tile = document.createElement("span");
-        tile.className = "works-with-app" + (bare[it.name] ? " bare" : "");
+        tile.className = "works-with-app";
         tile.title = it.name;
         var img = document.createElement("img");
         img.src = it.src; img.alt = it.name; img.loading = "lazy";

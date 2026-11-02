@@ -43,6 +43,9 @@
 .hero-actions .btn.sec { min-height: 52px; }
 .hero-demo-link .ic { width: 18px; height: 18px; }
 .hero-works { justify-self: start; max-width: 420px; margin-top: 2px; }
+.hero-zero { justify-self: start; display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 13px; }
+.hero-zero .ic { width: 17px; height: 17px; flex: none; }
+.hero-zero strong { font-weight: 800; }
 /* dedicated sign-in / sign-up page */
 .auth-page { max-width: 480px; margin: 0 auto; padding: 40px 16px 8px; display: grid; gap: 18px; }
 .auth-page .auth { box-shadow: 0 24px 60px -30px var(--shadow); }

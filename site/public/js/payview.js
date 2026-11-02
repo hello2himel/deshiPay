@@ -294,7 +294,7 @@
       var help = method ? h("section", { class: "pv-help" },
         h("h2", null, "How to pay"),
         h("ol", { class: "pv-steps" }, STEPS[method].map(function (s) { return h("li", null, s); })),
-        h("div", { class: "pv-caution" }, icon("shield"), h("span", null, "DeshiPay is not a payment processor: it never takes, holds or confirms payments. Always check the name and amount in your app; you pay from your own banking app."))
+        h("div", { class: "pv-caution" }, icon("shield"), h("span", null, "DeshiPay is not a payment processor: it never takes, holds or confirms payments, and takes no cut or commission. Always check the name and amount in your app; you pay from your own banking app."))
       ) : null;
 
       var tree = h("div", { class: "pv", "data-theme": page.theme || "emerald" },

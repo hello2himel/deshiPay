@@ -103,6 +103,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
   explicit `html[data-mode="light|dark"]` overrides for all ten themes so the toggle beats
   `prefers-color-scheme`.
 
+### Added
+
+- **STEM, physics and space avatars.** The dashboard avatar picker now has grouped Atom, Flask, DNA,
+  Circuit chip and Sigma (STEM), Magnet and Wave (Physics), and Planet, Telescope and Comet (Space)
+  options alongside the existing shop/lifestyle icons.
+
 ### Changed
 
 - **Old “deshiqr” product names renamed to DeshiPay where they leaked into the app.** Downloaded pages are

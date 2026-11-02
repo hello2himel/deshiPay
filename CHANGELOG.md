@@ -116,6 +116,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
   Circuit chip and Sigma (STEM), Magnet and Wave (Physics), and Planet, Telescope and Comet (Space)
   options alongside the existing shop/lifestyle icons.
 
+### Added
+
+- **Animated FAQ open/collapse.** Landing FAQ answers now animate height + opacity (220 ms) with the
+  plus/close indicator still rotating; keyboard activation still works and `prefers-reduced-motion`
+  leaves the native instant toggle in place.
+
 ### Changed
 
 - **Old “deshiqr” product names renamed to DeshiPay where they leaked into the app.** Downloaded pages are

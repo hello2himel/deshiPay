@@ -296,6 +296,14 @@ async function scenarioOnline(browser) {
     const demoHelp = await page.$eval(".demo .slip-help", (e) => e.textContent);
     ok(demoHelp.includes("not a payment processor") && demoHelp.includes("never takes a cut"),
       "the homepage demo explains DeshiPay never takes a cut");
+    const faq = await page.$(".faq details");
+    await page.click(".faq details summary");
+    await page.waitForFunction(() => document.querySelector(".faq details").open === true, { timeout: 3000 });
+    ok(true, "FAQ opens with its animation path");
+    await page.click(".faq details summary");
+    await page.waitForFunction(() => document.querySelector(".faq details").open === false, { timeout: 3000 });
+    ok(true, "FAQ collapses again");
+
     const demoMethods = await page.$$(".demo .pv-methods button");
     await demoMethods[2].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });

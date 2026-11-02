@@ -33,7 +33,7 @@
   };
 
   function mountDemo() {
-    var host = document.getElementById("demoPayment") || document.getElementById("demo");
+    var host = document.getElementById("demo");
     if (!host || !window.PayView) return;
     // The same customer page pay.js mounts, minus the page-only tail (footer)
     // and the landing-page autofocus: full QR / Wallet / Bank tabs. The

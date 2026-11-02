@@ -42,6 +42,7 @@
 .hero-actions .hero-cta { margin-top: 0; }
 .hero-actions .btn.sec { min-height: 52px; }
 .hero-demo-link .ic { width: 18px; height: 18px; }
+.hero-works { justify-self: start; max-width: 420px; margin-top: 2px; }
 /* dedicated sign-in / sign-up page */
 .auth-page { max-width: 480px; margin: 0 auto; padding: 40px 16px 8px; display: grid; gap: 18px; }
 .auth-page .auth { box-shadow: 0 24px 60px -30px var(--shadow); }

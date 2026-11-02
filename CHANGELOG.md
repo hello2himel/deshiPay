@@ -124,6 +124,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Theme toggle uses saved Remix Icon glyphs.** Added `sun-line.svg` and `moon-line.svg` under
+  `site/public/vendor/remixicon/` (Apache-2.0) and switched the toggle to `currentColor` CSS masks,
+  so the icon follows the nav colour in both modes.
+
+### Changed
+
 - **Redesigned top navigation.** The header is now a floating rounded bar inside the page gutter, with a
   soft shadow and a clean action cluster (Donate, Log in, primary Create page, theme toggle). On mobile
   the menu opens as a rounded panel below the bar; hero height accounts for the new bar height.

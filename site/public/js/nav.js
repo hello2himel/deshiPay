@@ -17,13 +17,12 @@
   if (links) menu.appendChild(links);
   if (actions) menu.appendChild(actions);
 
-  var SUN = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-  var MOON = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/></svg>';
   var toggle = document.createElement("button");
   toggle.className = "theme-toggle";
   toggle.type = "button";
   var iconBox = document.createElement("span");
-  iconBox.className = "theme-ic";
+  iconBox.className = "theme-ic moon";
+  iconBox.setAttribute("aria-hidden", "true");
   var label = document.createElement("span");
   label.className = "theme-label";
   toggle.appendChild(iconBox);
@@ -37,7 +36,7 @@
   }
   function paintToggle() {
     var dark = isDark();
-    iconBox.innerHTML = dark ? SUN : MOON;
+    iconBox.className = "theme-ic " + (dark ? "sun" : "moon");
     label.textContent = dark ? "Light mode" : "Dark mode";
     toggle.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
     toggle.setAttribute("title", dark ? "Switch to light theme" : "Switch to dark theme");

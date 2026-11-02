@@ -4,8 +4,8 @@
   function render() {
     var L = window.DeshiPayIcons;
     if (!L) return;
-    var bare = { "Nagad": 1, "upay": 1, "Bangla QR": 1 };
-    var items = L.mfs.concat([L.banks[0]]);
+    var bare = { "Bangla QR": 1 };
+    var items = L.mfs.concat([L.banglaqr]);
     Array.prototype.forEach.call(document.querySelectorAll("[data-works-with]"), function (host) {
       var apps = document.createElement("span");
       apps.className = "works-with-apps";

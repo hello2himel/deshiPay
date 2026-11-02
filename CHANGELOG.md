@@ -107,8 +107,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 - **Works-with strip in the hero and below How to pay; PayView QR icons removed.** The app marks sit
   under the home hero buttons, and on payment pages in a “Works with … and any bank app” strip directly
-  below How to pay (including the donate page). Removed the 5×2 app-icon grid from under the QR; the A5
-  poster generated from a payment page still includes the icons.
+  below How to pay (including the donate page). The strip is bKash, Nagad, Rocket, upay and Bangla QR;
+  Nagad/upay use the same rounded tiles as other apps, while the Bangla QR standard mark stays unrounded.
+  Removed the 5×2 app-icon grid from under the QR; the A5 poster generated from a payment page still
+  includes the icons.
 
 ### Changed
 

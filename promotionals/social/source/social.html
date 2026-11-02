@@ -52,7 +52,7 @@
   /* page 6 ledger */
   #s6 { background: radial-gradient(circle at 82% 8%, rgba(52,214,164,.14), transparent 46%), var(--dark); }
   #s6 .kicker { color:var(--bright); }
-  #s6 .s6-head { position:relative; z-index:4; margin:64px 0 0; font-family:"Bricolage Grotesque",Arial,sans-serif; font-size:76px; line-height:.98; letter-spacing:-.05em; color:#fff; }
+  #s6 .s6-head { position:relative; z-index:4; margin:88px 0 0; font-family:"Bricolage Grotesque",Arial,sans-serif; font-size:76px; line-height:.98; letter-spacing:-.05em; color:#fff; }
   .s6-list { position:absolute; z-index:4; left:72px; right:72px; top:348px; bottom:150px; display:grid; grid-template-rows:repeat(3,1fr); border-top:1px solid rgba(230,240,237,.18); }
   .s6-row { display:grid; grid-template-columns:150px 360px 1fr; align-items:center; gap:24px; padding:0 18px 0 0; border-bottom:1px solid rgba(230,240,237,.18); }
   .s6-num { color:transparent; -webkit-text-stroke:1.5px rgba(52,214,164,.75); font:800 82px/1 "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.04em; }
@@ -79,29 +79,27 @@
 
   .s3-ghost { position:absolute; z-index:1; left:-42px; bottom:-128px; color:rgba(230,240,237,.045); font:800 450px/1 "Hind Siliguri","Noto Sans Bengali",sans-serif; letter-spacing:-.08em; pointer-events:none; }
   /* 04 phone crop */
-  #s4 .headline { font-size:54px; margin-top:150px; max-width:455px; }
+  #s4 .headline { font-size:54px; margin-top:132px; max-width:455px; }
   #s4 .body { margin-top:28px; max-width:400px; font-size:28px; }
   .s4-small { position:relative; z-index:4; margin:18px 0 0; color:var(--green); font-size:20px; font-weight:700; }
   #s4 .hairline { right:auto; width:500px; }
-  .phone-wrap { position:absolute; z-index:5; right:46px; top:126px; width:470px; }
-  .phone { width:424px; margin-left:auto; padding:10px; border-radius:54px; background:#0B1712; box-shadow:0 40px 80px -20px rgba(8,42,32,.35); transform:rotate(2.5deg); }
-  .screen { border-radius:45px; background:var(--mint); padding:20px 18px; }
-  .mini-brand { display:flex; align-items:center; gap:10px; font:800 20px "Bricolage Grotesque",Arial,sans-serif; }
-  .mini-brand .mark { width:31px; height:31px; }
-  .mini-tabs { display:flex; gap:4px; background:#fff; border-radius:14px; padding:5px; font:700 14px Figtree,sans-serif; color:var(--muted); margin-top:16px; }
-  .mini-tabs span { flex:1; text-align:center; padding:10px 3px; border-radius:10px; }
-  .mini-tabs span.on { color:var(--ink); box-shadow:0 4px 12px rgba(8,42,32,.09); }
-  .card { background:#fff; border-radius:22px; padding:18px; margin-top:14px; color:var(--ink); }
-  .payto { display:flex; justify-content:space-between; align-items:start; gap:10px; }
-  .payto small { color:var(--muted); font-size:13px; }
-  .payto b { font:800 18px "Bricolage Grotesque",Arial,sans-serif; }
-  .amount { display:flex; align-items:baseline; gap:3px; margin:13px 0 9px; font:800 40px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.04em; }
-  .amount .sym { color:var(--green); font-size:25px; }
-  .qrbox { width:100%; aspect-ratio:1; background:#fff; overflow:hidden; }
-  .qrbox svg { display:block; width:100%; height:auto; }
-  .note { text-align:center; color:var(--muted); font-size:12.5px; line-height:1.45; margin-top:9px; }
-  .note b { color:var(--ink); }
-
+  .s4-visual { position:absolute; z-index:4; right:34px; top:64px; width:590px; height:930px; }
+  .qr-poster { position:absolute; right:34px; top:0; width:304px; padding:20px; background:#fff; transform:rotate(-3.2deg); box-shadow:0 34px 60px -40px rgba(8,42,32,.5); }
+  .qr-kicker { display:block; color:var(--green); font:800 12px Figtree,sans-serif; letter-spacing:.17em; margin-bottom:12px; }
+  .qr-poster .qrbox { border-radius:0; }
+  .qr-meta { display:flex; flex-direction:column; gap:3px; margin-top:13px; }
+  .qr-meta b { font:800 19px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.02em; }
+  .qr-meta span { color:var(--muted); font-size:11px; }
+  .page-tag { position:absolute; left:0; top:390px; width:250px; color:var(--green); font:800 13px Figtree,sans-serif; letter-spacing:.06em; text-transform:uppercase; transform:rotate(-2deg); }
+  .page-tag span { display:block; margin-top:5px; color:var(--muted); font-weight:600; letter-spacing:0; text-transform:none; font-size:13px; }
+  .direct-rail { position:absolute; right:184px; top:414px; height:252px; width:2px; background:var(--green); }
+  .direct-rail:after { content:""; position:absolute; left:-5px; bottom:-2px; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:9px solid var(--green); }
+  .direct-rail span { position:absolute; left:10px; top:104px; color:var(--green); font:800 11px Figtree,sans-serif; letter-spacing:.18em; white-space:nowrap; transform:rotate(90deg); transform-origin:left top; }
+  .account-card { position:absolute; right:44px; top:620px; width:392px; padding:24px 26px; background:var(--dark); color:#fff; transform:rotate(1.4deg); box-shadow:0 28px 50px -35px rgba(8,42,32,.5); }
+  .acct-label { display:block; color:var(--bright); font:800 11px Figtree,sans-serif; letter-spacing:.18em; }
+  .account-card b { display:block; margin-top:10px; font:800 32px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.035em; }
+  .account-card p { margin:10px 0 0; color:rgba(230,240,237,.66); font-size:18px; line-height:1.55; }
+  .acct-note { display:inline-block; margin-top:15px; padding-top:10px; border-top:1px solid rgba(230,240,237,.18); color:var(--bright); font:700 12px Figtree,sans-serif; }
   /* 05 manifesto */
   #s5 .headline { font-size:96px; line-height:1.0; margin-top:118px; max-width:860px; }
   #s5 .body { margin-top:34px; max-width:700px; color:rgba(8,42,32,.72); font-size:31px; }
@@ -128,7 +126,6 @@
   </section>
 
   <section class="slide paper" id="s2">
-    <p class="kicker">One page</p>
     <h1 class="headline">One link.<br>Every payment<br>method.</h1>
     <p class="body">Scan to pay, copy a wallet number, or send to your bank.</p>
     <div class="qr-crop" data-qr="site"></div>
@@ -138,7 +135,6 @@
   </section>
 
   <section class="slide dark" id="s3">
-    <p class="kicker">Pay any way</p>
     <div class="s3-ghost" aria-hidden="true">৳</div>
     <h1 class="headline">Customers pay<br>using any<br>Payment Method</h1>
     <p class="body">You receive it in your preferred account.</p>
@@ -148,28 +144,29 @@
   </section>
 
   <section class="slide mint" id="s4">
-    <p class="kicker">How it works</p>
     <h1 class="headline">Receive the money in any account or provider you want.</h1>
     <p class="body">Directly. No middleman involved.</p>
     <p class="s4-small">Through your Bangla QR.</p>
-    <div class="phone-wrap">
-      <div class="phone"><div class="screen">
-        <div class="mini-brand"><span data-mark></span>Your business</div>
-        <div class="mini-tabs"><span class="on">Scan QR</span><span>Wallet</span><span>Bank</span></div>
-        <div class="card">
-          <div class="payto"><small>Pay to</small><b>YOUR BUSINESS</b></div>
-          <div class="amount"><span class="sym">৳</span>500</div>
-          <div class="qrbox" data-qr="pay"></div>
-          <div class="note">Scan with <b>bKash, Nagad, Rocket</b> or any bank app.</div>
-        </div>
-      </div></div>
+    <div class="s4-visual">
+      <div class="qr-poster">
+        <span class="qr-kicker">SCAN TO PAY</span>
+        <div class="qrbox" data-qr="site"></div>
+        <div class="qr-meta"><b>Your page</b><span>deshipay.netlify.app/yourname</span></div>
+      </div>
+      <div class="page-tag">DeshiPay page <span>not in the money path</span></div>
+      <div class="direct-rail"><span>DIRECT</span></div>
+      <div class="account-card">
+        <span class="acct-label">RECEIVE TO</span>
+        <b>Your account</b>
+        <p>bKash · Nagad · Rocket<br>or your bank account</p>
+        <span class="acct-note">No middleman</span>
+      </div>
     </div>
     <div class="hairline"></div>
     <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">04 / 06</span></footer>
   </section>
 
   <section class="slide bright" id="s5">
-    <p class="kicker">Start here</p>
     <h1 class="headline">No commission.<br>No fees.<br>No charge.</h1>
     <p class="body">You get the money. We only host the page. Normal payment-app charges may still apply.</p>
     <a class="cta">deshipay.netlify.app</a>
@@ -179,7 +176,6 @@
   </section>
 
   <section class="slide dark" id="s6">
-    <p class="kicker">Why DeshiPay</p>
     <h1 class="s6-head">Built to be<br>trusted.</h1>
     <div class="s6-list">
       <div class="s6-row"><span class="s6-num">01</span><h2>Open source</h2><p>Read the code, fork it or self-host your page.</p></div>
@@ -190,9 +186,9 @@
   </section>
 </div>
 
-<script src="../../../site/public/js/pay-icons.js"></script>
-<script src="../../../site/public/vendor/qrcode.js"></script>
-<script src="../../../site/public/js/common.js"></script>
+<script src="file:///home/himel/Documents/deshiQR/site/public/js/pay-icons.js"></script>
+<script src="file:///home/himel/Documents/deshiQR/site/public/vendor/qrcode.js"></script>
+<script src="file:///home/himel/Documents/deshiQR/site/public/js/common.js"></script>
 <script>
 (function () {
   var PAY_PAYLOAD = "00020101021126450014bd.org.bb.npsb0102020202040311017000000005204601653030505802BD5913YOUR BUSINESS6005Dhaka62060602FT8010TOKENA/+==63049FC4";

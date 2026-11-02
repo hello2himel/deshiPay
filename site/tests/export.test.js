@@ -55,6 +55,7 @@ function assets(overrides) {
       common: read("js/common.js"),
       providers: read("js/providers.js"),
       avatars: read("js/avatars.js"),
+      payicons: read("js/pay-icons.js"),
       payview: read("js/payview.js"),
       pay: read("js/pay.js"),
     },
@@ -245,8 +246,8 @@ test("generates one complete HTML document with pay.html's head and body", () =>
   assert.ok(html.includes('<div id="root"></div>'));
   assert.ok(html.includes("This payment page needs JavaScript to draw the QR code."));
   assert.strictEqual(count(html, "<style>"), 3, "exactly the three stylesheets");
-  assert.strictEqual(count(html, "<script>"), 9, "page data + the eight runtime scripts");
-  assert.strictEqual(count(html, "<script"), 9, "no extra script elements");
+  assert.strictEqual(count(html, "<script>"), 10, "page data + the nine runtime scripts");
+  assert.strictEqual(count(html, "<script"), 10, "no extra script elements");
 });
 
 test("inlines the real CSS files in pay.html order (themes, base, pay)", () => {
@@ -268,6 +269,7 @@ test("inlines every runtime script in pay.html order and never uses src=", () =>
     "js/common.js",
     "js/providers.js",
     "js/avatars.js",
+    "js/pay-icons.js",
     "js/payview.js",
     "js/pay.js",
   ]) {
@@ -360,8 +362,8 @@ test("a literal </script in an inlined asset cannot close the script element ear
   const html = E.buildPageHtml(full, broken);
   assert.strictEqual(html.indexOf('var closing = "</script>"'), -1, "literal sequence is guarded");
   assert.ok(html.includes('var closing = "<\\/script>";'), "escaped to <\\/script> (same JS string)");
-  assert.strictEqual(count(html, "<script>"), 9);
-  assert.strictEqual(count(html, "</script>"), 9);
+  assert.strictEqual(count(html, "<script>"), 10);
+  assert.strictEqual(count(html, "</script>"), 10);
 });
 
 /* ---------------- fixtures ---------------- */
@@ -437,6 +439,7 @@ test("downloadPage names the file after the username, then the title slug, then 
     "/js/common.js": read("js/common.js"),
     "/js/providers.js": read("js/providers.js"),
     "/js/avatars.js": read("js/avatars.js"),
+    "/js/pay-icons.js": read("js/pay-icons.js"),
     "/js/payview.js": read("js/payview.js"),
     "/js/pay.js": read("js/pay.js"),
     "/favicon.svg": read("favicon.svg"),

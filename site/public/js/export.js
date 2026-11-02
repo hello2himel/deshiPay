@@ -28,7 +28,7 @@
 
   var CSS_ASSETS = ["themes", "base", "pay"];
   var CSS_FILES = { themes: "/css/themes.css", base: "/css/base.css", pay: "/css/pay.css" };
-  var JS_ASSETS = ["qrcode", "engine", "payload", "common", "providers", "avatars", "payview", "pay"];
+  var JS_ASSETS = ["qrcode", "engine", "payload", "common", "providers", "avatars", "payicons", "payview", "pay"];
   var JS_FILES = {
     qrcode: "/vendor/qrcode.js",
     engine: "/vendor/deshiqr.global.js",
@@ -36,6 +36,7 @@
     common: "/js/common.js",
     providers: "/js/providers.js",
     avatars: "/js/avatars.js",
+    payicons: "/js/pay-icons.js",
     payview: "/js/payview.js",
     pay: "/js/pay.js"
   };
@@ -195,6 +196,7 @@
       fetchText(JS_FILES.common),
       fetchText(JS_FILES.providers),
       fetchText(JS_FILES.avatars),
+      fetchText(JS_FILES.payicons),
       fetchText(JS_FILES.payview),
       fetchText(JS_FILES.pay),
       fetchText(FAVICON_FILE)
@@ -210,10 +212,11 @@
             common: texts[6],
             providers: texts[7],
             avatars: texts[8],
-            payview: texts[9],
-            pay: texts[10]
+            payicons: texts[9],
+            payview: texts[10],
+            pay: texts[11]
           },
-          favicon: texts[11],
+          favicon: texts[12],
           fontUrl: FONT_URL
         };
       },

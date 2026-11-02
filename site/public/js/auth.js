@@ -16,15 +16,15 @@
 
   function mountDemo() {
     var host = document.getElementById("demo");
-    if (!host || !window.PayView) return;
+    if (!host || !window.PayView || !DEMO_PAGE) return;
     // The same customer page pay.js mounts, minus the page-only tail (footer)
     // and the landing-page autofocus: full QR / Wallet / Bank tabs. The
     // "How to pay" block is hidden for the landing demo in studio.css.
     window.PayView.mount(host, DEMO_PAGE, { preview: true });
-    // Keep the phone note (the Save button is hidden on the homepage demo), but
-    // point at the thing a visitor can actually do with a phone: screenshot it.
+    // The Save button is hidden in the demo, so replace its note with the
+    // product truth: DeshiPay only shows the page and never handles the money.
     var note = host.querySelector(".slip-help");
-    if (note) note.textContent = "Paying from this phone? Screenshot the QR, then choose it from your gallery inside your payment app.";
+    if (note) note.textContent = "DeshiPay is not a payment processor. It never takes a cut; you pay from your own banking app.";
     // Start at ৳1,500 so the demo shows a real amount-bearing QR immediately;
     // the visitor can edit it or use the quick-amount chips.
     var amount = host.querySelector(".amt-input");

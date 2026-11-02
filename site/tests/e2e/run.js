@@ -292,10 +292,9 @@ async function scenarioOnline(browser) {
       (await page.$$eval(".demo .slip-actions", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0,
       "the homepage demo leaves out the Save QR image button"
     );
-    ok(
-      (await page.$$eval(".demo .slip-help", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 1,
-      "the homepage demo keeps the paying-from-this-phone note"
-    );
+    const demoHelp = await page.$eval(".demo .slip-help", (e) => e.textContent);
+    ok(demoHelp.includes("not a payment processor") && demoHelp.includes("never takes a cut"),
+      "the homepage demo explains DeshiPay never takes a cut");
     const demoMethods = await page.$$(".demo .pv-methods button");
     await demoMethods[2].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });

@@ -242,9 +242,9 @@
     function worksWithStrip() {
       var L = window.DeshiPayIcons;
       if (!L) return null;
-      var bare = { "Bangla QR": 1 };
-      var apps = h("span", { class: "works-with-apps" }, L.mfs.concat([L.banglaqr]).map(function (it) {
-        return h("span", { class: "works-with-app" + (bare[it.name] ? " bare" : ""), title: it.name },
+      var wanted = { "Citytouch": 1, "BRAC Bank Astha": 1, "MTB Neo": 1 };
+      var apps = h("span", { class: "works-with-apps" }, L.mfs.concat(L.banks.filter(function (b) { return wanted[b.name]; })).map(function (it) {
+        return h("span", { class: "works-with-app", title: it.name },
           h("img", { src: it.src, alt: it.name, loading: "lazy" }));
       }));
       return h("section", { class: "works-with pv-works", "aria-label": "Works with" },

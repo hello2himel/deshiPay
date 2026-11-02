@@ -14,10 +14,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 ### Added
 
 - **Donate to DeshiPay page and links.** New `/deshipay` page (also in the sitemap) shows the DeshiPay
-  Dutch-Bangla Bank donation details: account name Himel Das, account 1251070048232, Bogura branch,
-  routing 090100378, SWIFT DBBLBDDH. It uses the same PayView copy rows/How-to-pay layout without needing
-  Supabase. “Donate” is now in the site nav and “Donate to DeshiPay” in the site-wide footer, plus the
-  dashboard top actions.
+  donation methods: the Dutch-Bangla Bank details (Himel Das, 1251070048232, Bogura branch, routing
+  090100378, SWIFT DBBLBDDH), bKash and Nagad personal numbers (01868 735269), and the DeshiPay Bangla
+  QR. It uses the same PayView copy rows/How-to-pay layout without needing Supabase. “Donate” is now in
+  the site nav and “Donate to DeshiPay” in the site-wide footer, plus the dashboard top actions.
 
 ### Added
 
@@ -105,10 +105,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
-- **Works-with strip moved to the side; PayView icon grid removed.** The app marks now live in a side
-  panel of the home hero (and beside the bank card on the donate page) via reusable `works-with.js`,
-  instead of under the QR. Removed the 5×2 app-icon strip from PayView; the A5 poster generated from a
-  payment page still includes the icons.
+- **Works-with strip in the hero and below How to pay; PayView QR icons removed.** The app marks sit
+  under the home hero buttons, and on payment pages in a “Works with … and any bank app” strip directly
+  below How to pay (including the donate page). Removed the 5×2 app-icon grid from under the QR; the A5
+  poster generated from a payment page still includes the icons.
 
 ### Changed
 

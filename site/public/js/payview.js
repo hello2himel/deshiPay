@@ -239,6 +239,21 @@
       );
     }
 
+    function worksWithStrip() {
+      var L = window.DeshiPayIcons;
+      if (!L) return null;
+      var bare = { "Nagad": 1, "upay": 1, "Bangla QR": 1 };
+      var apps = h("span", { class: "works-with-apps" }, L.mfs.concat([L.banks[0]]).map(function (it) {
+        return h("span", { class: "works-with-app" + (bare[it.name] ? " bare" : ""), title: it.name },
+          h("img", { src: it.src, alt: it.name, loading: "lazy" }));
+      }));
+      return h("section", { class: "works-with pv-works", "aria-label": "Works with" },
+        h("span", { class: "works-with-inner" },
+          h("span", { class: "works-with-label" }, "Works with"),
+          apps,
+          h("span", null, "and any bank app")));
+    }
+
     /* ---------- page ---------- */
 
     var STEPS = {
@@ -294,6 +309,7 @@
           ),
           card,
           help,
+          opts.preview ? null : worksWithStrip(),
           opts.preview ? null : h("footer", { class: "pv-foot" },
             h("div", { class: "made-line" },
               h("span", { class: "made-kicker" }, "Made with"),

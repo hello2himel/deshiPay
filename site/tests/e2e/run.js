@@ -220,7 +220,7 @@ async function scenarioOnline(browser) {
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
     ok(!!(await page.$(".hero-actions .hero-demo-link[href='#demo']")), "the hero links to the live demo");
-    ok((await page.$$eval(".demo-works img", (els) => els.length)) === 5, "the side panel shows supported app marks");
+    ok((await page.$$eval(".hero-works img", (els) => els.length)) === 5, "the hero shows the supported app marks");
     ok(
       (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "emerald",
       "the site uses the green default theme"
@@ -622,6 +622,14 @@ async function scenarioOnline(browser) {
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
     ok((await page.$$eval(".pv-avatar svg", (els) => els.length)) === 1, "customer page shows the chosen avatar icon");
     ok(!(await page.$(".pv-apps")), "the customer QR no longer carries the app icon grid");
+    await page.waitForSelector(".pv-works img");
+    ok((await page.$$eval(".pv-works img", (els) => els.length)) === 5, "the pay page shows Works with below How to pay");
+    const worksBelowHelp = await page.evaluate(() => {
+      const help = document.querySelector(".pv-help").getBoundingClientRect();
+      const works = document.querySelector(".pv-works").getBoundingClientRect();
+      return works.top >= help.bottom - 1;
+    });
+    ok(worksBelowHelp, "the Works with strip sits below the How to pay block");
     ok(
       (await page.$eval(".pv-caution", (e) => e.innerText)).includes("not a payment processor"),
       "the customer-page caution says DeshiPay is not a payment processor"
@@ -786,13 +794,16 @@ async function scenarioOnline(browser) {
     await page.goto(BASE + "/deshipay", { waitUntil: "networkidle0" });
     await page.waitForSelector(".pv h1");
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "DeshiPay", "the donate page is titled DeshiPay");
+    ok((await page.$$eval(".pv-methods button", (els) => els.length)) === 3, "the donate page offers QR, Wallet and Bank");
+    await page.waitForSelector(".pv .qrbox svg");
+    ok(true, "the donate page draws its QR");
     const donateText = await page.evaluate(() => document.body.innerText);
     ok(
       donateText.includes("Himel Das") && donateText.includes("1251070048232") &&
         donateText.includes("Dutch-Bangla Bank") && donateText.includes("090100378") && donateText.includes("DBBLBDDH"),
       "the donate page shows the full bank details"
     );
-    ok((await page.$$eval(".donate-works img", (els) => els.length)) === 5, "the donate page repeats the Works with strip");
+    ok((await page.$$eval(".pv-works img", (els) => els.length)) === 5, "the donate page repeats the Works with strip below How to pay");
 
     console.log("Forgot password: OTP then new password");
     await page.click(".auth-links button");

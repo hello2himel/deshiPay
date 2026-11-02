@@ -175,10 +175,3 @@ p { margin: 0; }
 .works-with-app img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 6px; }
 .works-with-app.bare { background: transparent; border-radius: 0; overflow: visible; }
 .works-with-app.bare img { border-radius: 0; }
-.demo-works { margin-bottom: 14px; }
-.donate-shell { display: grid; gap: 18px; }
-.donate-shell .works-with { max-width: 260px; justify-self: center; }
-@media (min-width: 960px) {
-  .donate-shell { max-width: 1120px; margin: 0 auto; padding: 0 16px; grid-template-columns: minmax(0, 1fr) 240px; gap: 24px; align-items: start; }
-  .donate-shell .works-with { position: sticky; top: 88px; width: 100%; max-width: none; }
-}

@@ -12,7 +12,7 @@
 (function () {
   "use strict";
   var T = window.Deshi, h = T.h, icon = T.icon;
-  var HELP_TEXT = "Paying from this phone? Save the A5 poster, then choose it from your gallery inside your payment app.";
+  var HELP_TEXT = "Paying from this phone? Save it to your gallery, then choose it inside your payment app.";
 
   function mount(root, initial, opts) {
     opts = opts || {};
@@ -42,7 +42,7 @@
       });
       var err = h("div", { class: "amt-err", role: "alert" });
       var box = h("div", { class: "qrbox empty", "aria-live": "polite" }, h("span", null, "Enter an amount to see the QR"));
-      var save = h("button", { class: "btn", type: "button", disabled: true, onClick: onSave }, icon("download"), "Save A5 poster");
+      var save = h("button", { class: "btn", type: "button", disabled: true, onClick: onSave }, icon("download"), "Save to gallery");
       var help = h("p", { class: "slip-help" }, HELP_TEXT);
       qr = { input: input, err: err, box: box, save: save, help: help, payload: "" };
 
@@ -170,7 +170,7 @@
         c.toBlob(function (blob) {
           if (!blob) return T.toast("Couldn’t prepare the poster", { error: true });
           T.saveImage(blob, window.DeshiPoster.filename(pp, "a5").replace(/\.svg$/, ".png")).then(function (r) {
-            if (r === "saved") T.toast("A5 poster saved");
+            if (r === "saved") T.toast("Saved to gallery");
           });
         }, "image/png");
       };

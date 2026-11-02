@@ -283,7 +283,7 @@ async function scenarioOnline(browser) {
     const demoChips = await page.$$(".demo .chip");
     if (demoChips[1]) await demoChips[1].click();
     ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the live demo’s quick amounts update the amount");
-    ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 3, "the live demo has QR, Wallet and Bank methods");
+    ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 2, "the live demo has QR and Bank methods");
     ok((await page.$$eval(".demo .pv-help", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0, "the homepage demo leaves out the “How to pay” block");
     ok((await page.$$eval(".demo .pv-foot", (els) => els.length)) === 0, "the homepage demo leaves out the page footer");
     ok(
@@ -297,7 +297,8 @@ async function scenarioOnline(browser) {
     const demoMethods = await page.$$(".demo .pv-methods button");
     await demoMethods[1].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });
-    ok(true, "the demo’s Wallet method renders the customer copy rows");
+    ok((await page.$eval(".demo .copyrow .v", (e) => e.textContent)).includes("1251070048232"), "the demo shows DeshiPay’s DBBL account number");
+    ok((await page.$eval(".demo .item-title", (e) => e.textContent)) === "Dutch-Bangla Bank", "the demo shows DeshiPay’s bank");
     await shot("01-landing-mobile");
 
     console.log("Footer and legal pages");

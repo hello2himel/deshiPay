@@ -14,9 +14,9 @@
    */
   var DEMO_PAGE = {
     username: "demo",
-    title: "Himel Das",
+    title: "DeshiPay",
     avatar: "shop",
-    message: "Live demo of a real Bangla QR payment page. This QR pays the account inside it. Try a small amount.",
+    message: "Support DeshiPay. This is a live demo: the QR and bank details are real, so try a small amount.",
     theme: "emerald",
     presets: [100, 500, 1000, 5000],
     // Base payload of the demo QR (a real Bangla QR: NPSB account template,

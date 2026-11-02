@@ -163,6 +163,7 @@
 /* On phones/tablets the tab bar scrolls, so only the selected tab keeps its
    label; the other tabs are icon pills and all of them fit. */
 @media (max-width: 959px) {
+  .tabs { flex-wrap: wrap; overflow: visible; margin: 0; padding: 2px 0; row-gap: 6px; }
   .tabs button { padding: 0 14px; }
   .tabs button[aria-selected="true"] { padding: 0 16px; }
   .tabs button:not([aria-selected="true"]) .tab-label { display: none; }

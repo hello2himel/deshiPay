@@ -90,5 +90,9 @@ Full steps, Supabase project settings-as-code, the offline/standalone flow and t
 
 ## License
 
-MIT © Himel Das. Not affiliated with bKash, Nagad, Rocket or NPSB. See [SECURITY.md](./SECURITY.md)
+**AGPL-3.0-only** © Himel Das. The original code in this repository is licensed under the [GNU Affero General Public License v3.0 only](./LICENSE). If you run a modified version as a network service, the AGPL requires you to offer its corresponding source to users.
+
+Vendored third-party code and assets keep their own licences: qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT), the `deshiqr` engine bundle (MIT), Remix Icon (Apache-2.0, see [THIRD_PARTY_LICENSES/remixicon.txt](./THIRD_PARTY_LICENSES/remixicon.txt)). Provider names and app marks are trademarks of their owners and are not covered by the AGPL licence.
+
+Not affiliated with bKash, Nagad, Rocket or NPSB. See [SECURITY.md](./SECURITY.md)
 and [CONTRIBUTING.md](./CONTRIBUTING.md).

@@ -105,6 +105,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Homepage live demo now uses DeshiPay’s own details.** The hero PayView demo is titled DeshiPay and its
+  bank tab shows the real Dutch-Bangla Bank account (Himel Das, 1251070048232, Bogura, routing 090100378,
+  SWIFT DBBLBDDH); the dummy wallet numbers were removed, leaving the live QR and bank method. The demo
+  still starts at ৳1,500 and remains fully interactive.
+
+### Changed
+
 - **“Save A5 poster” on the payment page.** The button below the QR now renders the current payment
   page as the A5 print poster and downloads it as a 300 dpi PNG (1748×2480), instead of saving a bare QR
   image. It includes the amount-specific QR/headline when an amount is set, the supported app icons, and

@@ -106,7 +106,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 ### Changed
 
 - **“No commission, no cut” is now a site-wide trust point.** Added it to the hero descriptive copy
-  (“Not a payment processor. We never touch the money and take no cut or commission.”), renamed the money feature card, updated the
+  (“We’re not a payment processor. We never touch the money and take no cut or commission.”), renamed the money feature card, updated the
   cost FAQ, contact and terms copy, added the line to every footer, and added it to the PayView caution
   on customer/donate pages.
 

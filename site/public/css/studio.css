@@ -16,7 +16,9 @@
 .nav-btn span { display: block; width: 18px; height: 2px; border-radius: 2px; background: currentColor; }
 .theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 40px; min-height: 40px; padding: 0; flex: none; border: 0; border-radius: 11px; background: transparent; color: var(--muted); cursor: pointer; }
 .theme-toggle:hover { background: var(--sunk); color: var(--ink); }
-.theme-toggle .ic { width: 20px; height: 20px; }
+.theme-toggle .theme-ic { width: 20px; height: 20px; display: block; background: currentColor; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
+.theme-toggle .theme-ic.sun { -webkit-mask-image: url("/vendor/remixicon/sun-line.svg"); mask-image: url("/vendor/remixicon/sun-line.svg"); }
+.theme-toggle .theme-ic.moon { -webkit-mask-image: url("/vendor/remixicon/moon-line.svg"); mask-image: url("/vendor/remixicon/moon-line.svg"); }
 .theme-toggle .theme-label { display: none; font: 600 14px var(--body); white-space: nowrap; }
 .top.open .nav-btn span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .top.open .nav-btn span:nth-child(2) { opacity: 0; }

@@ -124,6 +124,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Redesigned top navigation.** The header is now a floating rounded bar inside the page gutter, with a
+  soft shadow and a clean action cluster (Donate, Log in, primary Create page, theme toggle). On mobile
+  the menu opens as a rounded panel below the bar; hero height accounts for the new bar height.
+
+### Changed
+
 - **Old “deshiqr” product names renamed to DeshiPay where they leaked into the app.** Downloaded pages are
   now `deshipay-<name>.html` (was `deshiqr-*`), the draft key is `deshipay.local.v1` (old
   `deshiqr.local.v1` drafts are migrated on load), and the site-level globals are `DESHIPAY_CONFIG`,

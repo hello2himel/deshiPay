@@ -633,6 +633,7 @@ async function scenarioOnline(browser) {
       (await page.$eval(".pv-foot .made-cta", (e) => e.textContent)).includes("Create your own page"),
       "the footer invites visitors to create their own page"
     );
+    ok(!!(await page.$(".pv-foot .made-actions .made-report[href^='mailto:']")), "the footer has a Report abuse button beside it");
     ok(!!(await page.$(".site-foot")), "customer page has the site footer");
     ok((await page.$eval(".pv-handle", (e) => e.textContent)) === "localhost:8899/rahim-traders", "online customer page still shows its host/username handle");
     ok((await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "coffee", "customer page uses the chosen theme");

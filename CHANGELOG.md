@@ -97,6 +97,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Report abuse beside the payment-page CTA.** The customer page footer now shows a “Report abuse”
+  button next to “Create your own page”, pre-addressed to the contact email with the page username in
+  the subject; the actions wrap on narrow screens.
+
+### Changed
+
 - **Supported app icons under the customer QR.** The payment page now shows the ten supported app marks
   (bKash, Nagad, Rocket, upay, Citytouch, BRAC Bank Astha, EBL Skybanking, NexusPay, MTB Neo, Bangla QR)
   below the QR, in the same rounded/bare treatment as the poster. The compact `pay-icons.js` asset is

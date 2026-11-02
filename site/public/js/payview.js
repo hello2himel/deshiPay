@@ -276,8 +276,11 @@
               h("span", { class: "made-kicker" }, "Made with"),
               h("a", { class: "brand made-brand", href: opts.footerHref || "/" }, T.mark(), "DeshiPay")
             ),
-            h("a", { class: "made-cta", href: opts.footerHref || "/" },
-              "Create your own page", icon("next")
+            h("div", { class: "made-actions" },
+              h("a", { class: "made-cta", href: opts.footerHref || "/" },
+                "Create your own page", icon("next")),
+              h("a", { class: "made-cta made-report", href: "mailto:stargzr.science@gmail.com?subject=" + encodeURIComponent("Report abuse on DeshiPay: " + (page.username || page.title || "")) },
+                icon("alert"), "Report abuse")
             )
           )
         )

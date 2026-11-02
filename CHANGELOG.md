@@ -97,6 +97,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Supported app icons under the customer QR.** The payment page now shows the ten supported app marks
+  (bKash, Nagad, Rocket, upay, Citytouch, BRAC Bank Astha, EBL Skybanking, NexusPay, MTB Neo, Bangla QR)
+  below the QR, in the same rounded/bare treatment as the poster. The compact `pay-icons.js` asset is
+  loaded by live pages and embedded in standalone exports, so downloaded pages carry the icons too.
+  e2e checks all ten icons and the three unrounded marks.
+
+### Changed
+
 - **Amount inputs are capped at ৳50,000.** Customer-page amount fields, quick amounts, `?amount=` locks and
   the dashboard's "link with an amount" all enforce a ৳50,000 ceiling (the QR engine can still carry more,
   but the product policy is 50k). Above it: a clear "above the page limit" message, the static QR stays

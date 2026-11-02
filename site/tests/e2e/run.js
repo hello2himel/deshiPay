@@ -450,6 +450,9 @@ async function scenarioOnline(browser) {
     ok((await page.$eval('.pick-row[data-pick="avatar"] .pick-value', (e) => e.textContent)).includes("initials"), "the avatar row shows the current choice");
     await page.click('.pick-row[data-pick="avatar"]');
     await page.waitForSelector(".sheet .avatars");
+    const avatarGroups = await page.$$eval(".sheet .avatar-group-label", (els) => els.map((e) => e.textContent));
+    ok(["STEM", "Physics", "Space"].every((g) => avatarGroups.includes(g)), "the avatar picker groups STEM, physics and space icons");
+    ok(!!(await page.$('.sheet .avatar-pick[aria-label="Atom"]')), "the avatar picker includes an atom icon");
     await page.click('.sheet .avatar-pick[aria-label="Shop"]');
     await page.waitForSelector(".sheet", { hidden: true });
     ok((await page.$$eval("#previewBody .pv-avatar svg", (els) => els.length)) === 1, "choosing an avatar updates the live preview");

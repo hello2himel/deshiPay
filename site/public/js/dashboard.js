@@ -601,17 +601,25 @@
 
     avatar.row.addEventListener("click", function () {
       openSheet("Avatar", function (card, close) {
-        var grid = h("div", { class: "avatars sheet-avatars", role: "radiogroup", "aria-label": "Avatar" });
-        var options = [{ id: "", label: "Your initials" }].concat(T.AVATARS);
-        options.forEach(function (a) {
-          var on = (S.avatar || "") === a.id;
-          grid.appendChild(h("button", {
-            class: "avatar-pick", type: "button", role: "radio", "aria-checked": String(on),
-            "aria-label": a.label || "Your initials",
-            onClick: function () { S.avatar = a.id; paintAvatar(); changed(); close(); }
-          }, a.id ? T.avatar(a.id) : h("span", { class: "avatar-letter" }, T.monogram(S.title || "A"))));
+        function gridFor(items, label) {
+          var grid = h("div", { class: "avatars sheet-avatars", role: "radiogroup", "aria-label": label || "Avatar" });
+          items.forEach(function (a) {
+            var on = (S.avatar || "") === a.id;
+            grid.appendChild(h("button", {
+              class: "avatar-pick", type: "button", role: "radio", "aria-checked": String(on),
+              "aria-label": a.label || "Your initials",
+              onClick: function () { S.avatar = a.id; paintAvatar(); changed(); close(); }
+            }, a.id ? T.avatar(a.id) : h("span", { class: "avatar-letter" }, T.monogram(S.title || "A"))));
+          });
+          return grid;
+        }
+        card.appendChild(gridFor([{ id: "", label: "Your initials" }].concat(T.AVATARS.filter(function (a) { return !a.group; }))));
+        ["STEM", "Physics", "Space"].forEach(function (group) {
+          var items = T.AVATARS.filter(function (a) { return a.group === group; });
+          if (!items.length) return;
+          card.appendChild(h("div", { class: "avatar-group-label" }, group));
+          card.appendChild(gridFor(items, group + " icons"));
         });
-        card.appendChild(grid);
       });
     });
 

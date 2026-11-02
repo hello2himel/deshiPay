@@ -41,11 +41,21 @@
     ["shirt", "Shirt", '<path d="M8 4 5 7l2 3 2-1v8h6v-8l2 1 2-3-3-3-2 2h-2z"/>'],
     ["gem", "Gem", '<path d="M6 4h12l3 5-9 11L3 9zM3 9h18M9 4l3 16M15 4l-3 16"/>'],
     ["moon", "Moon", '<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/>'],
-    ["sun", "Sun", '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>']
+    ["sun", "Sun", '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'],
+    ["atom", "Atom", '<circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="9" ry="3.8"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(120 12 12)"/>', "STEM"],
+    ["flask", "Flask", '<path d="M9 3h6M10 3v6l-6 9.5A2 2 0 0 0 5.7 21h12.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/>', "STEM"],
+    ["dna", "DNA", '<path d="M7 3c0 6 10 6 10 12s-10 6-10 6M17 3c0 6-10 6-10 12s10 6 10 6"/><path d="M8.5 7h7M8.5 11h7M8.5 15h7"/>', "STEM"],
+    ["chip", "Circuit chip", '<rect x="7" y="7" width="10" height="10" rx="2"/><rect x="10" y="10" width="4" height="4" rx=".8"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>', "STEM"],
+    ["sigma", "Sigma", '<path d="M7 4h10l-6 8 6 8H7"/>', "STEM"],
+    ["magnet", "Magnet", '<path d="M6 4v8a6 6 0 0 0 12 0V4h-4v8a2 2 0 0 1-4 0V4z"/><path d="M6 8h4M14 8h4"/>', "Physics"],
+    ["wave", "Wave", '<path d="M3 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/>', "Physics"],
+    ["planet", "Planet", '<circle cx="12" cy="12" r="5.5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" transform="rotate(-18 12 12)"/>', "Space"],
+    ["telescope", "Telescope", '<path d="M4 20l6-5M13 4l7 3-8 8-4-4zM9 15l-1.5 3M16 8l3 1.5"/><path d="M17 13l2 1"/>', "Space"],
+    ["comet", "Comet", '<circle cx="8" cy="16" r="3"/><path d="M11 13l7-7M13 17l7-4M9 12l6-8"/>', "Space"]
   ];
 
   var NS = "http://www.w3.org/2000/svg";
-  var LIST = ICONS.map(function (item) { return { id: item[0], label: item[1] }; });
+  var LIST = ICONS.map(function (item) { return { id: item[0], label: item[1], group: item[3] || "" }; });
   var byId = {};
   ICONS.forEach(function (item) { byId[item[0]] = item; });
 

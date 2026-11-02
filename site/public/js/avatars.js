@@ -54,7 +54,7 @@
     if (!item) return null;
     var svg = document.createElementNS(NS, "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("class", cls || "ic");
+    svg.setAttribute("class", cls ? (cls.indexOf("avatar-ic") < 0 ? cls + " avatar-ic" : cls) : "ic avatar-ic");
     svg.setAttribute("aria-hidden", "true");
     svg.innerHTML = item[2]; // static, trusted path table
     return svg;

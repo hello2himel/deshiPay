@@ -242,8 +242,8 @@
     function worksWithStrip() {
       var L = window.DeshiPayIcons;
       if (!L) return null;
-      var bare = { "Nagad": 1, "upay": 1, "Bangla QR": 1 };
-      var apps = h("span", { class: "works-with-apps" }, L.mfs.concat([L.banks[0]]).map(function (it) {
+      var bare = { "Bangla QR": 1 };
+      var apps = h("span", { class: "works-with-apps" }, L.mfs.concat([L.banglaqr]).map(function (it) {
         return h("span", { class: "works-with-app" + (bare[it.name] ? " bare" : ""), title: it.name },
           h("img", { src: it.src, alt: it.name, loading: "lazy" }));
       }));

@@ -109,7 +109,7 @@
 .made-cta .ic { width: 16px; height: 16px; }
 .made-cta:hover { border-color: var(--accent); color: var(--accent-text); }
 .made-actions { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
-.made-report { border-style: solid; }
+.made-report { border-style: dashed; }
 
 /* ---------- empty / error states ---------- */
 .pv-state { max-width: 440px; margin: 12vh auto 0; padding: 0 20px; text-align: center; display: grid; gap: 14px; justify-items: center; }

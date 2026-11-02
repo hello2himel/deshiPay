@@ -204,6 +204,7 @@
       return;
     }
     var kids = [];
+    kids.push(h("a", { class: "btn ghost sm", href: "/deshipay" }, "Donate"));
     if (!isNew && originalUsername) kids.push(h("a", { class: "btn sec sm", href: "/" + originalUsername, target: "_blank", rel: "noopener" }, icon("external"), "View page"));
     kids.push(h("span", { class: "user-chip" }, user.email || ""));
     kids.push(h("button", { class: "btn ghost sm", type: "button", onClick: signOut }, icon("logout"), "Sign out"));

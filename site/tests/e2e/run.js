@@ -20,12 +20,12 @@
  *
  * Setup (once, outside the repo — do not add puppeteer-core to the repo):
  *
- *   mkdir -p /tmp/deshiqr-e2e && cd /tmp/deshiqr-e2e
+ *   mkdir -p /tmp/deshipay-e2e && cd /tmp/deshipay-e2e
  *   npm i --no-save puppeteer-core
  *
  * Run from the repo root:
  *
- *   NODE_PATH=/tmp/deshiqr-e2e/node_modules \
+ *   NODE_PATH=/tmp/deshipay-e2e/node_modules \
  *   CHROME=/home/himel/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome \
  *   node site/tests/e2e/run.js
  *
@@ -49,7 +49,7 @@ const BASE = "http://localhost:" + PORT;
 const CHROME = process.env.CHROME || "/usr/bin/google-chrome";
 const MOCK_SUPABASE = fs.readFileSync(path.join(__dirname, "mock-supabase.js"), "utf8");
 const CONFIG_STUB =
-  'window.DESHIQR_CONFIG={supabaseUrl:"https://test.supabase.co",supabaseAnonKey:"test",googleAuth:false};';
+  'window.DESHIPAY_CONFIG={supabaseUrl:"https://test.supabase.co",supabaseAnonKey:"test",googleAuth:false};';
 // same load order as the pages: vendored engine bundle, then the site adapter
 const Q = H.loadAdapter();
 fs.mkdirSync(SHOTS, { recursive: true });
@@ -503,9 +503,9 @@ async function scenarioOnline(browser) {
       btn.click();
     });
     const onlineExport = await readCapture(page);
-    ok(onlineExport.filename === "deshiqr-rahim-traders.html", "share download filename is deshiqr-<username>.html");
+    ok(onlineExport.filename === "deshipay-rahim-traders.html", "share download filename is deshipay-<username>.html");
     ok(onlineExport.html.startsWith("<!doctype html>"), "share download is a complete HTML document");
-    ok(onlineExport.html.includes("window.DESHIQR_PAGE = {"), "share download embeds window.DESHIQR_PAGE");
+    ok(onlineExport.html.includes("window.DESHIPAY_PAGE = {"), "share download embeds window.DESHIPAY_PAGE");
     ok(/"avatar"\s*:\s*"shop"/.test(onlineExport.html), "share download keeps the chosen avatar icon");
     ok(
       onlineExport.html.includes('"title":"Rahim Traders"') && onlineExport.html.includes('"username":"rahim-traders"'),
@@ -927,26 +927,26 @@ async function scenarioOffline(browser) {
     await page.waitForSelector("#dlBtn", { timeout: 8000 });
     ok((await page.$eval(".progress .count", (e) => e.textContent)).includes("Step 5 of 5"), "the download is the fifth (new) step");
     ok((await page.$eval("#primary", (e) => e.textContent)).includes("Download page"), "the primary action becomes “Download page”");
-    ok((await page.$eval("#panel .urlbox span", (e) => e.textContent)) === "deshiqr-offline-traders.html", "download panel shows the title-derived file name");
+    ok((await page.$eval("#panel .urlbox span", (e) => e.textContent)) === "deshipay-offline-traders.html", "download panel shows the title-derived file name");
     ok(!!(await page.$(".poster-preview svg")), "offline/no-account mode also offers the printable poster");
     await shot("20-offline-download");
 
     const draft = await page.evaluate(() => {
-      try { return JSON.parse(localStorage.getItem("deshiqr.local.v1") || "null"); } catch (e) { return null; }
+      try { return JSON.parse(localStorage.getItem("deshipay.local.v1") || "null"); } catch (e) { return null; }
     });
-    ok(!!draft && draft.title === "Offline Traders" && draft.theme === "coffee" && !!draft.qr, "the wizard draft persists in localStorage deshiqr.local.v1");
+    ok(!!draft && draft.title === "Offline Traders" && draft.theme === "coffee" && !!draft.qr, "the wizard draft persists in localStorage deshipay.local.v1");
     ok(state.supa.every(isProbe), "the local wizard made no Supabase auth or RPC calls (only the aborted probe chain)");
 
     await armCapture(page);
     await page.click("#dlBtn");
     await page.waitForFunction(() => {
       const hint = document.getElementById("dlHint");
-      return !!hint && /^Downloaded deshiqr-offline-traders\.html/.test(hint.textContent);
+      return !!hint && /^Downloaded deshipay-offline-traders\.html/.test(hint.textContent);
     }, { timeout: 20000 });
     const exported = await readCapture(page);
-    ok(exported.filename === "deshiqr-offline-traders.html", "download filename is deshiqr-<username>.html");
+    ok(exported.filename === "deshipay-offline-traders.html", "download filename is deshipay-<username>.html");
     ok(exported.html.startsWith("<!doctype html>"), "downloaded file is a complete HTML document");
-    ok(exported.html.includes("window.DESHIQR_PAGE = {"), "downloaded file embeds window.DESHIQR_PAGE");
+    ok(exported.html.includes("window.DESHIPAY_PAGE = {"), "downloaded file embeds window.DESHIPAY_PAGE");
     ok(
       exported.html.includes('"title":"Offline Traders"') &&
         exported.html.includes('"username":"offline-traders"') &&
@@ -954,7 +954,7 @@ async function scenarioOffline(browser) {
       "downloaded file carries the wizard data (title, username, theme)"
     );
     ok(exported.html.includes('"qr_payload":"' + PAYLOAD + '"') && exported.html.includes('"qr_name":"RAHIM TRADERS"'), "downloaded file carries the uploaded QR payload");
-    ok(exported.html.includes('window.DESHIQR_FOOTER_HREF = "' + BASE + '/"'), "downloaded file points its footer at the generating site");
+    ok(exported.html.includes('window.DESHIPAY_FOOTER_HREF = "' + BASE + '/"'), "downloaded file points its footer at the generating site");
     ok(/<style>/.test(exported.html) && !/<script[^>]+src=/.test(exported.html), "CSS and JS are inlined into the file");
     const externals = (exported.html.match(/(?:src|href)="https?:\/\/[^"]+"/g) || []).map((s) => s.split('"')[1]);
     ok(externals.length > 0 && externals.every((u) => /fonts\.(googleapis|gstatic)\.com/.test(u)), "the only external references are Google Fonts");

@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  var cfg = window.DESHIQR_CONFIG || {};
+  var cfg = window.DESHIPAY_CONFIG || window.DESHIQR_CONFIG || {};
   var configured = !!(cfg.supabaseUrl && cfg.supabaseAnonKey && !/YOUR-/i.test(cfg.supabaseUrl + cfg.supabaseAnonKey));
   var _client = null;
 

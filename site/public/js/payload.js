@@ -26,7 +26,7 @@
 
   if (!engine || typeof engine.update !== "function" || typeof engine.validate !== "function") {
     throw new Error(
-      "DeshiQR site adapter: the deshiqr engine bundle is missing. Load /vendor/deshiqr.global.js before /js/payload.js.",
+      "DeshiPay site adapter: the deshiqr engine bundle is missing. Load /vendor/deshiqr.global.js before /js/payload.js.",
     );
   }
 

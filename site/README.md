@@ -208,11 +208,11 @@ When it is **offline**:
   name/business name and an optional note, **no link/username is asked at all** (there is no hosted
   address to claim); the file name is derived from the name you enter. The host/username line at the
   top of the page is hidden in the offline preview and in the downloaded file.
-- The wizard gets a fifth step, **Download**. The page is saved as `deshiqr-<name>.html` (the name you entered, slugified), one
+- The wizard gets a fifth step, **Download**. The page is saved as `deshipay-<name>.html` (the name you entered, slugified), one
   self-contained HTML file (~140 KB) with the customer page, all styles, the QR engine and the page data
   inside it. Only the web fonts are loaded from the internet; everything else works offline and from
   `file://`.
-- The draft is kept in `localStorage` under `deshiqr.local.v1`, so a reload does not lose the work.
+- The draft is kept in `localStorage` under `deshipay.local.v1`, so a reload does not lose the work.
 
 **Visitors on existing pages.** While the database is down, opening any published page
 (`/<username>`) shows a friendly **“Temporarily unavailable”** screen, “Sorry, payment pages can’t be

@@ -6,7 +6,7 @@
  * The anon key is meant to be public. Row Level Security keeps the data safe.
  * Never put the service_role key here.
  */
-window.DESHIQR_CONFIG = {
+window.DESHIPAY_CONFIG = {
   supabaseUrl: "https://YOUR-PROJECT.supabase.co",
   supabaseAnonKey: "YOUR-ANON-KEY",
   googleAuth: false

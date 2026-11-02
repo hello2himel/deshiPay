@@ -5,7 +5,7 @@
  * offline wizard, then hosts it anywhere a static file can live. The file keeps
  * the exact customer-page experience of /<username>: the same CSS, the same
  * vendored engines, the same PayView/pay.js, with the page data embedded as
- * window.DESHIQR_PAGE. No Supabase, config.js, auth or jsQR is needed.
+ * window.DESHIPAY_PAGE. No Supabase, config.js, auth or jsQR is needed.
  *
  * Load order on app.html: /js/common.js (creates window.Deshi), then this file.
  * Node: require() returns the same three functions so the builder can be tested
@@ -163,8 +163,8 @@
     );
     // pay.html's script order, all inlined; the data comes first so pay.js sees it.
     lines.push("<script>");
-    lines.push("window.DESHIQR_PAGE = " + pageJson + ";");
-    lines.push("window.DESHIQR_FOOTER_HREF = " + jsonForScript(footer) + ";");
+    lines.push("window.DESHIPAY_PAGE = " + pageJson + ";");
+    lines.push("window.DESHIPAY_FOOTER_HREF = " + jsonForScript(footer) + ";");
     lines.push("</script>");
     lines.push(js.replace(/\n$/, ""));
     lines.push("</body>");
@@ -271,7 +271,7 @@
     // The dashboard usually passes a username, but the offline wizard may not ask
     // for one: fall back to the title ("Demo Shop" -> demo-shop), then "page".
     var name = slug(page && page.username) || slug(page && page.title) || "page";
-    return "deshiqr-" + name + ".html";
+    return "deshipay-" + name + ".html";
   }
 
   // Touch devices get the share sheet (it has "Save to Files"), everything else
@@ -298,7 +298,7 @@
     });
   }
 
-  // exportPage() + save it as deshiqr-<username>.html; resolves with the filename.
+  // exportPage() + save it as deshipay-<username>.html; resolves with the filename.
   function downloadPage(page) {
     var filename = fileNameFor(page);
     var T = root.Deshi || {};

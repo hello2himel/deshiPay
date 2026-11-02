@@ -70,12 +70,6 @@
 
 .slip .btn { background: var(--slip-accent); color: #fff; }
 .slip .btn.sec { background: var(--s-sunk); color: var(--s-ink); }
-.pv-apps { display: grid; gap: 6px; justify-items: center; margin-top: 14px; }
-.pv-app-row { display: flex; justify-content: center; gap: 7px; }
-.pv-app { width: 30px; height: 30px; border-radius: 8px; background: #E9EDEB; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.pv-app img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 8px; }
-.pv-app.bare { background: transparent; border-radius: 0; overflow: visible; }
-.pv-app.bare img { border-radius: 0; }
 .slip-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
 .slip-help { margin-top: 14px; font-size: 13px; color: var(--s-muted); max-width: 36ch; margin-inline: auto; }
 

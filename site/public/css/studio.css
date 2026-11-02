@@ -42,17 +42,6 @@
 .hero-actions .hero-cta { margin-top: 0; }
 .hero-actions .btn.sec { min-height: 52px; }
 .hero-demo-link .ic { width: 18px; height: 18px; }
-.hero-methods { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
-.hero-methods-label { color: var(--ink); font-weight: 700; }
-.hero-apps { display: flex; align-items: center; gap: 6px; }
-.hero-app { width: 26px; height: 26px; border-radius: 7px; background: var(--sunk); overflow: hidden; display: grid; place-items: center; }
-.hero-app img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 7px; }
-.hero-app.bare { background: transparent; border-radius: 0; overflow: visible; }
-.hero-app.bare img { border-radius: 0; }
-/* Desktop already has the full demo beside the copy: keep the hero quieter. */
-@media (min-width: 720px) {
-  .hero-actions .hero-demo-link, .hero-methods { display: none; }
-}
 /* dedicated sign-in / sign-up page */
 .auth-page { max-width: 480px; margin: 0 auto; padding: 40px 16px 8px; display: grid; gap: 18px; }
 .auth-page .auth { box-shadow: 0 24px 60px -30px var(--shadow); }
@@ -87,6 +76,8 @@
 /* The landing demo is the real payment widget (PayView), directly on the page:
    no surrounding card: the slip and its method tabs are the only chrome. */
 .demo { width: 100%; max-width: 420px; justify-self: center; }
+.donate-shell @media (min-width: 960px) {
+    .donate-shell }
 .demo .pv-head { display: none; }
 .demo .pv-help { display: none; }
 /* the demo is for scanning, not saving: no Save QR image button, but the

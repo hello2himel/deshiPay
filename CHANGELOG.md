@@ -105,6 +105,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Works-with strip moved to the side; PayView icon grid removed.** The app marks now live in a side
+  panel of the home hero (and beside the bank card on the donate page) via reusable `works-with.js`,
+  instead of under the QR. Removed the 5×2 app-icon strip from PayView; the A5 poster generated from a
+  payment page still includes the icons.
+
+### Changed
+
 - **Richer home hero.** The hero now has a secondary “See a live page” jump link, a “Works with” strip of
   official app marks, and no longer forces an empty full viewport on phones, so the live payment demo
   peeks into the first screen. Desktop keeps the full-height split with the demo card beside the copy.

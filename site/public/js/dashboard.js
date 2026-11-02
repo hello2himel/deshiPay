@@ -25,7 +25,8 @@
   var posterFormat = "a4";
   var TAG_NAMES = { "00": "Format", "01": "Static (11) or dynamic (12)", "52": "Category", "53": "Currency (050 = BDT)", "54": "Amount", "58": "Country", "59": "Merchant name", "60": "City", "62": "Additional data", "63": "Checksum (recalculated)" };
 
-  var LOCAL_DRAFT_KEY = "deshiqr.local.v1";
+  var LOCAL_DRAFT_KEY = "deshipay.local.v1";
+  var OLD_LOCAL_DRAFT_KEY = "deshiqr.local.v1";
   var sb, user;
   var localMode = false; // backend paused/unreachable: no sb, no user
   var forcedLocal = false; // ?local=1: the visitor chose the no-account flow
@@ -90,7 +91,7 @@
     return r;
   }
   function dirty() { return !isNew && JSON.stringify(toRow()) !== savedSnap; }
-  function draftKey() { return localMode ? LOCAL_DRAFT_KEY : "deshiqr.draft.v1:" + user.id; }
+  function draftKey() { return localMode ? LOCAL_DRAFT_KEY : "deshipay.draft.v1:" + user.id; }
   function saveDraft() {
     if (!isNew) return;
     try { localStorage.setItem(draftKey(), JSON.stringify(S)); } catch (e) { /* private mode */ }
@@ -703,7 +704,7 @@
   /* ----- download (local mode only) ----- */
 
   function downloadFilename() {
-    return "deshiqr-" + (T.slugify(S.title) || "page") + ".html";
+    return "deshipay-" + (T.slugify(S.title) || "page") + ".html";
   }
 
   function downloadPanel() {
@@ -1012,8 +1013,14 @@
     STEPS[0].tab = "Name";
     STEPS[0].lead = "This is the name customers see on your page.";
     try {
-      var d = JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || "null");
-      if (d && typeof d === "object") S = Object.assign(blank(), d);
+      var rawDraft = localStorage.getItem(LOCAL_DRAFT_KEY) || localStorage.getItem(OLD_LOCAL_DRAFT_KEY);
+      var d = JSON.parse(rawDraft || "null");
+      if (d && typeof d === "object") {
+        S = Object.assign(blank(), d);
+        if (!localStorage.getItem(LOCAL_DRAFT_KEY)) {
+          try { localStorage.setItem(LOCAL_DRAFT_KEY, rawDraft); localStorage.removeItem(OLD_LOCAL_DRAFT_KEY); } catch (e) { /* ignore */ }
+        }
+      }
     } catch (e) { /* a bad draft is the same as no draft */ }
     S.username = T.slugify(S.title) || "page";
     renderAll();

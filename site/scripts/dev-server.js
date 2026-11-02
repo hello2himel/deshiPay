@@ -50,4 +50,4 @@ http
     res.writeHead(200, { "Content-Type": types[path.extname(file)] || "application/octet-stream", "Cache-Control": "no-store" });
     fs.createReadStream(file).pipe(res);
   })
-  .listen(port, () => console.log("DeshiQR dev server: http://localhost:" + port));
+  .listen(port, () => console.log("DeshiPay dev server: http://localhost:" + port));

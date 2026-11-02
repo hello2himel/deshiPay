@@ -2,7 +2,7 @@
   "name": "deshipay-site",
   "version": "1.0.0",
   "private": true,
-  "description": "DeshiPay (DeshiQR-branded) payment pages. Static site for Netlify, auth and data on Supabase.",
+  "description": "DeshiPay payment pages. Static site for Netlify, auth and data on Supabase.",
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "build": "node scripts/build-config.js",

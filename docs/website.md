@@ -247,11 +247,11 @@ page when it is back, rather than a load error. The CTA opens `/app` with
 the same onboarding wizard, running locally: step 1 asks only for the name/business name and an optional
 note, no link/username is requested, because the file will be hosted at an address this site doesn't
 know, and the small host/username line is hidden in the offline preview and the downloaded file. The
-draft lives in `localStorage` (`deshiqr.local.v1`), and the wizard ends with a fifth **Download** step
-(the file name comes from the name, e.g. `deshiqr-rahim-traders.html`). People can also open `/app`
+draft lives in `localStorage` (`deshipay.local.v1`), and the wizard ends with a fifth **Download** step
+(the file name comes from the name, e.g. `deshipay-rahim-traders.html`). People can also open `/app`
 directly.
 
-The download is a **single self-contained HTML file** (`deshiqr-<name>.html`, the name slugified, ~140 KB) containing the
+The download is a **single self-contained HTML file** (`deshipay-<name>.html`, the name slugified, ~140 KB) containing the
 customer page, all CSS, the vendored `deshiqr` engine, `payload.js`, PayView and the page data embedded
 as `window.DESHIQR_PAGE`. The only external reference is the Google Fonts stylesheet (system/Bengali
 font fallbacks still work); everything else works from `file://` or any static host (Netlify Drop,
@@ -274,8 +274,8 @@ Things an operator should know:
 
 ```bash
 # optional browser test: online journey + offline CTA/wizard/download + standalone file
-mkdir -p /tmp/deshiqr-e2e && (cd /tmp/deshiqr-e2e && npm i --no-save puppeteer-core)
-NODE_PATH=/tmp/deshiqr-e2e/node_modules CHROME=/path/to/chrome node site/tests/e2e/run.js
+mkdir -p /tmp/deshipay-e2e && (cd /tmp/deshipay-e2e && npm i --no-save puppeteer-core)
+NODE_PATH=/tmp/deshipay-e2e/node_modules CHROME=/path/to/chrome node site/tests/e2e/run.js
 ```
 
 ## Refreshing the vendored engine

@@ -45,8 +45,9 @@
 
   // A standalone export (see export.js) embeds its page data and has no
   // Supabase/config.js at all: render it straight away, then stop.
-  if (window.DESHIQR_PAGE) {
-    var embedded = window.DESHIQR_PAGE;
+  var embeddedPage = window.DESHIPAY_PAGE || window.DESHIQR_PAGE;
+  if (embeddedPage) {
+    var embedded = embeddedPage;
     document.documentElement.setAttribute("data-theme", embedded.theme || "emerald");
     document.title = "Pay " + embedded.title;
     var embeddedBg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
@@ -57,7 +58,7 @@
       preferredAmount: preferredAmount(),
       method: initialMethod(),
       syncUrl: true,
-      footerHref: window.DESHIQR_FOOTER_HREF || "/",
+      footerHref: window.DESHIPAY_FOOTER_HREF || window.DESHIQR_FOOTER_HREF || "/",
       hideHandle: true
     });
     return;

@@ -186,14 +186,14 @@ const walletBank = {
 
 /* ---------------- helpers for reading the generated file ---------------- */
 
-const PAGE_AT = "window.DESHIQR_PAGE = ";
-const FOOTER_AT = "\nwindow.DESHIQR_FOOTER_HREF = ";
+const PAGE_AT = "window.DESHIPAY_PAGE = ";
+const FOOTER_AT = "\nwindow.DESHIPAY_FOOTER_HREF = ";
 
 function embeddedJson(html) {
   const start = html.indexOf(PAGE_AT);
   const end = html.indexOf(FOOTER_AT);
-  assert.ok(start >= 0, "window.DESHIQR_PAGE must be present");
-  assert.ok(end > start, "window.DESHIQR_FOOTER_HREF must follow the page data");
+  assert.ok(start >= 0, "window.DESHIPAY_PAGE must be present");
+  assert.ok(end > start, "window.DESHIPAY_FOOTER_HREF must follow the page data");
   const assignment = html.slice(start + PAGE_AT.length, end);
   assert.ok(assignment.endsWith(";"), "the page assignment ends with ;");
   return assignment.slice(0, -1);
@@ -305,7 +305,7 @@ test("embeds the exact page JSON, escaped for inline script context", () => {
 
 test("sets the footer href to the generating site's absolute origin", () => {
   const html = E.buildPageHtml(full, assets());
-  assert.ok(html.includes('window.DESHIQR_FOOTER_HREF = "https://deshiqr.example/";'));
+  assert.ok(html.includes('window.DESHIPAY_FOOTER_HREF = "https://deshiqr.example/";'));
   assert.strictEqual(embeddedFooter(html), "https://deshiqr.example/");
   // absent from assets -> safe relative default
   const bare = assets();
@@ -417,7 +417,7 @@ test("export.js is a classic script: no modules, no build step, ES5-ish", () => 
 test("the standalone page mounts PayView with hideHandle: true, the live page leaves it default", () => {
   const html = E.buildPageHtml(full, assets());
   assert.strictEqual(count(html, "hideHandle: true"), 1, "the inlined pay.js passes hideHandle: true exactly once");
-  assert.ok(html.includes('footerHref: window.DESHIQR_FOOTER_HREF || "/",\n      hideHandle: true'), "embedded branch option list");
+  assert.ok(html.includes('footerHref: window.DESHIPAY_FOOTER_HREF || window.DESHIQR_FOOTER_HREF || "/",\n      hideHandle: true'), "embedded branch option list");
 
   // payview's default is unchanged: the handle is rendered unless hideHandle is true.
   assert.ok(
@@ -491,15 +491,15 @@ test("downloadPage names the file after the username, then the title slug, then 
   assert.strictEqual(typeof downloadPage, "function");
 
   const byUser = await downloadPage({ username: "himel-das", title: "Himel Das" });
-  assert.strictEqual(byUser.filename, "deshiqr-himel-das.html");
+  assert.strictEqual(byUser.filename, "deshipay-himel-das.html");
 
   const byTitle = await downloadPage({ username: "", title: "Demo Shop" });
-  assert.strictEqual(byTitle.filename, "deshiqr-demo-shop.html");
+  assert.strictEqual(byTitle.filename, "deshipay-demo-shop.html");
 
   const lastResort = await downloadPage({ username: null, title: "স্ট্যান্ডঅ্যালোন ডেমো" });
-  assert.strictEqual(lastResort.filename, "deshiqr-page.html");
+  assert.strictEqual(lastResort.filename, "deshipay-page.html");
 
-  assert.deepStrictEqual(downloads, ["deshiqr-himel-das.html", "deshiqr-demo-shop.html", "deshiqr-page.html"]);
+  assert.deepStrictEqual(downloads, ["deshipay-himel-das.html", "deshipay-demo-shop.html", "deshipay-page.html"]);
 });
 
 Promise.all(pending).then(function () {

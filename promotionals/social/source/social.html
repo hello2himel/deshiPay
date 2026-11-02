@@ -79,33 +79,39 @@
 
   .s3-ghost { position:absolute; z-index:1; left:-42px; bottom:-128px; color:rgba(230,240,237,.045); font:800 450px/1 "Hind Siliguri","Noto Sans Bengali",sans-serif; letter-spacing:-.08em; pointer-events:none; }
   /* 04 direct receipt */
-  #s4 .headline { font-size:52px; margin-top:124px; max-width:470px; }
-  #s4 .body { margin-top:24px; max-width:420px; font-size:27px; }
+  #s4 { background:#E6EFEA; }
+  #s4 .headline { font-size:68px; line-height:1.03; margin-top:96px; max-width:640px; color:#1A2030; letter-spacing:-.05em; }
+  #s4 .body { margin-top:20px; max-width:430px; font-size:28px; color:#6B7480; }
   #s4 .hairline { display:none; }
-  .s4-visual { position:absolute; z-index:4; right:22px; top:66px; width:610px; height:930px; }
-  .s4-device { position:absolute; right:34px; top:0; width:388px; padding:11px; border-radius:54px; background:#0B1712; transform:rotate(-2.4deg); box-shadow:0 44px 80px -38px rgba(8,42,32,.45); }
-  .s4-screen { border-radius:44px; background:var(--mint); padding:22px 18px; }
-  .shop-head { display:flex; align-items:center; gap:10px; color:var(--ink); font:800 21px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.03em; }
-  .shop-head .mark { width:32px; height:32px; flex:none; }
-  .shop-sub { margin:8px 0 0 42px; color:var(--muted); font-size:12px; }
-  .pay-card { background:#fff; border-radius:20px; padding:18px; margin-top:14px; color:var(--ink); }
-  .pay-label { display:block; color:var(--muted); font:800 11px Figtree,sans-serif; letter-spacing:.16em; }
+  .s4-phone { position:absolute; z-index:5; right:-58px; top:-8px; width:430px; padding:12px; border-radius:58px; background:#0A2B20; transform:rotate(4deg); box-shadow:0 40px 70px -40px rgba(10,43,32,.48); }
+  .s4-screen { border-radius:46px; background:#E6EFEA; padding:20px 18px; }
+  .shop-head { display:flex; align-items:center; gap:10px; color:#1A2030; font:800 20px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.03em; }
+  .shop-head .mark { width:30px; height:30px; flex:none; }
+  .shop-sub { margin:7px 0 0 40px; color:#6B7480; font-size:12px; }
+  .pay-card { background:#fff; border-radius:20px; padding:18px; margin-top:14px; color:#1A2030; }
+  .pay-label { display:block; color:#6B7480; font:800 11px Figtree,sans-serif; letter-spacing:.16em; }
   .pay-amount { display:flex; align-items:baseline; gap:3px; margin:8px 0 12px; font:800 58px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.05em; line-height:1; }
-  .pay-amount span { color:var(--green); font-size:29px; }
-  .s4-device .qrbox { border-radius:0; }
-  .pay-note { margin:10px 0 0; color:var(--muted); font-size:11px; line-height:1.45; }
-  .direct-arrow { position:absolute; z-index:6; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
-  .notif { position:absolute; left:0; top:620px; width:370px; padding:17px 20px 18px; background:#fff; border-radius:24px; box-shadow:0 30px 50px -32px rgba(8,42,32,.45); transform:rotate(1.2deg); }
-  .notif-top { display:flex; align-items:center; justify-content:space-between; }
-  .notif-top b { color:#D6195B; font:800 15px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.02em; }
-  .notif-top span { color:var(--muted); font-size:12px; }
-  .notif-amount { margin-top:9px; color:var(--ink); font:800 31px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.045em; }
-  .notif p { margin:5px 0 0; color:var(--muted); font-size:14px; }
-  .s4-never { position:absolute; left:0; top:800px; color:var(--green); font:800 19px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.02em; }
-  .s4-chat { position:absolute; z-index:4; left:72px; top:560px; width:350px; }
+  .pay-amount span { color:#0B6B4A; font-size:29px; }
+  .s4-phone .qrbox { border-radius:0; }
+  .pay-note { margin:10px 0 0; color:#6B7480; font-size:11px; line-height:1.45; }
+  .s4-chat { position:absolute; z-index:6; left:72px; top:730px; width:360px; }
   .s4-msg { width:max-content; max-width:100%; margin:0; padding:11px 16px; border-radius:19px; font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif; font-weight:700; font-size:23px; line-height:1.35; box-shadow:0 8px 18px rgba(0,0,0,.12); }
-  .s4-msg.ask { margin-left:auto; background:#0A84FF; color:#fff; }
-  .s4-msg.answer { margin-top:9px; background:#E9E9EB; color:#111; }
+  .s4-msg.ask { margin-left:auto; background:#1A7BFF; color:#fff; }
+  .s4-msg.answer { margin-top:9px; background:#E9E9EB; color:#1A2030; }
+  .s4-stays { position:absolute; z-index:7; left:422px; top:552px; width:300px; }
+  .s4-tag { display:inline-flex; align-items:center; gap:7px; padding:9px 12px; border:1px dashed rgba(107,116,128,.45); border-radius:12px; background:rgba(255,255,255,.4); color:#6B7480; font:800 12px Figtree,sans-serif; letter-spacing:.02em; }
+  .s4-tag .mark { width:17px; height:17px; opacity:.45; filter:grayscale(1); }
+  .s4-tag b { font:800 12px Figtree,sans-serif; }
+  .s4-tag .tag-cut { display:flex; align-items:center; gap:4px; margin-left:4px; color:#9AA39E; font:700 13px Figtree,sans-serif; }
+  .s4-tag .tag-cut:before { content:""; width:23px; border-top:1px dotted #AAB2AD; }
+  .s4-caption { margin:11px 0 0; color:#0B6B4A; font:800 27px/1.08 "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.03em; }
+  .s4-notif { position:absolute; z-index:7; left:500px; top:702px; width:390px; padding:17px 20px 18px; background:#fff; border-radius:24px; box-shadow:0 30px 50px -32px rgba(8,42,32,.45); transform:rotate(4deg); }
+  .notif-top { display:flex; align-items:center; justify-content:space-between; }
+  .notif-top b { color:#E2136E; font:800 15px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.02em; }
+  .notif-top span { color:#6B7480; font-size:12px; }
+  .notif-amount { margin-top:9px; color:#1A2030; font:800 31px "Bricolage Grotesque",Arial,sans-serif; letter-spacing:-.045em; }
+  .s4-notif p { margin:5px 0 0; color:#6B7480; font-size:14px; }
+  .s4-arrow { position:absolute; z-index:6; inset:0; width:100%; height:100%; pointer-events:none; }
   /* 05 manifesto */
   #s5 .headline { font-size:96px; line-height:1.0; margin-top:118px; max-width:860px; }
   #s5 .body { margin-top:34px; max-width:700px; color:rgba(8,42,32,.72); font-size:31px; }
@@ -149,35 +155,37 @@
     <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">03 / 06</span></footer>
   </section>
 
-  <section class="slide mint" id="s4">
-    <h1 class="headline">Receive it in your bKash, Nagad, Rocket or bank account.</h1>
-    <p class="body">Directly. No middleman involved.</p>
-    <div class="s4-visual">
-      <div class="s4-device"><div class="s4-screen">
-        <div class="shop-head"><span data-mark></span><b>Rina’s Boutique</b></div>
-        <p class="shop-sub">Pay with Bangla QR</p>
-        <div class="pay-card">
-          <span class="pay-label">PAYING</span>
-          <div class="pay-amount"><span>৳</span>500</div>
-          <div class="qrbox" data-qr="pay"></div>
-          <p class="pay-note">Scan with bKash, Nagad, Rocket or any bank app.</p>
-        </div>
-      </div></div>
-      <svg class="direct-arrow" viewBox="0 0 610 930" aria-hidden="true">
-        <defs><marker id="s4-arrow" markerWidth="12" markerHeight="12" refX="8" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#056B4E"/></marker></defs>
-        <path d="M 190 440 C 140 510 155 575 200 592 L 200 616" fill="none" stroke="#056B4E" stroke-width="3" stroke-dasharray="8 9" marker-end="url(#s4-arrow)"/>
-      </svg>
-      <div class="notif">
-        <div class="notif-top"><b>bKash</b><span>now</span></div>
-        <div class="notif-amount">৳500 received</div>
-        <p>Rina’s Boutique · via Bangla QR</p>
-      </div>
-      <div class="s4-never">We never touch your money.</div>
-    </div>
+  <section class="slide" id="s4">
+    <h1 class="headline">Receive it in your<br>bKash, Nagad,<br>Rocket or bank<br>account.</h1>
+    <p class="body">Directly to your account.</p>
     <div class="s4-chat" lang="bn">
       <p class="s4-msg ask">পেমেন্ট করলাম, পেয়েছেন?</p>
       <p class="s4-msg answer">হ্যাঁ, সরাসরি এসে গেছে</p>
     </div>
+    <div class="s4-phone"><div class="s4-screen">
+      <div class="shop-head"><span data-mark></span><b>Rina’s Boutique</b></div>
+      <p class="shop-sub">Pay with Bangla QR</p>
+      <div class="pay-card">
+        <span class="pay-label">PAYING</span>
+        <div class="pay-amount"><span>৳</span>500</div>
+        <div class="qrbox" data-qr="pay"></div>
+        <p class="pay-note">Scan with bKash, Nagad, Rocket or any bank app.</p>
+      </div>
+    </div></div>
+    <div class="s4-stays">
+      <div class="s4-tag"><span data-mark></span><b>DeshiPay</b><span class="tag-cut" aria-hidden="true">×</span></div>
+      <p class="s4-caption">DeshiPay never touches your money.</p>
+    </div>
+    <div class="s4-notif">
+      <div class="notif-top"><b>bKash</b><span>now</span></div>
+      <div class="notif-amount">৳500 received</div>
+      <p>Rina’s Boutique · via Bangla QR</p>
+    </div>
+    <svg class="s4-arrow" viewBox="0 0 1080 1080" aria-hidden="true">
+      <path d="M 714 500 C 690 570 800 620 800 696" fill="none" stroke="#34D6A0" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10"/>
+      <circle cx="714" cy="500" r="5" fill="#34D6A0"/>
+      <path d="M 788 682 L 800 696 L 812 682" fill="none" stroke="#34D6A0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
     <footer class="footer"><div class="brand"><span data-mark></span>DeshiPay</div><span class="mid">deshipay.netlify.app</span><span class="num">04 / 06</span></footer>
   </section>
 

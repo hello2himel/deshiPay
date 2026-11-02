@@ -170,7 +170,8 @@ compatibility; the artwork is embedded, so the file has no external image reques
 
 The customer page shows the **supported app icons under the QR** (bKash, Nagad, Rocket, upay, Citytouch,
 BRAC Bank Astha, EBL Skybanking, NexusPay, MTB Neo and the Bangla QR mark); the same artwork is included
-in downloaded standalone pages.
+in downloaded standalone pages. **Save A5 poster** downloads the current page as the A5 print poster PNG
+at 300 dpi, with the amount-specific QR when an amount is set.
 
 `/username?amount=1500` locks the amount (amounts are capped at **৳50,000**), and `?method=wallet` / `?method=bank` (or `?method=qr`) opens the page on that tab; switching tabs updates the URL so the address can be shared.
 

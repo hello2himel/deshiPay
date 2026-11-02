@@ -97,6 +97,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **“Save A5 poster” on the payment page.** The button below the QR now renders the current payment
+  page as the A5 print poster and downloads it as a 300 dpi PNG (1748×2480), instead of saving a bare QR
+  image. It includes the amount-specific QR/headline when an amount is set, the supported app icons, and
+  the full footer; static pages keep the amount-free QR. Exports carry `poster.js` so standalone pages
+  can do the same.
+
+### Changed
+
 - **Report abuse beside the payment-page CTA.** The customer page footer now shows a “Report abuse”
   button next to “Create your own page”, pre-addressed to the contact email with the page username in
   the subject; the actions wrap on narrow screens.

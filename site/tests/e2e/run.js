@@ -243,6 +243,8 @@ async function scenarioOnline(browser) {
     ok(!!(await page.$(".top-actions a[href='/login']")), "the top nav offers a create-page action");
     ok(!!(await page.$(".top-actions a[href='/login?mode=signin']")), "the top nav offers a sign-in action");
     ok((await page.$eval(".nav-btn", (e) => getComputedStyle(e).display)) === "flex", "mobile shows a hamburger menu button");
+    ok(!!(await page.$('.top-actions a[href="/deshipay"]')), "the nav offers Donate to DeshiPay");
+    ok(!!(await page.$('.site-foot a[href="/deshipay"]')), "the site footer offers Donate to DeshiPay");
     ok((await page.$eval(".top-menu", (e) => getComputedStyle(e).display)) === "none", "the mobile nav menu starts collapsed");
     await page.click(".nav-btn");
     ok((await page.$eval(".top", (e) => e.classList.contains("open"))) === true, "the hamburger opens the nav menu");
@@ -779,6 +781,17 @@ async function scenarioOnline(browser) {
     await page.click("form button[type=submit]");
     await page.waitForFunction(() => document.querySelector(".form-msg.bad"), { timeout: 4000 });
     ok((await page.$eval(".form-msg.bad", (e) => e.textContent)).includes("don’t match"), "wrong password shows a friendly message");
+
+    console.log("Donate page");
+    await page.goto(BASE + "/deshipay", { waitUntil: "networkidle0" });
+    await page.waitForSelector(".pv h1");
+    ok((await page.$eval(".pv h1", (e) => e.textContent)) === "DeshiPay", "the donate page is titled DeshiPay");
+    const donateText = await page.evaluate(() => document.body.innerText);
+    ok(
+      donateText.includes("Himel Das") && donateText.includes("1251070048232") &&
+        donateText.includes("Dutch-Bangla Bank") && donateText.includes("090100378") && donateText.includes("DBBLBDDH"),
+      "the donate page shows the full bank details"
+    );
 
     console.log("Forgot password: OTP then new password");
     await page.click(".auth-links button");

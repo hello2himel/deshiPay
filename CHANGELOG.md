@@ -13,6 +13,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Added
 
+- **Donate to DeshiPay page and links.** New `/deshipay` page (also in the sitemap) shows the DeshiPay
+  Dutch-Bangla Bank donation details: account name Himel Das, account 1251070048232, Bogura branch,
+  routing 090100378, SWIFT DBBLBDDH. It uses the same PayView copy rows/How-to-pay layout without needing
+  Supabase. “Donate” is now in the site nav and “Donate to DeshiPay” in the site-wide footer, plus the
+  dashboard top actions.
+
+### Added
+
 - **Payments tab in the dashboard.** A published page now has a Payments tab with a **locked amount**
   (`?amount=`), a **preferred amount** (`?preferred=`, prefilled but editable on the customer page), and
   open/copy actions for each link. It also exports the A4/A5 poster with the set amount baked into the

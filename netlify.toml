@@ -65,6 +65,11 @@
   status = 200
 
 [[redirects]]
+  from = "/deshipay"
+  to = "/deshipay.html"
+  status = 200
+
+[[redirects]]
   from = "/favicon.ico"
   to = "/favicon.svg"
   status = 200

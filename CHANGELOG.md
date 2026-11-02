@@ -105,6 +105,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
+- **Home hero demo and /deshipay share one data source.** Both now render `deshipay-data.js`, so the
+  live hero demo and the donation page show the same name, message, theme, quick amounts, Bangla QR,
+  bKash/Nagad numbers and DBBL bank details. The hero demo is therefore back to QR + Wallet + Bank with
+  the real DeshiPay accounts.
+
+### Changed
+
 - **Works-with strip in the hero and below How to pay; PayView QR icons removed.** The app marks sit
   under the home hero buttons, and on payment pages in a “Works with … and any bank app” strip directly
   below How to pay (including the donate page). The strip is bKash, Nagad, Rocket, upay, Citytouch, BRAC Bank Astha,

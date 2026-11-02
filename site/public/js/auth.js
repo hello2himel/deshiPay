@@ -12,25 +12,7 @@
    * amount-bearing QR built by the same engine the site uses, with no real account
    * data, and nothing here talks to Supabase.
    */
-  var DEMO_PAGE = {
-    username: "demo",
-    title: "DeshiPay",
-    avatar: "shop",
-    message: "Support DeshiPay. This is a live demo: the QR and bank details are real, so try a small amount.",
-    theme: "emerald",
-    presets: [100, 500, 1000, 5000],
-    // Base payload of the demo QR (a real Bangla QR: NPSB account template,
-    // merchant name/city in tags 59/60 and the provider token templates).
-    qr_payload: "00020101021126470014bd.org.bb.npsb010202020420020311018687352695204601653030505802BD5909HIMEL DAS6005Bogra62060602FT80660014bd.org.bb.npsb01445XNCJK94czExK9lJvOzkThJZ1WeRL9ejOv/DpI3gIk8w81660014bd.org.bb.npsb0144OS4dluMwFWQdIe4vJT3fc22f2V7L2grFuN9FjRKYAw==63044901",
-    qr_name: "HIMEL DAS",
-    qr_city: "Bogra",
-    ref_prefix: "",
-    ref_len: 0,
-    wallets: [],
-    banks: [
-      { bank: "Dutch-Bangla Bank", name: "Himel Das", number: "1251070048232", branch: "Bogura", routing: "090100378", swift: "DBBLBDDH" }
-    ]
-  };
+  var DEMO_PAGE = window.DESHIPAY_PAGE || null;
 
   function mountDemo() {
     var host = document.getElementById("demo");

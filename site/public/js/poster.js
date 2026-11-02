@@ -139,20 +139,27 @@
     svg.appendChild(g);
   }
   function logoBanglaQr(svg, defs, item, x, top, size) {
+    var g = el("g", { "data-logo": item.name, "aria-label": item.name });
+    if (item.src) {
+      var img = el("image", { x: x, y: top, width: size, height: size, preserveAspectRatio: "xMidYMid meet" });
+      img.setAttribute("href", item.src);
+      img.setAttributeNS(XLINK, "xlink:href", item.src);
+      g.appendChild(img);
+      svg.appendChild(g);
+      return;
+    }
     var doc = new DOMParser().parseFromString(item.svg, "image/svg+xml");
     var src = doc.documentElement;
     var vb = (src.getAttribute("viewBox") || "0 0 1 1").split(/\s+/).map(Number);
     var ratio = vb[2] && vb[3] ? vb[2] / vb[3] : 1;
     var h = size, w = h * ratio;
-    // Bangla QR is the official standard mark, not an app tile: no rounded box.
-    var g = el("g", { "data-logo": item.name, "aria-label": item.name });
     var nested = el("svg", { x: x + (size - w) / 2, y: top, width: w, height: h, viewBox: vb.join(" "), preserveAspectRatio: "xMidYMid meet" });
     Array.prototype.forEach.call(src.childNodes, function (n) { nested.appendChild(document.importNode(n, true)); });
     g.appendChild(nested);
     svg.appendChild(g);
   }
   function appLogos(svg, f, defs) {
-    var L = window.DeshiPosterLogos;
+    var L = window.DeshiPosterLogos || window.DeshiPayIcons;
     if (!L) return;
     var row1 = L.mfs.concat([L.banglaqr]);
     var row2 = L.banks;
@@ -257,11 +264,13 @@
     if (!w) return false;
     var mmSize = f.w + "mm " + f.h + "mm";
     w.document.open();
+    var styleOpen = "<sty" + "le>", styleClose = "</sty" + "le>";
+    var scriptOpen = "<scr" + "ipt>", scriptClose = "</scr" + "ipt>";
     w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + filename(page, format).replace(/\.svg$/, "") +
-      '</title><style>@page{size:' + mmSize + ';margin:0}html,body{margin:0;padding:0;background:#fff}' +
+      '</title>' + styleOpen + '@page{size:' + mmSize + ';margin:0}html,body{margin:0;padding:0;background:#fff}' +
       'svg{width:100%;height:auto;display:block;print-color-adjust:exact;-webkit-print-color-adjust:exact}' +
-      '@media print{html,body{width:' + mmSize + '}svg{width:' + f.w + 'mm;height:' + f.h + 'mm}}</style></head><body>' +
-      serialize(svg) + '<script>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},250);});</script></body></html>');
+      '@media print{html,body{width:' + mmSize + '}svg{width:' + f.w + 'mm;height:' + f.h + 'mm}}' + styleClose + '</head><body>' +
+      serialize(svg) + scriptOpen + 'window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},250);});' + scriptClose + '</body></html>');
     w.document.close();
     return true;
   }

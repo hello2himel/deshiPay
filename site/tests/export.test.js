@@ -56,6 +56,7 @@ function assets(overrides) {
       providers: read("js/providers.js"),
       avatars: read("js/avatars.js"),
       payicons: read("js/pay-icons.js"),
+      poster: read("js/poster.js"),
       payview: read("js/payview.js"),
       pay: read("js/pay.js"),
     },
@@ -85,6 +86,8 @@ const MARKERS = {
     ["common", "Shared helpers for every page"],
     ["providers", "Mobile wallets, wallet account types"],
     ["avatars", "Avatar icon set"],
+    ["payicons", "Supported apps shown under the payment QR"],
+    ["poster", "Printable DeshiPay poster"],
     ["payview", "PayView renders the customer-facing payment page"],
     ["pay", "Public payment page: /<username>"],
   ],
@@ -246,8 +249,8 @@ test("generates one complete HTML document with pay.html's head and body", () =>
   assert.ok(html.includes('<div id="root"></div>'));
   assert.ok(html.includes("This payment page needs JavaScript to draw the QR code."));
   assert.strictEqual(count(html, "<style>"), 3, "exactly the three stylesheets");
-  assert.strictEqual(count(html, "<script>"), 10, "page data + the nine runtime scripts");
-  assert.strictEqual(count(html, "<script"), 10, "no extra script elements");
+  assert.strictEqual(count(html, "<script>"), 11, "page data + the ten runtime scripts");
+  assert.strictEqual(count(html, "<script"), 11, "no extra script elements");
 });
 
 test("inlines the real CSS files in pay.html order (themes, base, pay)", () => {
@@ -270,6 +273,7 @@ test("inlines every runtime script in pay.html order and never uses src=", () =>
     "js/providers.js",
     "js/avatars.js",
     "js/pay-icons.js",
+    "js/poster.js",
     "js/payview.js",
     "js/pay.js",
   ]) {
@@ -362,8 +366,8 @@ test("a literal </script in an inlined asset cannot close the script element ear
   const html = E.buildPageHtml(full, broken);
   assert.strictEqual(html.indexOf('var closing = "</script>"'), -1, "literal sequence is guarded");
   assert.ok(html.includes('var closing = "<\\/script>";'), "escaped to <\\/script> (same JS string)");
-  assert.strictEqual(count(html, "<script>"), 10);
-  assert.strictEqual(count(html, "</script>"), 10);
+  assert.strictEqual(count(html, "<script>"), 11);
+  assert.strictEqual(count(html, "</script>"), 11);
 });
 
 /* ---------------- fixtures ---------------- */
@@ -440,6 +444,7 @@ test("downloadPage names the file after the username, then the title slug, then 
     "/js/providers.js": read("js/providers.js"),
     "/js/avatars.js": read("js/avatars.js"),
     "/js/pay-icons.js": read("js/pay-icons.js"),
+    "/js/poster.js": read("js/poster.js"),
     "/js/payview.js": read("js/payview.js"),
     "/js/pay.js": read("js/pay.js"),
     "/favicon.svg": read("favicon.svg"),

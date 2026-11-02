@@ -617,6 +617,7 @@ async function scenarioOnline(browser) {
     ok((await page.$eval(".pv h1", (e) => e.textContent)) === "Rahim Traders", "customer page shows the title");
     ok((await page.$$eval(".pv-avatar svg", (els) => els.length)) === 1, "customer page shows the chosen avatar icon");
     await page.waitForSelector(".pv-apps img");
+    ok((await page.$eval(".slip-actions .btn", (e) => e.textContent)).includes("A5 poster"), "the QR save button downloads the A5 poster");
     ok((await page.$$eval(".pv-apps img", (els) => els.length)) === 10, "customer QR shows the supported app icons");
     ok((await page.$$eval(".pv-apps .pv-app.bare", (els) => els.length)) === 3, "Nagad, upay and Bangla QR keep their unrounded marks");
     ok(

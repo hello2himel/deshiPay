@@ -12,7 +12,7 @@
 (function () {
   "use strict";
   var T = window.Deshi, h = T.h, icon = T.icon;
-  var HELP_TEXT = "Paying from this phone? Save the image, then choose it from your gallery inside your payment app.";
+  var HELP_TEXT = "Paying from this phone? Save the A5 poster, then choose it from your gallery inside your payment app.";
 
   function mount(root, initial, opts) {
     opts = opts || {};
@@ -58,7 +58,7 @@
       });
       var err = h("div", { class: "amt-err", role: "alert" });
       var box = h("div", { class: "qrbox empty", "aria-live": "polite" }, h("span", null, "Enter an amount to see the QR"));
-      var save = h("button", { class: "btn", type: "button", disabled: true, onClick: onSave }, icon("download"), "Save QR image");
+      var save = h("button", { class: "btn", type: "button", disabled: true, onClick: onSave }, icon("download"), "Save A5 poster");
       var help = h("p", { class: "slip-help" }, HELP_TEXT);
       qr = { input: input, err: err, box: box, save: save, help: help, payload: "" };
 
@@ -148,11 +148,51 @@
     }
     function onSave() {
       if (!qr.payload) return;
-      T.qrPng(qr.payload, 1000).then(function (blob) {
-        return T.saveImage(blob, "pay-" + T.slugify(page.username || page.title || "qr") + "-" + (amount || "no-amount") + ".png");
-      }).then(function (r) {
-        if (r === "saved") T.toast("QR image saved");
-      });
+      // Download the A5 print poster as a 300 dpi PNG. The QR reflects the
+      // amount currently on screen (or stays amount-free if none is set).
+      if (!window.DeshiPoster || !page.qr_payload) {
+        return T.qrPng(qr.payload, 1000).then(function (blob) {
+          return T.saveImage(blob, "pay-" + T.slugify(page.username || page.title || "qr") + "-" + (amount || "no-amount") + ".png");
+        }).then(function (r) { if (r === "saved") T.toast("Image saved"); });
+      }
+      var n = parseFloat(amount);
+      var pp = {
+        username: page.username, title: page.title, message: page.message,
+        qr_name: page.qr_name, qr_city: page.qr_city,
+        ref_prefix: page.ref_prefix, ref_len: page.ref_len,
+        qr_payload: page.qr_payload
+      };
+      if (n > 0) {
+        try {
+          var ref = page.ref_len ? window.DeshiQR.makeRef(page.ref_prefix, page.ref_len) : null;
+          pp.qr_payload = window.DeshiQR.build(page.qr_payload, n, ref);
+          pp.amount = n;
+          pp.amountLabel = T.taka(n);
+        } catch (e) {
+          return T.toast("Couldn’t make the poster QR", { error: true });
+        }
+      }
+      var svg = window.DeshiPoster.build(pp, "a5");
+      if (!svg) return T.toast("Couldn’t make the poster", { error: true });
+      var xml = new XMLSerializer().serializeToString(svg);
+      var url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml" }));
+      var img = new Image();
+      img.onload = function () {
+        var c = document.createElement("canvas");
+        c.width = 1748; c.height = 2480; // A5 at 300 dpi
+        var g = c.getContext("2d");
+        g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+        g.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (blob) {
+          if (!blob) return T.toast("Couldn’t prepare the poster", { error: true });
+          T.saveImage(blob, window.DeshiPoster.filename(pp, "a5").replace(/\.svg$/, ".png")).then(function (r) {
+            if (r === "saved") T.toast("A5 poster saved");
+          });
+        }, "image/png");
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); T.toast("Couldn’t prepare the poster", { error: true }); };
+      img.src = url;
     }
 
     /* ---------- wallet and bank panels ---------- */

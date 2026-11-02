@@ -102,8 +102,15 @@
 .faq summary::after { content: "+"; color: var(--accent-text); font-weight: 800; font-size: 18px; transition: transform 0.18s ease; }
 .faq details[open] summary::after { transform: rotate(45deg); }
 .faq details p { margin: 0 0 14px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
-.home-cta { gap: 10px; justify-items: start; padding: 24px; border-radius: 22px; background: var(--accent-soft); }
+.home-cta { gap: 16px; justify-items: start; padding: 24px; border-radius: 22px; background: var(--accent-soft); }
 .home-cta p { margin: 0; color: var(--muted); max-width: 52ch; }
+.home-cta .cta-action { display: grid; gap: 10px; justify-items: start; }
+.cta-note { color: var(--muted); font-size: 13px; }
+@media (min-width: 720px) {
+  .home-cta { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 32px; padding: 30px 34px; }
+  .home-cta .cta-action { justify-items: end; }
+  .home-cta h2 { font-size: 26px; }
+}
 @media (min-width: 720px) { .feat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .faq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1000px) { .feat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .land-foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; }

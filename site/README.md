@@ -303,4 +303,4 @@ The engine's own tests live in the [deshiQR repo](https://github.com/hello2himel
 
 ## Licences
 
-This site's code: MIT, in the [DeshiPay repo](../README.md) (root [LICENSE](../LICENSE)). Vendored libraries keep their own licences: qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT), the `deshiqr` browser bundle (MIT, from the [deshiQR repo](https://github.com/hello2himel/deshiQR)), and **Remix Icon 4.9.1** (Apache-2.0; path data embedded in `public/js/common.js`, license in [`THIRD_PARTY_LICENSES/remixicon.txt`](../THIRD_PARTY_LICENSES/remixicon.txt)).
+This site's code: MIT, in the [DeshiPay repo](../README.md) (root [LICENSE](../LICENSE)). Vendored libraries keep their own licences: qrcode-generator (MIT), jsQR (Apache-2.0), supabase-js (MIT), and the `deshiqr` browser bundle (MIT, from the [deshiQR repo](https://github.com/hello2himel/deshiQR)).

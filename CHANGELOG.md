@@ -105,14 +105,6 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ### Changed
 
-- **Whole UI migrated to Remix Icon.** All dynamic UI icons (dashboard, PayView, nav/theme toggle, login,
-  buttons) and the static landing icons now use Remix Icon 4.9.1 line paths with a filled
-  `currentColor` style instead of the previous hand-drawn stroke set. Avatar illustrations stay custom
-  because they are selectable artwork, not UI glyphs. Remix Icon is Apache-2.0; its license is included
-  in `THIRD_PARTY_LICENSES/remixicon.txt` and attribution is in `site/README.md`.
-
-### Changed
-
 - **Old “deshiqr” product names renamed to DeshiPay where they leaked into the app.** Downloaded pages are
   now `deshipay-<name>.html` (was `deshiqr-*`), the draft key is `deshipay.local.v1` (old
   `deshiqr.local.v1` drafts are migrated on load), and the site-level globals are `DESHIPAY_CONFIG`,

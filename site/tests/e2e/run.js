@@ -219,6 +219,8 @@ async function scenarioOnline(browser) {
     ok(heroFill.hero >= heroFill.viewport - Math.ceil(heroFill.nav), "the hero fills at least the viewport below the nav");
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
+    ok(!!(await page.$(".hero-actions .hero-demo-link[href='#demo']")), "the hero links to the live demo");
+    ok((await page.$$eval("#heroApps img", (els) => els.length)) === 5, "the hero shows supported app marks");
     ok(
       (await page.evaluate(() => document.documentElement.getAttribute("data-theme"))) === "emerald",
       "the site uses the green default theme"

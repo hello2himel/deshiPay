@@ -38,7 +38,17 @@
 #features, #faq, #demo { scroll-margin-top: 84px; }
 .auth { grid-area: auth; }
 /* hero CTA: one button below the lead, with an arrow */
-.hero-cta { justify-self: start; margin-top: 4px; }
+.hero-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.hero-actions .hero-cta { margin-top: 0; }
+.hero-actions .btn.sec { min-height: 52px; }
+.hero-demo-link .ic { width: 18px; height: 18px; }
+.hero-methods { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.hero-methods-label { color: var(--ink); font-weight: 700; }
+.hero-apps { display: flex; align-items: center; gap: 6px; }
+.hero-app { width: 26px; height: 26px; border-radius: 7px; background: var(--sunk); overflow: hidden; display: grid; place-items: center; }
+.hero-app img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 7px; }
+.hero-app.bare { background: transparent; border-radius: 0; overflow: visible; }
+.hero-app.bare img { border-radius: 0; }
 /* dedicated sign-in / sign-up page */
 .auth-page { max-width: 480px; margin: 0 auto; padding: 40px 16px 8px; display: grid; gap: 18px; }
 .auth-page .auth { box-shadow: 0 24px 60px -30px var(--shadow); }
@@ -103,6 +113,7 @@
 .land-foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 13px; }
 
 @media (max-width: 719px) {
+  .hero-top { min-height: 0; padding-top: 36px; padding-bottom: 20px; gap: 16px; }
   .nav-btn { display: flex; }
   .top-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 45; flex-direction: column; align-items: stretch; gap: 10px; margin: 0; padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--bg); border-top: 1px solid var(--line); box-shadow: 0 24px 40px -26px var(--shadow); }
   .top.open .top-menu { display: flex; }

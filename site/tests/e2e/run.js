@@ -219,7 +219,7 @@ async function scenarioOnline(browser) {
     ok(heroFill.hero >= heroFill.viewport - Math.ceil(heroFill.nav), "the hero fills at least the viewport below the nav");
     ok((await page.$("#email")) === null, "landing has no login form — just the create-page CTA");
     ok(!!(await page.$(".hero-cta[href='/login'] .ic")), "the hero CTA is a button with an arrow icon");
-    ok(!!(await page.$(".hero-actions .hero-demo-link[href='#demo']")), "the hero links to the live demo");
+    ok(!!(await page.$(".hero-actions .hero-demo-link[href='/deshipay']")), "the hero links to the live donation page");
     ok((await page.$$eval(".hero-works img", (els) => els.length)) === 8, "the hero shows the supported app marks");
     ok((await page.$eval(".hero-top .lead", (e) => e.textContent)).includes("We’re not a payment processor") && (await page.$eval(".hero-top .lead", (e) => e.textContent)).includes("no cut or commission"), "the hero copy carries the not-a-processor no-cut line");
     ok(
@@ -278,24 +278,26 @@ async function scenarioOnline(browser) {
     // follow the system preference again for the rest of the suite (dark-mode tests)
     await page.evaluate(() => { localStorage.removeItem("deshipay.mode"); document.documentElement.removeAttribute("data-mode"); });
 
-    // The landing demo is the real customer page (PayView), not a static mock.
-    ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "landing shows the live payment demo (real customer page)");
-    ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "1500", "the live demo starts at ৳1,500");
+    // The landing preview is the real PayView component, driven by demo-data.js.
+    ok((await page.$$eval(".demo .pv", (els) => els.length)) === 1, "landing shows the sample PayView preview");
+    const landingSource = await page.content();
+    ok(!landingSource.includes("1251070048232") && !landingSource.includes("01868735269"), "the homepage source contains no real donation account details");
+    ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the sample preview starts at ৳500");
     await page.waitForSelector(".demo .qrbox svg", { timeout: 5000 });
-    ok(true, "the live demo draws its real amount-bearing QR");
+    ok(true, "the sample preview draws its amount-bearing QR");
     const demoChips = await page.$$(".demo .chip");
     if (demoChips[1]) await demoChips[1].click();
-    ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the live demo’s quick amounts update the amount");
-    ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 3, "the live demo has QR, Wallet and Bank methods");
+    ok((await page.$eval(".demo .amt-input", (e) => e.value)) === "500", "the sample preview’s quick amounts update the amount");
+    ok((await page.$$eval(".demo .pv-methods button", (els) => els.length)) === 3, "the sample preview has QR, Wallet and Bank methods");
     ok((await page.$$eval(".demo .pv-help", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0, "the homepage demo leaves out the “How to pay” block");
     ok((await page.$$eval(".demo .pv-foot", (els) => els.length)) === 0, "the homepage demo leaves out the page footer");
     ok(
       (await page.$$eval(".demo .slip-actions", (els) => els.filter((el) => getComputedStyle(el).display !== "none").length)) === 0,
       "the homepage demo leaves out the Save QR image button"
     );
-    const demoHelp = await page.$eval(".demo .slip-help", (e) => e.textContent);
-    ok(demoHelp.includes("not a payment processor") && demoHelp.includes("never takes a cut"),
-      "the homepage demo explains DeshiPay never takes a cut");
+    const demoCover = await page.$eval(".demo-qr-cover", (e) => e.textContent);
+    ok(demoCover.includes("Demo QR") && demoCover.includes("won’t take a payment"),
+      "the sample QR is clearly covered by a Demo QR notice");
     const faq = await page.$(".faq details");
     await page.click(".faq details summary");
     await page.waitForFunction(() => document.querySelector(".faq details").open === true, { timeout: 3000 });
@@ -307,8 +309,8 @@ async function scenarioOnline(browser) {
     const demoMethods = await page.$$(".demo .pv-methods button");
     await demoMethods[2].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });
-    ok((await page.$eval(".demo .copyrow .v", (e) => e.textContent)).includes("1251070048232"), "the demo shows DeshiPay’s DBBL account number");
-    ok((await page.$eval(".demo .item-title", (e) => e.textContent)) === "Dutch-Bangla Bank", "the demo shows DeshiPay’s bank");
+    ok((await page.$eval(".demo .copyrow .v", (e) => e.textContent)).includes("0000000000"), "the sample preview shows a dummy account number");
+    ok((await page.$eval(".demo .item-title", (e) => e.textContent)) === "Demo Bank", "the sample preview shows a demo bank");
     await shot("01-landing-mobile");
 
     console.log("Footer and legal pages");

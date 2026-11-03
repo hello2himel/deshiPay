@@ -6,13 +6,12 @@
   var card = document.getElementById("auth");
   var notice = document.getElementById("setupNotice");
 
-  /* ----- live payment demo -----
-   * The actual customer page (PayView), mounted with a synthetic Bangla QR from
-   * docs/demo-payloads.md. Visitors can type an amount and get a real,
-   * amount-bearing QR built by the same engine the site uses, with no real account
-   * data, and nothing here talks to Supabase.
+  /* ----- sample payment page -----
+   * Homepage-only. Uses DEMO_SHOP and fake account details from demo-data.js,
+   * with a synthetic Bangla QR. Nothing here talks to Supabase and the QR is
+   * covered by a "Demo QR" notice so nobody mistakes it for a real page.
    */
-  var DEMO_PAGE = window.DESHIPAY_PAGE || null;
+  var DEMO_PAGE = window.DEMO_PAGE || null;
 
   function mountDemo() {
     var host = document.getElementById("demo");
@@ -21,15 +20,25 @@
     // and the landing-page autofocus: full QR / Wallet / Bank tabs. The
     // "How to pay" block is hidden for the landing demo in studio.css.
     window.PayView.mount(host, DEMO_PAGE, { preview: true });
-    // The Save button is hidden in the demo, so replace its note with the
-    // product truth: DeshiPay only shows the page and never handles the money.
+    // The Save button is hidden in the demo, so make the note explicit.
     var note = host.querySelector(".slip-help");
-    if (note) note.textContent = "DeshiPay is not a payment processor. It never takes a cut; you pay from your own banking app.";
-    // Start at ৳1,500 so the demo shows a real amount-bearing QR immediately;
-    // the visitor can edit it or use the quick-amount chips.
+    if (note) note.textContent = "Sample page only. These details are dummy data and no payment is collected.";
+    // Wrap the QR so the demo cover sits above it without breaking redraws.
+    var box = host.querySelector(".qrbox");
+    if (box) {
+      var wrap = document.createElement("div");
+      wrap.className = "demo-qr";
+      box.parentNode.insertBefore(wrap, box);
+      wrap.appendChild(box);
+      var cover = document.createElement("div");
+      cover.className = "demo-qr-cover";
+      cover.innerHTML = '<span class="demo-qr-badge">Demo QR</span><span class="demo-qr-line">Sample only — this won’t take a payment.</span>';
+      wrap.appendChild(cover);
+    }
+    // Dummy amount for an obvious sample.
     var amount = host.querySelector(".amt-input");
     if (amount) {
-      amount.value = "1500";
+      amount.value = "500";
       amount.dispatchEvent(new Event("input", { bubbles: true }));
     }
   }

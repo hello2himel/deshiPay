@@ -296,8 +296,8 @@ async function scenarioOnline(browser) {
       "the homepage demo leaves out the Save QR image button"
     );
     const demoCover = await page.$eval(".demo-qr-cover", (e) => e.textContent);
-    ok(demoCover.includes("Demo QR") && demoCover.includes("won’t take a payment"),
-      "the sample QR is clearly covered by a Demo QR notice");
+    ok(demoCover.includes("Demo QR"),
+      "the sample QR has a Demo QR badge");
     const faq = await page.$(".faq details");
     await page.click(".faq details summary");
     await page.waitForFunction(() => document.querySelector(".faq details").open === true, { timeout: 3000 });

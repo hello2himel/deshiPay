@@ -361,7 +361,6 @@ body[data-step="qr"] .preview-col, body[data-step="look"] .preview-col { display
    sample is unmistakable and cannot be used as a real payment prompt. */
 .demo-qr { position: relative; }
 .demo-qr .qrbox { border-radius: 16px; }
-.demo-qr-cover { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; padding: 18px; text-align: center; background: rgba(246, 250, 248, .84); border-radius: 16px; }
-.demo-qr-badge { display: inline-flex; align-items: center; justify-content: center; padding: 7px 12px; border-radius: 999px; background: var(--ink); color: #fff; font: 800 12px/1 var(--body); letter-spacing: .13em; text-transform: uppercase; }
-.demo-qr-line { max-width: 190px; color: var(--ink); font: 700 13px/1.4 var(--body); }
+.demo-qr-cover { position: absolute; inset: 0; pointer-events: none; display: grid; place-items: center; padding: 0; }
+.demo-qr-badge { display: inline-flex; align-items: center; justify-content: center; padding: 9px 16px; border-radius: 999px; background: var(--ink); color: #fff; font: 800 14px/1 var(--body); letter-spacing: .13em; text-transform: uppercase; box-shadow: 0 6px 16px rgba(8, 42, 32, .18); }
 .demo .slip-help { display: none; }

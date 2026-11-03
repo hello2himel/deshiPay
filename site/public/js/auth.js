@@ -9,7 +9,7 @@
   /* ----- sample payment page -----
    * Homepage-only. Uses DEMO_SHOP and fake account details from demo-data.js,
    * with a synthetic Bangla QR. Nothing here talks to Supabase and the QR is
-   * covered by a "Demo QR" notice so nobody mistakes it for a real page.
+   * marked with a "Demo QR" badge so nobody mistakes it for a real page.
    */
   var DEMO_PAGE = window.DEMO_PAGE || null;
 
@@ -32,7 +32,7 @@
       wrap.appendChild(box);
       var cover = document.createElement("div");
       cover.className = "demo-qr-cover";
-      cover.innerHTML = '<span class="demo-qr-badge">Demo QR</span><span class="demo-qr-line">Sample only — this won’t take a payment.</span>';
+      cover.innerHTML = '<span class="demo-qr-badge">Demo QR</span>';
       wrap.appendChild(cover);
     }
     // Dummy amount for an obvious sample.

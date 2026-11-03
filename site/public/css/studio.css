@@ -362,5 +362,5 @@ body[data-step="qr"] .preview-col, body[data-step="look"] .preview-col { display
 .demo-qr { position: relative; }
 .demo-qr .qrbox { border-radius: 16px; }
 .demo-qr-cover { position: absolute; inset: 0; pointer-events: none; display: grid; place-items: center; padding: 0; }
-.demo-qr-badge { display: inline-flex; align-items: center; justify-content: center; padding: 9px 16px; border-radius: 999px; background: var(--ink); color: #fff; font: 800 14px/1 var(--body); letter-spacing: .13em; text-transform: uppercase; box-shadow: 0 6px 16px rgba(8, 42, 32, .18); }
+.demo-qr-badge { display: inline-flex; align-items: center; justify-content: center; padding: 13px 22px; border-radius: 999px; background: var(--accent); color: #fff; font: 800 19px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; box-shadow: 0 8px 24px rgba(8, 42, 32, .28); transform: rotate(45deg); }
 .demo .slip-help { display: none; }

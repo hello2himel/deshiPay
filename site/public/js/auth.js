@@ -23,18 +23,28 @@
     // The Save button is hidden in the demo, so make the note explicit.
     var note = host.querySelector(".slip-help");
     if (note) note.textContent = "Sample page only. These details are dummy data and no payment is collected.";
-    // Wrap the QR so the demo cover sits above it without breaking redraws.
-    var box = host.querySelector(".qrbox");
-    if (box) {
-      var wrap = document.createElement("div");
-      wrap.className = "demo-qr";
-      box.parentNode.insertBefore(wrap, box);
-      wrap.appendChild(box);
-      var cover = document.createElement("div");
-      cover.className = "demo-qr-cover";
-      cover.innerHTML = '<span class="demo-qr-badge">Demo QR</span>';
-      wrap.appendChild(cover);
+    // PayView rebuilds its panel on every tab switch, so decorate the QR
+    // after each render as well as on the first mount.
+    function decorateDemo() {
+      var box = host.querySelector(".qrbox");
+      if (!box) return;
+      var wrap = box.parentNode && box.parentNode.classList && box.parentNode.classList.contains("demo-qr")
+        ? box.parentNode
+        : document.createElement("div");
+      if (!wrap.classList.contains("demo-qr")) {
+        wrap.className = "demo-qr";
+        box.parentNode.insertBefore(wrap, box);
+        wrap.appendChild(box);
+      }
+      if (!wrap.querySelector(".demo-qr-cover")) {
+        var cover = document.createElement("div");
+        cover.className = "demo-qr-cover";
+        cover.innerHTML = '<span class="demo-qr-badge">Demo QR</span>';
+        wrap.appendChild(cover);
+      }
     }
+    decorateDemo();
+    new MutationObserver(decorateDemo).observe(host, { childList: true, subtree: true });
     // Dummy amount for an obvious sample.
     var amount = host.querySelector(".amt-input");
     if (amount) {

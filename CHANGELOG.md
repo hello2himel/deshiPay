@@ -11,6 +11,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this proj
 
 ## [Unreleased]
 
+### Changed
+
+- **Homepage preview is now visibly a sample.** It uses a Demo Shop page, dummy wallet/bank details and a synthetic QR under a “Demo QR — sample only” cover, so the landing page no longer exposes real account data. The hero’s secondary action is now **View a live page** and opens the working `/deshipay` donation page.
+
 ### Added
 
 - **Avatar picker now uses Remix Icon.** Replaced the hand-drawn avatar glyphs with Remix Icon 4.9.1

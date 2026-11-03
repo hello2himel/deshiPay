@@ -29,7 +29,7 @@ library toolchain.
 
 ## What's here
 
-- **Landing** (`/`) with a live, scannable payment-page demo (real QR, typed amount).
+- **Landing** (`/`) with a sample payment-page preview (dummy shop, non-payable Demo QR) and a link to the live `/deshipay` donation page.
 - **Sign in / sign up** (`/login`) on Supabase Auth; the dashboard (`/app`) has a short setup wizard,
   then the page editor (link/username, QR, wallet & bank details, theme, share).
 - **Customer pages** (`/<username>`): QR / Wallet / Bank methods, amount + quick amounts, amount-bearing

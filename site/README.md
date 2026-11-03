@@ -21,7 +21,7 @@ complete way to get paid.
 ```
 site/
   public/
-    index.html        landing page (hero, live payment demo, "Create your page" CTA)
+    index.html        landing page (hero, sample payment preview, "Create your page" CTA)
     login.html        sign up / sign in page (served at /login)
     app.html          dashboard: onboarding wizard, then the editor (served at /app)
     pay.html          the customer page (served at /<username>)

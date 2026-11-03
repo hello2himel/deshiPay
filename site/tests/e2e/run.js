@@ -307,6 +307,10 @@ async function scenarioOnline(browser) {
     ok(true, "FAQ collapses again");
 
     const demoMethods = await page.$$(".demo .pv-methods button");
+    await demoMethods[1].click();
+    await demoMethods[0].click();
+    await page.waitForSelector(".demo-qr-badge", { timeout: 3000 });
+    ok(true, "the Demo QR badge returns after switching away from Scan QR and back");
     await demoMethods[2].click();
     await page.waitForSelector(".demo .copyrow", { timeout: 5000 });
     ok((await page.$eval(".demo .copyrow .v", (e) => e.textContent)).includes("0000000000"), "the sample preview shows a dummy account number");
